@@ -1,0 +1,10 @@
+^MANIFEST\.SKIP$
+^.git/
+^.gitignore
+^.gitmodules
+/.git
+^Makefile$
+^pm_to_blib$
+^blib
+^\.vimrc$
+^ToDo$
