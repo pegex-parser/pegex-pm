@@ -13,6 +13,13 @@ has 'position' => 0;
 has 'receiver';
 has 'arguments' => [];
 
+sub grammar {
+    my $self = shift;
+    require Parse::Pegex::Compiler;
+    my $compiler = Parse::Pegex::Compiler->new;
+    return $compiler->compile($self->grammar_text);
+}
+
 sub parse {
     my $self = shift;
     $self->stream(shift);
