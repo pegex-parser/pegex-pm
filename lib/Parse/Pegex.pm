@@ -68,8 +68,13 @@ sub match {
         $rule = $rule->{'+any'};
         $method = 'match_any';
     }
+    elsif ($rule->{'+error'}) {
+        my $error = $rule->{'+error'};
+        $self->throw_error($error);
+    }
     else {
-        die "no support for $rule";
+        require Carp;
+        Carp::confess("no support for $rule");
     }
 
     if ($state and not $not) {
@@ -137,9 +142,10 @@ sub callback {
     }
 }
 
-# sub throw_error {
-#     my $self = shift;
-#     my $msg = shift;
+sub throw_error {
+    my $self = shift;
+    my $msg = shift;
+    die $msg;
 #     my $line = @{[substr($self->stream, 0, $self->position) =~ /(\n)/g]} + 1;
 #     my $context = substr($self->stream, $self->position, 50);
 #     $context =~ s/\n/\\n/g;
@@ -149,7 +155,7 @@ sub callback {
 #   line: $line
 #   context: "$context"
 # ...
-# }
+}
 
 1;
 
