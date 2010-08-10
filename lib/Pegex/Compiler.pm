@@ -10,7 +10,7 @@ sub grammar_file_to_yaml {
     my $file = shift;
     open IN, $file or die "Can't open '$file'";
     my $grammar = do {local $/; <IN>};
-    return YAML::XS::Dump($class->new->compile($grammar));
+    return YAML::XS::Dump($class->new->compile($grammar)->grammar);
 }
 
 my $atoms = {
