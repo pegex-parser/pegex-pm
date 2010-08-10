@@ -1,9 +1,41 @@
 NAME
-    Parse::Pegex - Pegex Parser Generator
+    Pegex - Pegex Parser Generator
 
 SYNOPSIS
-        package MyParser;
-        use Parse::Pegex -base;
+        use Pegex;
+        my $data = pegex($grammar)->parse($input);
+
+    or more explicitly:
+
+        use Pegex::Grammar;
+        use Pegex::AST;
+        my $grammar = Pegex::Grammar->new(
+            grammar => $grammar,
+            receiver => Pegex::AST->new(),
+        );
+        $grammar->parse($input, 'rule_name');
+        my $data = $grammar->receiver->data;
+
+    or customized explicitly:
+
+        package MyGrammar;
+        use Pegex::Grammar -base;
+        has grammar_text => "some grammar text goes here";
+
+        package MyReceiver;
+        use Pegex::Receiver -base;
+        got_some_rule { ... }
+        got_other_rule { ... }
+
+        package main;
+        use MyReceiver;
+        use MyGrammar;
+        my $receiver = MyReceiver->new();
+        my $grammar = MyGrammar->new(
+            receiver => $receiver,
+        );
+        $grammar->parse($input);
+        my $data = $receiver->data;
 
 DESCRIPTION
     Pegex is a new Acmeist parsing technique.

@@ -1,4 +1,9 @@
 ---
+version: 0.02
+date:    Tue Aug 10 01:15:58 PDT 2010
+changes:
+- Changed name from Parse::Pegex to Pegex.
+---
 version: 0.01
 date:    Tue Aug  3 02:42:29 PDT 2010
 changes:

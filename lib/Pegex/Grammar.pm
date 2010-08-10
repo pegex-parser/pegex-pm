@@ -10,8 +10,8 @@ has 'grammar_tree';
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
 
 has 'input';
-has 'position' => 0;
-has 'match_groups' => [];
+has 'position';
+has 'match_groups';
 
 sub parse {
     my $self = shift;
@@ -19,6 +19,7 @@ sub parse {
         unless @_ >= 1 and @_ <= 2;
     $self->input(shift);
     $self->position(0);
+    $self->match_groups([]);
     my $start_rule = shift || undef;
 
     if (not $self->grammar) {
@@ -43,10 +44,12 @@ sub parse {
             ? 'TOP'
             : $self->grammar->{_FIRST_RULE};
 
+    $self->action("__begin__");
     $self->match($start_rule);
     if ($self->position < length($self->input)) {
         $self->throw_error("Parse document failed for some reason");
     }
+    $self->action("__end__");
 
     if ($self->receiver->can('data')) {
         return $self->receiver->data;
@@ -54,12 +57,6 @@ sub parse {
     else {
         return 1;
     }
-}
-
-sub setup {
-    my $self = shift;
-
-    return 
 }
 
 sub match {
@@ -76,28 +73,28 @@ sub match {
         $rule = $self->grammar->{$rule}
     }
 
-    my $method;
+    my $kind;
     my $times = $rule->{'<'} || '1';
     if ($rule->{'+not'}) {
         $rule = $rule->{'+not'};
-        $method = 'match';
+        $kind = 'rule';
         $not = 1;
     }
     elsif ($rule->{'+rule'}) {
         $rule = $rule->{'+rule'};
-        $method = 'match';
+        $kind = 'rule';
     }
     elsif (defined $rule->{'+re'}) {
         $rule = $rule->{'+re'};
-        $method = 'match_regexp';
+        $kind = 'regexp';
     }
     elsif ($rule->{'+all'}) {
         $rule = $rule->{'+all'};
-        $method = 'match_all';
+        $kind = 'all';
     }
     elsif ($rule->{'+any'}) {
         $rule = $rule->{'+any'};
-        $method = 'match_any';
+        $kind = 'any';
     }
     elsif ($rule->{'+error'}) {
         my $error = $rule->{'+error'};
@@ -110,10 +107,12 @@ sub match {
 
     if ($state and not $not) {
         $self->callback("try_$state");
+        $self->action("__try__", $state, $kind);
     }
 
     my $position = $self->position;
     my $count = 0;
+    my $method = ($kind eq 'rule') ? 'match' : "match_$kind";
     while ($self->$method($rule)) {
         $count++;
         last if $times eq '1' or $times eq '?';
@@ -121,6 +120,9 @@ sub match {
     my $result = (($count or $times eq '?' or $times eq '*') ? 1 : 0) ^ $not;
 
     if ($state and not $not) {
+        $result
+            ? $self->action("__got__", $state, $method)
+            : $self->callback("__not__", $state, $method);
         $result
             ? $self->callback("got_$state")
             : $self->callback("not_$state");
@@ -156,14 +158,24 @@ sub match_regexp {
     pos($self->{input}) = $self->position;
     $self->{input} =~ /$regexp/g or return 0;
     if (defined $1) {
-        $self->match_groups([$1, $2, $3, $4, $5]);
+        $self->match_groups([
+            grep defined($_), ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ]);
     }
     $self->position(pos($self->{input}));
 
     return 1;
 }
 
-my $warn = 0;
+sub action {
+    my $self = shift;
+    my $method = shift;
+
+    if ($self->receiver->can($method)) {
+        $self->receiver->$method(@_, $self->match_groups);
+    }
+}
+
 sub callback {
     my $self = shift;
     my $method = shift;
