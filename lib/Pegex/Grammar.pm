@@ -4,6 +4,7 @@ use warnings;
 use 5.008003;
 use Pegex::Base -base;
 
+has 'grammar';
 has 'grammar_text';
 has 'grammar_tree';
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
@@ -11,8 +12,6 @@ has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
 has 'input';
 has 'position' => 0;
 has 'match_groups' => [];
-
-use XXX;
 
 sub parse {
     my $self = shift;
@@ -22,13 +21,17 @@ sub parse {
     $self->position(0);
     my $start_rule = shift || undef;
 
-    if (not $self->grammar_tree) {
-        if (not $self->grammar_text) {
-            die ref($self) . " object has no grammar";
+    if (not $self->grammar) {
+        my $grammar_tree = $self->grammar_tree;
+        if (not $grammar_tree) {
+            my $grammar_text = $self->grammar_text;
+            if (not $grammar_text) {
+                die ref($self) . " object has no grammar";
+            }
+            require Pegex::Compiler;
+            $grammar_tree = Pegex::Compiler->new->compile($grammar_text)->grammar;
         }
-        require Pegex::Compiler;
-        my $tree = Pegex::Compiler->new->compile($self->grammar_text)->grammar;
-        $self->grammar_tree($tree);
+        $self->grammar($grammar_tree);
     }
 
     if (not ref $self->receiver) {
@@ -36,13 +39,13 @@ sub parse {
     }
 
     $start_rule ||= 
-        $self->grammar_tree->{TOP}
+        $self->grammar->{TOP}
             ? 'TOP'
-            : $self->grammar_tree->{_FIRST_RULE};
+            : $self->grammar->{_FIRST_RULE};
 
     $self->match($start_rule);
     if ($self->position < length($self->input)) {
-        $self->throw("Parse document failed for some reason");
+        $self->throw_error("Parse document failed for some reason");
     }
 
     if ($self->receiver->can('data')) {
@@ -68,9 +71,9 @@ sub match {
     my $state = undef;
     if (not ref($rule) and $rule =~ /^\w+$/) {
         die "\n\n*** No grammar support for '$rule'\n\n"
-            unless $self->grammar_tree->{$rule};
+            unless $self->grammar->{$rule};
         $state = $rule;
-        $rule = $self->grammar_tree->{$rule}
+        $rule = $self->grammar->{$rule}
     }
 
     my $method;

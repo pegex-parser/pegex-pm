@@ -46,6 +46,7 @@ my $atoms = {
 
 sub compile {
     my $self = shift;
+    $self = $self->new unless ref $self;
     my $grammar_text = shift;
     $self->grammar({});
     $grammar_text =~ s/^#.*\n//gm;

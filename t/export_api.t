@@ -24,6 +24,6 @@ fail $@ if $@;
 is ref $p2->grammar, 'Pegex::Grammar', 'grammar property is Pegex::Grammar object';
 
 ok $p2->grammar->grammar_text, 'Grammar object has grammar_text';
-ok $p2->grammar->grammar_tree, 'Grammar object is compiled to a tree';
+ok $p2->grammar->grammar, 'Grammar object is compiled to a tree';
 
-is $p2->grammar->grammar_tree->{_FIRST_RULE}, 'number', '_FIRST_RULE is set correctly';
+is $p2->grammar->grammar->{_FIRST_RULE}, 'number', '_FIRST_RULE is set correctly';
