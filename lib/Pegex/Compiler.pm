@@ -1,5 +1,5 @@
-package Parse::Pegex::Compiler;
-use Parse::Pegex::Base -base;
+package Pegex::Compiler;
+use Pegex::Base -base;
 
 has 'grammar';
 has 'combined';
@@ -79,6 +79,7 @@ sub compile {
         $self->grammar->{$rule} = $self->compile_next($tree);  
     }
     $self->combinate($first_rule);
+    $self->grammar->{_FIRST_RULE} = $first_rule;
     return $self;
 }
 

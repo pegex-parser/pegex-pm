@@ -1,7 +1,7 @@
 use inc::Module::Install;
 
-name 'Parse-Pegex';
-all_from 'lib/Parse/Pegex.pm';
+name 'Pegex';
+all_from 'lib/Pegex.pm';
 
 # use_testml;
 
