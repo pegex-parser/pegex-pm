@@ -15,19 +15,24 @@ sub grammar_file_to_yaml {
 
 my $atoms = {
     ALWAYS  => '',
+    NEVER   => '(?!)',
     ALL     => '[\s\S]',
     ANY     => '.',
     BLANK   => '[\ \t]',
     BLANKS  => '\ \t',
+    SPACE   => ' ',
+    TAB     => '\t',
+    WS      => '\s',
     BREAK   => '\n',
+    CR      => '\r',
     EOL     => '\r?\n',
+    ALPHA   => '[a-zA-Z]',
     LOWER   => '[a-z]',
     UPPER   => '[A-Z]',
     DIGIT   => '[0-9]',
     XDIGIT  => '[0-9a-fA-F]',
     ALNUM   => '[a-zA-Z0-9]',
     WORD    => '\w',
-    SPACE   => '\s',
 
     SINGLE  => "'",
     DOUBLE  => '"',
@@ -68,7 +73,7 @@ sub compile {
     $self = $self->new unless ref $self;
     my $grammar_text = shift;
     $self->grammar({});
-    $grammar_text =~ s/^#.*\n//gm;
+    $grammar_text =~ s/^#.*\n+//gm;
     my $first_rule;
     for my $rule (split /(?=^\w+:\s)/m, $grammar_text) {
         (my $value = $rule) =~ s/^(\w+):// or die;
