@@ -1,4 +1,9 @@
 ---
+version: 0.04
+date:    Sat Aug 14 17:11:17 PDT 2010
+changes:
+- Use new Gloom for base OO.
+---
 version: 0.02
 date:    Tue Aug 10 01:15:58 PDT 2010
 changes:
