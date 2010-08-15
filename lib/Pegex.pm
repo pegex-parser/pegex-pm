@@ -4,7 +4,7 @@ use warnings;
 use 5.008003;
 use Pegex::Base -base;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 our @EXPORT = qw(pegex);
 
 has 'grammar';
@@ -95,6 +95,13 @@ The grammar can also be precompiled to JSON: http://github.com/ingydotnet/testml
 Pegex::Compiler further compiles this into a Perl 5 only graamar tree, which becomes this module: http://github.com/ingydotnet/testml-pm/blob/master/lib/TestML/Parser/Grammar.pm
 
 TestML::Parser::Grammar is a subclass of Pegex::Grammar. It can be used to parse TestML files. TestML::Parser calls the C<parse()> method of the grammar with a TestML::Receiver object that receives callbacks when various rules match, and uses the information to build a TestML::Document object. http://github.com/ingydotnet/testml-pm/blob/master/lib/TestML/Parser.pm
+
+=head1 REPOSITORY AND COMMUNITY
+
+The Pegex module can be found on CPAN and on GitHub:
+L<http://github.com/ingydotnet/pegex-pm>.
+
+Please join the Pegex discussion on #pegex on irc.freenode.net.
 
 =head1 AUTHOR
 
