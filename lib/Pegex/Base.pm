@@ -1,21 +1,21 @@
 #line 1
-### Gloom - the Great Little OO Module!
-### Read `perldoc Gloom::Doc` for more information.
+### This is Gloom - the Great Little OO Module!
+### Read `perldoc Gloom::Doc` for more information about Gloom.
 
 use strict;
 use warnings;
 
-$Gloom::VERSION = '0.10';
+$Gloom::VERSION = '0.11';
 
 my $code = do { local $/; <DATA> };
-my $file = __FILE__;
-my $ok = 1;
-my $package =
-    join '::',
-    reverse
-    grep { $ok and (/^[A-Z]/ or do {$ok = 0}) }
-    reverse
-    split /[\/\\]/, $file;
+
+my $package = __FILE__;
+for my $inc (sort { length($b) <=> length($a) } @INC) {
+    $package =~ s/^\Q$inc\E[\\\/]// and last;
+}
+die "Gloom can't determine package name from '$package'"
+    if $package eq __FILE__;
+$package =~ s/[\\\/]/::/g;
 $package =~ s/\.pm//;
 
 eval <<"...";
