@@ -10,7 +10,6 @@ has 'rule';
 
 my $atoms;
 
-use XXX;
 sub compile {
     my $self = shift;
     $self = $self->new unless ref $self;
@@ -113,21 +112,29 @@ sub combinate_re {
     }
 }
 
-sub grammar_file_to_yaml {
-    require YAML::XS;
-    my $class = shift;
+sub parse_file {
+    my $self = shift;
     my $file = shift;
     open IN, $file or die "Can't open '$file'";
     my $grammar = do {local $/; <IN>};
-    return YAML::XS::Dump($class->new->compile($grammar)->grammar);
+    $self->compile($grammar);
+    return $self;
+}
+
+sub to_yaml {
+    require YAML::XS;
+    my $self = shift;
+    return YAML::XS::Dump($self->grammar);
+}
+
+sub to_json {
+    require JSON::XS;
+    my $self = shift;
+    return JSON::XS->new->utf8->canonical->pretty->encode($self->grammar);
 }
 
 sub to_perl {
     my $self = shift;
-#     use XXX;
-#     XXX $self->grammar->{regular_expression};
-#     print $self->grammar->{regular_expression}{'+re'}, "\n";
-#     die;
     $self->compile_perl_regex($self->grammar);
     require Data::Dumper;
     no warnings 'once';
