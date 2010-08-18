@@ -6,6 +6,45 @@ use warnings;
 sub grammar_tree {
     return +{
   '_FIRST_RULE' => 'grammar',
+  'all_group' => {
+    '+all' => [
+      {
+        '+rule' => 'rule_item'
+      },
+      {
+        '+all' => [
+          {
+            '+re' => qr/(?-xism:\G\s*)/
+          },
+          {
+            '+rule' => 'rule_item',
+            '<' => '+'
+          },
+          {
+            '+re' => qr/(?-xism:\G\s*)/
+          }
+        ]
+      }
+    ]
+  },
+  'any_group' => {
+    '+all' => [
+      {
+        '+rule' => 'rule_item'
+      },
+      {
+        '+all' => [
+          {
+            '+re' => qr/(?-xism:\G\s*\|\s*)/
+          },
+          {
+            '+rule' => 'rule_item'
+          }
+        ],
+        '<' => '+'
+      }
+    ]
+  },
   'bracketed_group' => {
     '+all' => [
       {
@@ -16,6 +55,10 @@ sub grammar_tree {
       },
       {
         '+re' => qr/(?-xism:\G\s*\])/
+      },
+      {
+        '+rule' => 'group_quantifier',
+        '<' => '?'
       }
     ]
   },
@@ -42,26 +85,11 @@ sub grammar_tree {
       }
     ]
   },
+  'group_quantifier' => {
+    '+re' => qr/(?-xism:\G([\*\+\?]))/
+  },
   'regular_expression' => {
     '+re' => qr/(?-xism:\G\/([^\/]*)\/)/
-  },
-  'rule_alternation' => {
-    '+all' => [
-      {
-        '+rule' => 'rule_set'
-      },
-      {
-        '+all' => [
-          {
-            '+re' => qr/(?-xism:\G\s*\|\s*)/
-          },
-          {
-            '+rule' => 'rule_set'
-          }
-        ],
-        '<' => '+'
-      }
-    ]
   },
   'rule_definition' => {
     '+all' => [
@@ -72,7 +100,7 @@ sub grammar_tree {
         '+re' => qr/(?-xism:\G[\ \t]*:\s*)/
       },
       {
-        '+rule' => 'rule_set'
+        '+rule' => 'rule_item'
       },
       {
         '+rule' => 'rule_ending'
@@ -85,10 +113,23 @@ sub grammar_tree {
   'rule_group' => {
     '+any' => [
       {
-        '+rule' => 'rule_sequence'
+        '+rule' => 'any_group'
       },
       {
-        '+rule' => 'rule_alternation'
+        '+rule' => 'all_group'
+      }
+    ]
+  },
+  'rule_item' => {
+    '+any' => [
+      {
+        '+rule' => 'bracketed_group'
+      },
+      {
+        '+rule' => 'regular_expression'
+      },
+      {
+        '+rule' => 'rule_reference'
       }
     ]
   },
@@ -96,44 +137,7 @@ sub grammar_tree {
     '+re' => qr/(?-xism:\G([a-zA-Z]\w*))/
   },
   'rule_reference' => {
-    '+re' => qr/(?-xism:\G<([!&]?)(([a-zA-Z]\w*))>)/
-  },
-  'rule_sequence' => {
-    '+all' => [
-      {
-        '+rule' => 'rule_set'
-      },
-      {
-        '+all' => [
-          {
-            '+re' => qr/(?-xism:\G\s*)/
-          },
-          {
-            '+rule' => 'rule_set',
-            '<' => '+'
-          },
-          {
-            '+re' => qr/(?-xism:\G\s*)/
-          }
-        ]
-      }
-    ]
-  },
-  'rule_set' => {
-    '+any' => [
-      {
-        '+rule' => 'regular_expression'
-      },
-      {
-        '+rule' => 'rule_reference'
-      },
-      {
-        '+rule' => 'bracketed_group'
-      },
-      {
-        '+rule' => 'rule_group'
-      }
-    ]
+    '+re' => qr/(?-xism:\G<([!&]?)([a-zA-Z]\w*)>([\*\+\?]?))/
   }
 };
 }

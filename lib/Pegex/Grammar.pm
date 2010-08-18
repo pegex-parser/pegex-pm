@@ -63,6 +63,7 @@ sub parse {
     }
 }
 
+my $indent = 0;
 sub match {
     my $self = shift;
     my $rule = shift or die "No rule passed to match";
@@ -111,6 +112,10 @@ sub match {
 
     if ($state and not $not) {
         $self->callback("try_$state");
+
+#         print ' ' x $indent++;
+#         print "try_$state\n";
+
         $self->action("__try__", $state, $kind);
     }
 
@@ -123,6 +128,7 @@ sub match {
     }
     my $result = (($count or $times eq '?' or $times eq '*') ? 1 : 0) ^ $not;
 
+    die if $main::x++ > 200;
     if ($state and not $not) {
         $result
             ? $self->action("__got__", $state, $method)
@@ -130,6 +136,15 @@ sub match {
         $result
             ? $self->callback("got_$state")
             : $self->callback("not_$state");
+
+#         print ' ' x --$indent;
+#         $result
+#             ? print "got_$state\n"
+#             : print "not_$state\n";
+
+#         use XXX;
+#         XXX $self if ($result and $state eq 'rule_group');
+
         $self->callback("end_$state")
     }
 
@@ -192,16 +207,18 @@ sub callback {
 sub throw_error {
     my $self = shift;
     my $msg = shift;
-    die $msg;
-#     my $line = @{[substr($self->input, 0, $self->position) =~ /(\n)/g]} + 1;
-#     my $context = substr($self->input, $self->position, 50);
-#     $context =~ s/\n/\\n/g;
-#     die <<"...";
-# Error parsing TestML document:
-#   msg: $msg
-#   line: $line
-#   context: "$context"
-# ...
+#     die $msg;
+    my $line = @{[substr($self->input, 0, $self->position) =~ /(\n)/g]} + 1;
+    my $context = substr($self->input, $self->position, 50);
+    $context =~ s/\n/\\n/g;
+    my $position = $self->position;
+    die <<"...";
+Error parsing TestML document:
+  msg: $msg
+  line: $line
+  context: "$context"
+  position: $position
+...
 }
 
 1;
