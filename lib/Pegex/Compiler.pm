@@ -220,6 +220,7 @@ $atoms = {
     BREAK   => '\n',
     CR      => '\r',
     EOL     => '\r?\n',
+    EOS     => '\z',
     ALPHA   => '[a-zA-Z]',
     LOWER   => '[a-z]',
     UPPER   => '[A-Z]',

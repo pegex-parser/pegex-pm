@@ -108,7 +108,7 @@ sub grammar_tree {
     ]
   },
   'rule_ending' => {
-    '+re' => qr/(?-xism:\G\s*[\n|;])/
+    '+re' => qr/(?-xism:\G\s*(?:\n|;|\z))/
   },
   'rule_group' => {
     '+any' => [

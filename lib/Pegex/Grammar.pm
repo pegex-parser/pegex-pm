@@ -128,7 +128,7 @@ sub match {
     }
     my $result = (($count or $times eq '?' or $times eq '*') ? 1 : 0) ^ $not;
 
-    die if $main::x++ > 200;
+#     die if $main::x++ > 200;
     if ($state and not $not) {
         $result
             ? $self->action("__got__", $state, $method)
