@@ -7,17 +7,17 @@ sub compile {
     my $grammar_text = shift;
     $self->grammar({});
     $grammar_text =~ s/^#.*\n+//gm;
-    my $first_rule;
     for my $rule (split /(?=^\w+:\s)/m, $grammar_text) {
         (my $value = $rule) =~ s/^(\w+):// or die;
         my $key = $1;
         $value =~ s/\s+/ /g;
         $value =~ s/^\s*(.*?)\s*$/$1/;
         $self->grammar->{$key} = $value;
-        $first_rule ||= $key;
+        $self->grammar->{_FIRST_RULE} ||= $key;
     }
 
     for my $rule (sort keys %{$self->grammar}) {
+        next if $rule =~ /^_/;
         my $text = $self->grammar->{$rule};
         my @tokens = ($text =~ m{(
             /[^/]*/ |
@@ -36,8 +36,6 @@ sub compile {
         my $tree = $self->make_tree(\@tokens);
         $self->grammar->{$rule} = $self->compile_next($tree);  
     }
-    $self->combinate($first_rule);
-    $self->grammar->{_FIRST_RULE} = $first_rule;
     return $self;
 }
 

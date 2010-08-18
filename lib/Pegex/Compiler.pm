@@ -2,11 +2,10 @@ package Pegex::Compiler;
 use Pegex::Base -base;
 
 has 'grammar';
-has 'combined';
+has 'grammar_combined';
 
-has 'first_rule';
 has 'stack' => [];
-has 'rule';
+# has 'rule';
 
 my $atoms;
 
@@ -23,16 +22,13 @@ sub compile {
 
     $grammar->parse($grammar_text);
 
-    $self->combinate($self->first_rule);
-    $self->grammar->{_FIRST_RULE} = $self->first_rule;
-
     return $self;
 }
 
 sub got_rule_name {
     my $self = shift;
     my $name = shift;
-    $self->{first_rule} ||= $name;
+    $self->grammar->{_FIRST_RULE} ||= $name;
     my $rule = $self->grammar->{$name} = {};
     push @{$self->stack}, $rule;
 }
@@ -45,18 +41,21 @@ sub got_regular_expression {
 # Combination
 sub combinate {
     my $self = shift;
-    my $rule = shift;
-    $self->combined({});
+    my $rule = shift || $self->grammar->{_FIRST_RULE};
+    $self->grammar_combined({
+        map {($_, $self->grammar->{$_})} grep { /^_/ } keys %{$self->grammar}
+    });
     $self->combinate_rule($rule);
-    $self->grammar($self->combined);
+    $self->grammar($self->grammar_combined);
+    return $self;
 }
 
 sub combinate_rule {
     my $self = shift;
     my $rule = shift;
-    return if exists $self->combined->{$rule};
+    return if exists $self->grammar_combined->{$rule};
 
-    my $object = $self->combined->{$rule} = $self->grammar->{$rule};
+    my $object = $self->grammar_combined->{$rule} = $self->grammar->{$rule};
     $self->combinate_object($object);
 }
 
@@ -112,7 +111,7 @@ sub combinate_re {
     }
 }
 
-sub parse_file {
+sub compile_file {
     my $self = shift;
     my $file = shift;
     open IN, $file or die "Can't open '$file'";
@@ -135,7 +134,7 @@ sub to_json {
 
 sub to_perl {
     my $self = shift;
-    $self->compile_perl_regex($self->grammar);
+    $self->perl_regexes($self->grammar);
     require Data::Dumper;
     no warnings 'once';
     $Data::Dumper::Terse = 1;
@@ -144,7 +143,7 @@ sub to_perl {
     return Data::Dumper::Dumper($self->grammar);
 }
 
-sub compile_perl_regex {
+sub perl_regexes {
     my $self = shift;
     my $node = shift;
     if (ref($node) eq 'HASH') {
@@ -154,12 +153,12 @@ sub compile_perl_regex {
         }
         else {
             for (keys %$node) {
-                $self->compile_perl_regex($node->{$_});
+                $self->perl_regexes($node->{$_});
             }
         }
     }
     elsif (ref($node) eq 'ARRAY') {
-        $self->compile_perl_regex($_) for @$node;
+        $self->perl_regexes($_) for @$node;
     }
 }
 

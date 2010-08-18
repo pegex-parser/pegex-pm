@@ -14,6 +14,7 @@ my $p2 = pegex(<<'...');
 number: /<DIGIT>+/
 ...
 
+
 eval {
     $p2->parse('123');
     pass '$p2->parse worked';

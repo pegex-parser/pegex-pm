@@ -30,7 +30,11 @@ sub parse {
                 die ref($self) . " object has no grammar";
             }
             require Pegex::Compiler;
-            $grammar_tree = Pegex::Compiler->new->compile($grammar_text)->grammar;
+            $grammar_tree =
+                Pegex::Compiler->new
+                    ->compile($grammar_text)
+                    ->combinate()
+                    ->grammar;
         }
         $self->grammar($grammar_tree);
     }
