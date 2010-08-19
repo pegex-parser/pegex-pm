@@ -8,6 +8,7 @@ has 'grammar';
 has 'grammar_text';
 has 'grammar_tree';
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
+has 'debug' => 0;
 
 has 'input';
 has 'position';
@@ -63,7 +64,6 @@ sub parse {
     }
 }
 
-my $indent = 0;
 sub match {
     my $self = shift;
     my $rule = shift or die "No rule passed to match";
@@ -113,8 +113,11 @@ sub match {
     if ($state and not $not) {
         $self->callback("try_$state");
 
-#         print ' ' x $indent++;
-#         print "try_$state\n";
+        if ($self->debug) {
+            $self->{indent} ||= 0;
+            print ' ' x $self->{indent}++;
+            print "try_$state\n";
+        }
 
         $self->action("__try__", $state, $kind);
     }
@@ -137,13 +140,12 @@ sub match {
             ? $self->callback("got_$state")
             : $self->callback("not_$state");
 
-#         print ' ' x --$indent;
-#         $result
-#             ? print "got_$state\n"
-#             : print "not_$state\n";
-
-#         use XXX;
-#         XXX $self if ($result and $state eq 'rule_group');
+        if ($self->debug) {
+            print ' ' x --$self->{indent};
+            $result
+                ? print "got_$state\n"
+                : print "not_$state\n";
+        }
 
         $self->callback("end_$state")
     }

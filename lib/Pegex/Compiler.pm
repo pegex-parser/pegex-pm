@@ -3,6 +3,7 @@ use Pegex::Base -base;
 
 has 'grammar';
 has 'grammar_combined';
+has 'debug' => 0;
 
 has 'stack' => [];
 
@@ -17,6 +18,7 @@ sub compile {
     require Pegex::Compiler::Grammar;
     my $grammar = Pegex::Compiler::Grammar->new(
         receiver => $self,
+        debug => $self->debug,
     );
 #     $self->{parser} = $grammar;
 

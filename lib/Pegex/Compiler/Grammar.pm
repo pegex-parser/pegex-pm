@@ -94,6 +94,9 @@ sub grammar_tree {
   'rule_definition' => {
     '+all' => [
       {
+        '+re' => qr/(?-xism:\G\s*)/
+      },
+      {
         '+rule' => 'rule_name'
       },
       {
@@ -108,7 +111,7 @@ sub grammar_tree {
     ]
   },
   'rule_ending' => {
-    '+re' => qr/(?-xism:\G\s*(?:\n|;|\z))/
+    '+re' => qr/(?-xism:\G\s*?(?:\n\s*|;\s*|\z))/
   },
   'rule_group' => {
     '+any' => [
