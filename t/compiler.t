@@ -19,7 +19,7 @@ sub bootstrap_compile {
 sub compress {
     my $grammar = (shift)->value;
     chomp($grammar);
-    $grammar =~ s/\n(\w+\s*:)/;$1/g;
+    $grammar =~ s/(?<!;)\n(\w+\s*:)/;$1/g;
     $grammar =~ s/\s//g;
     return $grammar;
 }
@@ -30,7 +30,7 @@ sub yaml {
 
 __DATA__
 %TestML: 1.0
-%Plan: 3
+%Plan: 6
 
 *grammar.pegex_compile.yaml == *grammar.bootstrap_compile.yaml;
 *grammar.compress.pegex_compile.yaml == *grammar.compress.bootstrap_compile.yaml;
@@ -45,7 +45,6 @@ b: /x/
 c: /y+/
 
 === Semicolons OK
---- SKIP
 --- grammar
 a: /x/;
 b: /y/;
