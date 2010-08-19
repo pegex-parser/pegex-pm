@@ -9,4 +9,9 @@ use_testml;
 
 use_gloom 'Pegex::Base';
 
+if (admin) {
+    print "Module author removing inc/Pegex/\n";
+    system("rm -fr inc/Pegex");
+}
+
 WriteAll;
