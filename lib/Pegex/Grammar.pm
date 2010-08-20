@@ -216,7 +216,7 @@ sub throw_error {
     $context =~ s/\n/\\n/g;
     my $position = $self->position;
     die <<"...";
-Error parsing TestML document:
+Error parsing Pegex document:
   msg: $msg
   line: $line
   context: "$context"
