@@ -126,7 +126,7 @@ sub match {
     my $count = 0;
     my $method = ($kind eq 'rule') ? 'match' : "match_$kind";
     while ($self->$method($rule)) {
-        $position = $self->position;
+        $position = $self->position unless $not;
         $count++;
         last if $times eq '1' or $times eq '?';
     }
