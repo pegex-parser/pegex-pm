@@ -30,13 +30,13 @@ sub yaml {
 
 __DATA__
 %TestML: 1.0
-%Plan: 6
+%Plan: 9
 
 *grammar.pegex_compile.yaml == *grammar.bootstrap_compile.yaml;
 *grammar.compress.pegex_compile.yaml == *grammar.compress.bootstrap_compile.yaml;
 *grammar.compress.pegex_compile.yaml == *grammar.bootstrap_compile.yaml;
 
-# *grammar.compress.pegex_compile.yaml;
+# *grammar.pegex_compile;
 
 === Simple Grammar
 --- grammar
@@ -48,3 +48,8 @@ c: /y+/
 --- grammar
 a: /x/;
 b: /y/;
+
+=== Unbracketed
+--- grammar
+a: <b> <c> <d>
+b: <c> | <d>

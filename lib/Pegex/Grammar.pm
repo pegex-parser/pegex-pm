@@ -126,12 +126,16 @@ sub match {
     my $count = 0;
     my $method = ($kind eq 'rule') ? 'match' : "match_$kind";
     while ($self->$method($rule)) {
+        $position = $self->position;
         $count++;
         last if $times eq '1' or $times eq '?';
     }
-    my $result = (($count or $times eq '?' or $times eq '*') ? 1 : 0) ^ $not;
+    if ($count and $times =~ /[\+\*]/) {
+        $self->position($position);
+    }
+    my $result = (($count or $times =~ /^[\?\*]$/) ? 1 : 0) ^ $not;
+    $self->position($position) unless $result;
 
-#     die if $main::x++ > 200;
     if ($state and not $not) {
         $result
             ? $self->action("__got__", $state, $method)
@@ -139,6 +143,7 @@ sub match {
         $result
             ? $self->callback("got_$state")
             : $self->callback("not_$state");
+        $self->callback("end_$state");
 
         if ($self->debug) {
             print ' ' x --$self->{indent};
@@ -146,11 +151,7 @@ sub match {
                 ? print "got_$state\n"
                 : print "not_$state\n";
         }
-
-        $self->callback("end_$state")
     }
-
-    $self->position($position) unless $result;
     return $result;
 }
 

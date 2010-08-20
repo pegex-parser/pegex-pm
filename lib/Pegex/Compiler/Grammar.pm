@@ -17,13 +17,10 @@ sub grammar_tree {
             '+re' => qr/(?-xism:\G\s*)/
           },
           {
-            '+rule' => 'rule_item',
-            '<' => '+'
-          },
-          {
-            '+re' => qr/(?-xism:\G\s*)/
+            '+rule' => 'rule_item'
           }
-        ]
+        ],
+        '<' => '+'
       }
     ]
   },
@@ -91,6 +88,36 @@ sub grammar_tree {
   'regular_expression' => {
     '+re' => qr/(?-xism:\G\/([^\/]*)\/)/
   },
+  'rule_body' => {
+    '+any' => [
+      {
+        '+all' => [
+          {
+            '+re' => qr/(?-xism:\G(?=\[))/
+          },
+          {
+            '+rule' => 'bracketed_group'
+          }
+        ]
+      },
+      {
+        '+all' => [
+          {
+            '+re' => qr/(?-xism:\G(?=\/))/
+          },
+          {
+            '+rule' => 'regular_expression'
+          }
+        ]
+      },
+      {
+        '+rule' => 'rule_group'
+      },
+      {
+        '+rule' => 'rule_reference'
+      }
+    ]
+  },
   'rule_definition' => {
     '+all' => [
       {
@@ -103,7 +130,7 @@ sub grammar_tree {
         '+re' => qr/(?-xism:\G[\ \t]*:\s*)/
       },
       {
-        '+rule' => 'rule_item'
+        '+rule' => 'rule_body'
       },
       {
         '+rule' => 'rule_ending'
