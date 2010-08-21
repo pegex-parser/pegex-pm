@@ -24,20 +24,7 @@ sub parse {
     my $start_rule = shift || undef;
 
     if (not $self->grammar) {
-        my $grammar_tree = $self->grammar_tree;
-        if (not $grammar_tree) {
-            my $grammar_text = $self->grammar_text;
-            if (not $grammar_text) {
-                die ref($self) . " object has no grammar";
-            }
-            require Pegex::Compiler;
-            $grammar_tree =
-                Pegex::Compiler->new
-                    ->compile($grammar_text)
-                    ->combinate()
-                    ->grammar;
-        }
-        $self->grammar($grammar_tree);
+        $self->compile;
     }
 
     if (not ref $self->receiver) {
@@ -62,6 +49,27 @@ sub parse {
     else {
         return 1;
     }
+}
+
+sub compile {
+    my $self = shift;
+    my $grammar_tree = $self->grammar_tree;
+    if (not $grammar_tree) {
+        my $grammar_text = $self->grammar_text;
+        if (not $grammar_text) {
+            die ref($self) . " object has no grammar";
+        }
+        #require Pegex::Compiler;
+        require Pegex::Compiler::Bootstrap;
+        $grammar_tree =
+            #Pegex::Compiler->new
+            Pegex::Compiler::Bootstrap->new
+                ->compile($grammar_text)
+                ->combinate()
+                ->grammar;
+    }
+    $self->grammar($grammar_tree);
+    return $self;
 }
 
 sub match {

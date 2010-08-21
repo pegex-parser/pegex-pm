@@ -131,6 +131,10 @@ sub compile_rule {
     else {
         $object->{'+rule'} = $node;
     }
+    if (defined(my $re = $self->atoms->{$node})) {
+        $self->grammar->{$node} ||= {'+re' => $re};
+    }
+
     return $object;
 }
 

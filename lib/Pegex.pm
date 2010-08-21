@@ -20,6 +20,12 @@ sub pegex {
     );
 }
 
+sub compile {
+    my $self = shift;
+    $self->grammar->compile;
+    return $self;
+}
+
 sub parse {
     my $self = shift;
     die 'Pegex->parse() takes one or two arguments ($input, $start_rule)'

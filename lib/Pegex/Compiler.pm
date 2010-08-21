@@ -264,3 +264,5 @@ $atoms = {
     QMARK   => '\?',
     SLASH   => '/',
 };
+
+sub atoms { return $atoms }
