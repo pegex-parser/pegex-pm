@@ -204,14 +204,19 @@ sub has {
     return $code if defined wantarray;
 }
 
+our $DumpModule = 'YAML::XS';
+sub WWW { require XXX; local $XXX::DumpModule = $DumpModule; XXX::WWW(@_) }
+sub XXX { require XXX; local $XXX::DumpModule = $DumpModule; XXX::XXX(@_) }
+sub YYY { require XXX; local $XXX::DumpModule = $DumpModule; XXX::YYY(@_) }
+sub ZZZ { require XXX; local $XXX::DumpModule = $DumpModule; XXX::ZZZ(@_) }
+
 sub EXPORT_BASE {
-    return (
-        __PACKAGE__ . '::has',
-    );
+    return map { __PACKAGE__ . '::' .$_ }
+        qw(has WWW XXX YYY ZZZ);
 }
 
 1;
 
 =encoding utf-8
 
-#line 239
+#line 244
