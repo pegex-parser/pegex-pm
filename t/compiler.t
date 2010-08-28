@@ -31,7 +31,8 @@ sub yaml {
 
 __DATA__
 %TestML: 1.0
-%Plan: 9
+
+Plan = 9;
 
 *grammar.pegex_compile.yaml == *grammar.bootstrap_compile.yaml;
 *grammar.compress.pegex_compile.yaml == *grammar.compress.bootstrap_compile.yaml;
