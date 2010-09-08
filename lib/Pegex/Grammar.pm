@@ -119,14 +119,8 @@ sub match {
     }
 
     if ($state and not $not) {
+        $self->trace("try_$state", 1);
         $self->callback("try_$state");
-
-        if ($self->debug) {
-            $self->{indent} ||= 0;
-            print ' ' x $self->{indent}++;
-            print "try_$state\n";
-        }
-
         $self->action("__try__", $state, $kind);
     }
 
@@ -145,6 +139,8 @@ sub match {
     $self->position($position) unless $result;
 
     if ($state and not $not) {
+        $self->trace(($result ? "got" : "not") . "_$state");
+
         $result
             ? $self->action("__got__", $state, $method)
             : $self->callback("__not__", $state, $method);
@@ -152,15 +148,23 @@ sub match {
             ? $self->callback("got_$state")
             : $self->callback("not_$state");
         $self->callback("end_$state");
-
-        if ($self->debug) {
-            print ' ' x --$self->{indent};
-            $result
-                ? print "got_$state\n"
-                : print "not_$state\n";
-        }
     }
     return $result;
+}
+
+sub trace {
+    my $self = shift;
+    return unless $self->debug;
+    my $action = shift;
+    my $indent = shift || 0;
+    $self->{indent} ||= 0;
+    $self->{indent}-- unless $indent;
+    print ' ' x $self->{indent};
+    $self->{indent}++ if $indent;
+    my $snippet = substr($self->input, $self->position);
+    $snippet = substr($snippet, 0, 30) . "..." if length $snippet > 30;
+    $snippet =~ s/\n/\\n/g;
+    print sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
 }
 
 sub match_all {
