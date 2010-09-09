@@ -1,4 +1,9 @@
 ---
+version: 0.10
+date:    Thu Sep  9 10:41:30 PDT 2010
+changes:
+- Changes supporting TestML 0.20
+---
 version: 0.05
 date:    Sat Aug 14 17:11:17 PDT 2010
 changes:

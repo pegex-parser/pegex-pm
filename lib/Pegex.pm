@@ -4,7 +4,7 @@ use warnings;
 use 5.008003;
 use Pegex::Base -base;
 
-our $VERSION = '0.05';
+our $VERSION = '0.10';
 our @EXPORT = qw(pegex);
 
 has 'grammar';
