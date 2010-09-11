@@ -2,10 +2,12 @@ use inc::Module::Install;
 
 name 'Pegex';
 all_from 'lib/Pegex.pm';
-
-use_testml;
+readme_from;
+manifest_skip;
 
 use_gloom 'Pegex::Base';
+
+use_testml;
 
 if (admin) {
     print "Module author removing inc/Pegex/\n";

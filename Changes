@@ -1,4 +1,9 @@
 ---
+version: 0.11
+date:    
+changes:
+- Add manifest_skip and readme_from to Makefile.PL
+---
 version: 0.10
 date:    Thu Sep  9 10:41:30 PDT 2010
 changes:
