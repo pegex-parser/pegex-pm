@@ -6,6 +6,8 @@ readme_from;
 manifest_skip;
 ack_xxx;
 
+# XXX Should probably add support for this.
+# use_gloom 0.12 => 'Pegex::Base';
 use_gloom 'Pegex::Base';
 
 use_testml;
