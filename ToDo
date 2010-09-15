@@ -1,0 +1,7 @@
+- Backtracking control
+- Detailed error reporting
+- Pegex::AST - Receiver to generate an AST
+
+- Parse Name: First Middle? Last
+
+- Look at Perl6::Rules on CPAN

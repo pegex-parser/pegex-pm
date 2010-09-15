@@ -4,12 +4,13 @@ name 'Pegex';
 all_from 'lib/Pegex.pm';
 readme_from;
 manifest_skip;
+ack_xxx;
 
 use_gloom 'Pegex::Base';
 
 use_testml;
 
-if (admin) {
+if (is_admin) {
     print "Module author removing inc/Pegex/\n";
     system("rm -fr inc/Pegex");
 }
