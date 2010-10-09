@@ -7,6 +7,7 @@ sub compile {
     my $grammar_text = shift;
     $self->grammar({});
     $grammar_text =~ s/^#.*\n+//gm;
+    $grammar_text =~ s/^\s*\n//;
     $grammar_text .= "\n" unless $grammar_text =~ /\n\z/;
     $grammar_text =~ s/;/\n/g;
     for my $rule (split /(?=^\w+:\s*)/m, $grammar_text) {
