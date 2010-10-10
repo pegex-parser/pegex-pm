@@ -5,6 +5,7 @@ all_from 'lib/Pegex.pm';
 readme_from;
 manifest_skip;
 ack_xxx;
+version_check;
 
 # XXX Should probably add support for this.
 # use_gloom 0.12 => 'Pegex::Base';
