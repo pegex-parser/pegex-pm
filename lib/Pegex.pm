@@ -1,13 +1,23 @@
-package Pegex;
-use strict;
-use warnings;
+##
+# name:      Pegex
+# abstract:  Pegex Parser Generator
+# author:    Ingy döt Net <ingy@cpan.org>
+# license:   perl
+# copyright: 2011
+
 use 5.008003;
-use Pegex::Base -base;
+package Pegex;
+use Mouse 0.93;
+use Mouse::Exporter;
 
-our $VERSION = '0.11';
-our @EXPORT = qw(pegex);
+our $VERSION = '0.12';
 
-has 'grammar';
+Mouse::Exporter->setup_import_methods(
+    as_is => [ 'pegex', ],
+    also  => 'Mouse',
+);
+
+has grammar => (is => 'ro');
 
 sub pegex {
     die 'Pegex::pegex takes one argument ($grammar_text)'
@@ -34,12 +44,6 @@ sub parse {
 }
 
 1;
-
-=encoding utf-8
-
-=head1 NAME
-
-Pegex - Pegex Parser Generator
 
 =head1 SYNOPSIS
 
@@ -108,18 +112,3 @@ The Pegex module can be found on CPAN and on GitHub:
 L<http://github.com/ingydotnet/pegex-pm>.
 
 Please join the Pegex discussion on #pegex on irc.freenode.net.
-
-=head1 AUTHOR
-
-Ingy döt Net <ingy@cpan.org>
-
-=head1 COPYRIGHT
-
-Copyright (c) 2010. Ingy döt Net.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
-
-See http://www.perl.com/perl/misc/Artistic.html
-
-=cut

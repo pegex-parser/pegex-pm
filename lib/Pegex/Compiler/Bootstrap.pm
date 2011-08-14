@@ -1,5 +1,6 @@
 package Pegex::Compiler::Bootstrap;
-use Pegex::Compiler -base;
+use Mouse;
+extends 'Pegex::Compiler';
 
 sub compile {
     my $self = shift;

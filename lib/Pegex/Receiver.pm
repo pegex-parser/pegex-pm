@@ -1,6 +1,6 @@
 package Pegex::Receiver;
-use Pegex::Base -base;
+use Mouse;
 
-has 'data' => {};
+has data => (is => 'rw', default => sub{+{}});
 
 1;

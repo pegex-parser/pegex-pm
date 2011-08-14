@@ -1,8 +1,16 @@
-package Pegex::AST;
-use Pegex::Receiver -base;
+##
+# name:      Pegex::AST
+# abstract:  Pegex Abstract Syntax Tree Object Class
+# author:    Ingy döt Net <ingy@cpan.org>
+# license:   perl
+# copyright: 2011
 
-has 'ast';
-has 'stack';
+package Pegex::AST;
+use Mouse;
+extends 'Pegex::Receiver';
+
+has ast => (is => 'rw');
+has stack => (is => 'rw');
 
 # use XXX;
 

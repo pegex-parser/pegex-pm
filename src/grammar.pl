@@ -7,10 +7,16 @@ my $perl = Pegex::Compiler::Bootstrap->compile($grammar)->combinate->to_perl;
 chomp($perl);
 
 print <<"...";
+##
+# name:      Pegex::Compiler::Grammar
+# abstract:  Pegex Grammar for a Pegex Grammar
+# author:    Ingy döt Net <ingy@cpan.org>
+# license:   perl
+# copyright: 2011
+
 package Pegex::Compiler::Grammar;
-use base 'Pegex::Grammar';
-use strict;
-use warnings;
+use Mouse;
+extends 'Pegex::Grammar';
 
 sub grammar_tree {
     return +$perl;

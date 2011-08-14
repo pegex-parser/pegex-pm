@@ -1,11 +1,18 @@
+##
+# name:      Pegex::Compiler
+# abstract:  Pegex Compiler
+# author:    Ingy döt Net <ingy@cpan.org>
+# license:   perl
+# copyright: 2011
+
 package Pegex::Compiler;
-use Pegex::Base -base;
+use Mouse;
 
-has 'grammar';
-has 'grammar_combined';
-has 'debug' => 0;
+has grammar => (is => 'rw');
+has grammar_combined => (is => 'rw');
+has debug => (is => 'ro', default => 0);
 
-has 'stack' => [];
+has stack => (is => 'rw', default => sub {[]});
 
 my $atoms;
 
