@@ -10,7 +10,7 @@ print <<"...";
 ##
 # name:      Pegex::Compiler::Grammar
 # abstract:  Pegex Grammar for a Pegex Grammar
-# author:    Ingy döt Net <ingy@cpan.org>
+# author:    Ingy döt Net <ingy\@cpan.org>
 # license:   perl
 # copyright: 2011
 
