@@ -6,11 +6,10 @@
 # copyright: 2011
 
 package Pegex::AST;
-use Mouse;
-extends 'Pegex::Receiver';
+use Pegex::Receiver -base;
 
-has ast => (is => 'rw');
-has stack => (is => 'rw');
+has 'ast';
+has 'stack';
 
 # use XXX;
 

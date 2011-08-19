@@ -6,13 +6,13 @@
 # copyright: 2011
 
 package Pegex::Compiler;
-use Mouse;
+use Pegex::Base -base;
+ 
+has 'grammar';
+has 'grammar_combined';
+has 'debug' => 0;
 
-has grammar => (is => 'rw');
-has grammar_combined => (is => 'rw');
-has debug => (is => 'ro', default => 0);
-
-has stack => (is => 'rw', default => sub {[]});
+has 'stack' => [];
 
 my $atoms;
 

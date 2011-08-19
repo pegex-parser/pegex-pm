@@ -1,6 +1,12 @@
+##
+# name:      Pegex::Compiler::Bootstrap
+# abstract:  Bootstrapping Compiler for a Pegex Grammar
+# author:    Ingy döt Net <ingy@cpan.org>
+# license:   perl
+# copyright: 2010, 2011
+
 package Pegex::Compiler::Bootstrap;
-use Mouse;
-extends 'Pegex::Compiler';
+use Pegex::Compiler -base;
 
 sub compile {
     my $self = shift;

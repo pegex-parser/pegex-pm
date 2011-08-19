@@ -3,27 +3,23 @@
 # abstract:  Pegex Grammar Class
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2011
+# copyright: 2010, 2011
 
 package Pegex::Grammar;
-use Mouse;
+use strict;
+use warnings;
+use 5.008003;
+use Pegex::Base -base;
 
-has grammar => (is => 'rw');
-has grammar_text => (is => 'ro');
-has grammar_tree => (is => 'ro');
-has receiver => (
-    is => 'ro',
-    default => sub {
-        require Pegex::AST;
-        Pegex::AST->new();
-    },
-);
+has 'grammar';
+has 'grammar_text';
+has 'grammar_tree';
+has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
+has 'debug' => 0;
 
-has debug => (is => 'ro', default => 0);
-
-has input => (is => 'rw');
-has position => (is => 'rw');
-has match_groups => (is => 'rw');
+has 'input';
+has 'position';
+has 'match_groups';
 
 sub parse {
     my $self = shift;

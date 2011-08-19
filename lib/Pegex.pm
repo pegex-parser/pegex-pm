@@ -3,21 +3,17 @@
 # abstract:  Pegex Parser Generator
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2011
+# copyright: 2010, 2011
 
 use 5.008003;
 package Pegex;
-use Mouse 0.93;
-use Mouse::Exporter;
+use Pegex::Base -base;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
-Mouse::Exporter->setup_import_methods(
-    as_is => [ 'pegex', ],
-    also  => 'Mouse',
-);
+our @EXPORT = qw(pegex);
 
-has grammar => (is => 'ro');
+has 'grammar';
 
 sub pegex {
     die 'Pegex::pegex takes one argument ($grammar_text)'

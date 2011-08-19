@@ -1,5 +1,5 @@
 BEGIN { $main::PM = 'lib/Pegex.pm' }
-use inc::Module::Package 'Ingy:modern 0.13';
+use inc::Module::Package 'Ingy:modern 0.14';
 
 if (is_admin) {
     print "Module author removing inc/Pegex/\n";
