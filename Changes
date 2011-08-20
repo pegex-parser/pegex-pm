@@ -1,4 +1,9 @@
 ---
+version: 0.14
+date:    Sat Aug 20 18:19:20 CEST 2011
+changes:
+- Fix TestML dep with new version of Module::Package
+---
 version: 0.13
 date:    Fri Aug 19 20:51:18 EEST 2011
 changes:

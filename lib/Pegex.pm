@@ -9,7 +9,7 @@ use 5.008003;
 package Pegex;
 use Pegex::Base -base;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 our @EXPORT = qw(pegex);
 
