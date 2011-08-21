@@ -32,13 +32,25 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 9;
+Plan = 15;
 
-*grammar.pegex_compile.yaml == *grammar.bootstrap_compile.yaml;
-*grammar.compress.pegex_compile.yaml == *grammar.compress.bootstrap_compile.yaml;
-*grammar.compress.pegex_compile.yaml == *grammar.bootstrap_compile.yaml;
+test = (grammar) { 
+    Label = '$BlockLabel - Does the compiler output match the bootstrap?';
+    grammar.pegex_compile.yaml
+      == grammar.bootstrap_compile.yaml;
 
-# *grammar.pegex_compile;
+    Label = '$BlockLabel - Does the compressed grammar compile the same?';
+    grammar.compress.pegex_compile.yaml
+      == grammar.compress.bootstrap_compile.yaml;
+
+    Label =
+        '$BlockLabel - Does the compressed grammar match the uncompressed?';
+    grammar.compress.pegex_compile.yaml
+      == grammar.pegex_compile.yaml;
+};
+
+test(*grammar);
+
 
 === Simple Grammar
 --- grammar
@@ -55,3 +67,19 @@ b: /y/;
 --- grammar
 a: <b> <c> <d>
 b: <c> | <d>
+
+=== Not Rule
+--- grammar
+a: <!b> <c>
+
+=== Equivalent
+--- grammar
+a: <b>
+c: <!d>
+
+
+=== Failures to test later
+--- SKIP
+--- grammar
+a: <b> [ <c>* | <d>+ ]?
+e: [ <f> ]

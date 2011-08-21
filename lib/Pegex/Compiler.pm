@@ -27,7 +27,6 @@ sub compile {
         receiver => $self,
         debug => $self->debug,
     );
-#     $self->{parser} = $grammar;
 
     $grammar->parse($grammar_text);
 
@@ -70,7 +69,6 @@ sub not_all_group {
     my $self = shift;
     pop @{$self->stack};
 }
-
 sub got_rule_group {
     my $self = shift;
     my $group = pop @{$self->stack};
@@ -80,19 +78,29 @@ sub got_rule_group {
 sub got_rule_reference {
     my $self = shift;
     my ($modifier, $name, $quantifier) = @_;
-    my $rule = {
-        '+rule' => $name,
-    };
+    my $rule =
+        $modifier eq '!' ?
+            { '+not' => $name } :
+            { '+rule' => $name };
     $rule->{'<'} = $quantifier if $quantifier;
     my $current = $self->stack->[-1];
-    push @{$current->{'+all'}}, $rule
-        if $current->{'+all'};
-    push @{$current->{'+any'}}, $rule
-        if $current->{'+any'};
+    # A single reference
+    if (ref $current ne 'HASH') {
+        push @{$self->stack->[-1]}, $rule;
+    }
+    # An 'all' group
+    elsif ($current->{'+all'}) {
+        push @{$current->{'+all'}}, $rule;
+    }
+    # An 'any' group
+    elsif ($current->{'+any'}) {
+        push @{$current->{'+any'}}, $rule;
+    }
 }
 
-
+#------------------------------------------------------------------------------#
 # Combination
+#------------------------------------------------------------------------------#
 sub combinate {
     my $self = shift;
     my $rule = shift || $self->grammar->{_FIRST_RULE};
