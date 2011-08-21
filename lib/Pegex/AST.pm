@@ -15,8 +15,8 @@ has 'stack';
 
 sub __begin__ {
     my $self = shift;
-    my $ast = $self->ast({});
-    my $stack = $self->stack([]);
+    $self->ast({});
+    $self->stack([]);
 }
 
 sub __try__ {
@@ -29,6 +29,7 @@ sub __got__ {
     my $self = shift;
     my $rule = shift;
     my $kind = shift;
+#     WWW { rule => $rule, kind => $kind };
 }
 
 sub __not__ {

@@ -77,6 +77,11 @@ a: <!b> <c>
 a: <b>
 c: <!d>
 
+=== Failing Test
+--- SKIP
+--- grammar
+a_b: /c/ <d>
+
 
 === Failures to test later
 --- SKIP

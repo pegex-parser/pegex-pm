@@ -9,7 +9,7 @@ package Pegex::Compiler;
 use Pegex::Base -base;
  
 has 'grammar';
-has 'grammar_combined';
+has '_grammar';
 has 'debug' => 0;
 
 has 'stack' => [];
@@ -69,6 +69,7 @@ sub not_all_group {
     my $self = shift;
     pop @{$self->stack};
 }
+
 sub got_rule_group {
     my $self = shift;
     my $group = pop @{$self->stack};
@@ -104,20 +105,20 @@ sub got_rule_reference {
 sub combinate {
     my $self = shift;
     my $rule = shift || $self->grammar->{_FIRST_RULE};
-    $self->grammar_combined({
+    $self->_grammar({
         map {($_, $self->grammar->{$_})} grep { /^_/ } keys %{$self->grammar}
     });
     $self->combinate_rule($rule);
-    $self->grammar($self->grammar_combined);
+    $self->grammar($self->_grammar);
     return $self;
 }
 
 sub combinate_rule {
     my $self = shift;
     my $rule = shift;
-    return if exists $self->grammar_combined->{$rule};
+    return if exists $self->_grammar->{$rule};
 
-    my $object = $self->grammar_combined->{$rule} = $self->grammar->{$rule};
+    my $object = $self->_grammar->{$rule} = $self->grammar->{$rule};
     $self->combinate_object($object);
 }
 
@@ -234,6 +235,7 @@ $atoms = {
     SPACE   => ' ',
     TAB     => '\t',
     WS      => '\s',
+    NS      => '\S',
     BREAK   => '\n',
     CR      => '\r',
     EOL     => '\r?\n',
