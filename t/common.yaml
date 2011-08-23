@@ -1,0 +1,5 @@
+sources:
+- Test-Common
+t:
+- test: use_ok.t
+clean: all
