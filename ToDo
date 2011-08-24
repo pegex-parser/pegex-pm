@@ -1,5 +1,5 @@
-- Change compile api:
-  - compile => parse->combinate->grammar
++ Change compile api:
+  + compile => parse->combinate->grammar
 - Redo compile api
   all,any,rgx,rul,err
   +,*,?,!,&
