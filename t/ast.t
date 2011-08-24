@@ -45,8 +45,6 @@ Pegex::Grammar->new(
     grammar => Pegex::Compiler::Bootstrap
         ->new(debug => 0)
         ->compile($grammar1)
-        ->combinate()
-        ->grammar,
 )->parse($text1);
 
 pass 'ok';

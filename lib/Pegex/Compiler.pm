@@ -12,11 +12,25 @@ has 'grammar';
 has '_grammar';
 has 'debug' => 0;
 
-has 'stack' => [];
-
 my $atoms;
 
 sub compile {
+    my $self = shift;
+    $self = $self->new unless ref $self;
+    my $grammar_text = shift;
+    return $self->parse($grammar_text)->combinate->grammar;
+}
+
+sub compile_file {
+    my $self = shift;
+    $self = $self->new unless ref $self;
+    my $file = shift;
+    open IN, $file or die "Can't open '$file'";
+    my $grammar_text = do {local $/; <IN>};
+    return $self->compile($grammar_text);
+}
+
+sub parse {
     my $self = shift;
     $self = $self->new unless ref $self;
     my $grammar_text = shift;
@@ -31,72 +45,6 @@ sub compile {
     $grammar->parse($grammar_text);
 
     return $self;
-}
-
-sub got_rule_name {
-    my $self = shift;
-    my $name = shift;
-    $self->grammar->{_FIRST_RULE} ||= $name;
-    push @{$self->stack}, [$name];
-}
-
-sub got_rule_definition {
-    my $self = shift;
-    $self->grammar->{$self->stack->[0]->[0]} = $self->stack->[0]->[1];
-    $self->stack([]);
-}
-
-sub got_regular_expression {
-    my $self = shift;
-    my $re = shift;
-    push @{$self->stack->[-1]}, {'+re' => $re};
-}
-
-sub try_any_group {
-    my $self = shift;
-    push @{$self->stack}, {'+any' => []};
-}
-sub not_any_group {
-    my $self = shift;
-    pop @{$self->stack};
-}
-
-sub try_all_group {
-    my $self = shift;
-    push @{$self->stack}, {'+all' => []};
-}
-sub not_all_group {
-    my $self = shift;
-    pop @{$self->stack};
-}
-
-sub got_rule_group {
-    my $self = shift;
-    my $group = pop @{$self->stack};
-    push @{$self->stack->[-1]}, $group;
-}
-
-sub got_rule_reference {
-    my $self = shift;
-    my ($modifier, $name, $quantifier) = @_;
-    my $rule =
-        $modifier eq '!' ?
-            { '+not' => $name } :
-            { '+rule' => $name };
-    $rule->{'<'} = $quantifier if $quantifier;
-    my $current = $self->stack->[-1];
-    # A single reference
-    if (ref $current ne 'HASH') {
-        push @{$self->stack->[-1]}, $rule;
-    }
-    # An 'all' group
-    elsif ($current->{'+all'}) {
-        push @{$current->{'+all'}}, $rule;
-    }
-    # An 'any' group
-    elsif ($current->{'+any'}) {
-        push @{$current->{'+any'}}, $rule;
-    }
 }
 
 #------------------------------------------------------------------------------#
@@ -174,15 +122,80 @@ sub combinate_re {
     }
 }
 
-sub compile_file {
+#------------------------------------------------------------------------------#
+# Receiver methods
+#------------------------------------------------------------------------------#
+has 'stack' => [];
+
+sub got_rule_name {
     my $self = shift;
-    my $file = shift;
-    open IN, $file or die "Can't open '$file'";
-    my $grammar = do {local $/; <IN>};
-    $self->compile($grammar);
-    return $self;
+    my $name = shift;
+    $self->grammar->{_FIRST_RULE} ||= $name;
+    push @{$self->stack}, [$name];
 }
 
+sub got_rule_definition {
+    my $self = shift;
+    $self->grammar->{$self->stack->[0]->[0]} = $self->stack->[0]->[1];
+    $self->stack([]);
+}
+
+sub got_regular_expression {
+    my $self = shift;
+    my $re = shift;
+    push @{$self->stack->[-1]}, {'+re' => $re};
+}
+
+sub try_any_group {
+    my $self = shift;
+    push @{$self->stack}, {'+any' => []};
+}
+sub not_any_group {
+    my $self = shift;
+    pop @{$self->stack};
+}
+
+sub try_all_group {
+    my $self = shift;
+    push @{$self->stack}, {'+all' => []};
+}
+sub not_all_group {
+    my $self = shift;
+    pop @{$self->stack};
+}
+
+sub got_rule_group {
+    my $self = shift;
+    my $group = pop @{$self->stack};
+    push @{$self->stack->[-1]}, $group;
+}
+
+sub got_rule_reference {
+    my $self = shift;
+    my ($modifier, $name, $quantifier) = @_;
+    my $rule =
+        $modifier eq '!' ?
+            { '+not' => $name } :
+            { '+rule' => $name };
+    $rule->{'<'} = $quantifier if $quantifier;
+    my $current = $self->stack->[-1];
+    # A single reference
+    if (ref $current ne 'HASH') {
+        push @{$self->stack->[-1]}, $rule;
+    }
+    # An 'all' group
+    elsif ($current->{'+all'}) {
+        push @{$current->{'+all'}}, $rule;
+    }
+    # An 'any' group
+    elsif ($current->{'+any'}) {
+        push @{$current->{'+any'}}, $rule;
+    }
+}
+
+#------------------------------------------------------------------------------#
+# Output formatter methods
+#------------------------------------------------------------------------------#
 sub to_yaml {
     require YAML::XS;
     my $self = shift;
@@ -225,6 +238,9 @@ sub perl_regexes {
     }
 }
 
+#------------------------------------------------------------------------------#
+# Pegex regex atoms for grammars
+#------------------------------------------------------------------------------#
 $atoms = {
     ALWAYS  => '',
     NEVER   => '(?!)',

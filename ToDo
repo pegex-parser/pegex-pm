@@ -1,3 +1,17 @@
+- Change compile api:
+  - compile => parse->combinate->grammar
+- Redo compile api
+  all,any,rgx,rul,err
+  +,*,?,!,&
+    []+*?, !&[|], <>+*?, !&<>
+    //, ``
+
+- Smart whitespace
+  name: normal rule
+  name:: smart <ws> rule
+  name:ws1: special user-defined ws rule
+
+
 - Backtracking control
 - Detailed error reporting
 - Pegex::AST - Receiver to generate an AST

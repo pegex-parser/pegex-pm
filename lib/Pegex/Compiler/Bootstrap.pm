@@ -8,7 +8,7 @@
 package Pegex::Compiler::Bootstrap;
 use Pegex::Compiler -base;
 
-sub compile {
+sub parse {
     my $self = shift;
     $self = $self->new unless ref $self;
     my $grammar_text = shift;

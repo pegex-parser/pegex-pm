@@ -69,11 +69,8 @@ sub compile {
         #require Pegex::Compiler;
         require Pegex::Compiler::Bootstrap;
         $grammar_tree =
-            #Pegex::Compiler->new
-            Pegex::Compiler::Bootstrap->new
-                ->compile($grammar_text)
-                ->combinate()
-                ->grammar;
+            # Pegex::Compiler->new->compile($grammar_text)
+            Pegex::Compiler::Bootstrap->new->compile($grammar_text)
     }
     $self->grammar($grammar_tree);
     return $self;

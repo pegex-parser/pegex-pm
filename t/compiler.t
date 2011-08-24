@@ -6,23 +6,23 @@ use Pegex::Compiler::Bootstrap;
 use YAML::XS;
 
 sub pegex_compile {
-    my $grammar = (shift)->value;
+    my $grammar_text = (shift)->value;
     my $compiler = Pegex::Compiler->new(debug => 0);
-    return $compiler->compile($grammar)->grammar;
+    return $compiler->parse($grammar_text)->grammar;
 }
 
 sub bootstrap_compile {
-    my $grammar = (shift)->value;
+    my $grammar_text = (shift)->value;
     my $compiler = Pegex::Compiler::Bootstrap->new;
-    return $compiler->compile($grammar)->grammar;
+    return $compiler->parse($grammar_text)->grammar;
 }
 
 sub compress {
-    my $grammar = (shift)->value;
-    chomp($grammar);
-    $grammar =~ s/(?<!;)\n(\w+\s*:)/;$1/g;
-    $grammar =~ s/\s//g;
-    return $grammar;
+    my $grammar_text = (shift)->value;
+    chomp($grammar_text);
+    $grammar_text =~ s/(?<!;)\n(\w+\s*:)/;$1/g;
+    $grammar_text =~ s/\s//g;
+    return $grammar_text;
 }
 
 sub yaml {
