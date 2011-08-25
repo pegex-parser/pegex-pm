@@ -23,18 +23,13 @@ sub pegex {
     die 'Pegex::pegex takes one argument ($grammar_text)'
         unless @_ == 1;
     require Pegex::Grammar;
+    require Pegex::Compiler::Bootstrap;
     return 'Pegex'->new(
         grammar => Pegex::Grammar->new(
-            grammar_text => $_[0],
+            tree => Pegex::Compiler::Bootstrap->compile($_[0])->tree,
         ),
     );
 }
-
-# sub compile {
-#     my $self = shift;
-#     $self->grammar->compile;
-#     return $self;
-# }
 
 sub parse {
     my $self = shift;

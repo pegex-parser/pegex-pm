@@ -9,9 +9,9 @@ use YAML::XS;
 sub bootstrap_compile {
     my $grammar_text = (shift)->value;
     my $compiler = Pegex::Compiler::Bootstrap->new;
-    my $grammar = $compiler->compile($grammar_text);
-    delete $grammar->{_FIRST_RULE};
-    return $grammar;
+    my $tree = $compiler->compile($grammar_text)->tree;
+    delete $tree->{_FIRST_RULE};
+    return $tree;
 }
 
 sub yaml {

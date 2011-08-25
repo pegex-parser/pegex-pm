@@ -8,21 +8,21 @@
 package Pegex::Compiler;
 use Pegex::Base -base;
  
-# XXX Refactor:
-# grammar means grammar_text
-# tree means grammar_tree
-has 'grammar';
-has '_grammar';
+# has 'grammar';
+# has 'grammar_file';
+has 'tree';
 has 'debug' => 0;
 
 my $atoms;
 
-# XXX this should return $self.
 sub compile {
     my $self = shift;
     $self = $self->new unless ref $self;
     my $grammar_text = shift;
-    return $self->parse($grammar_text)->combinate->grammar;
+
+    $self->parse($grammar_text);
+    $self->combinate;
+    return $self;
 }
 
 sub compile_file {
@@ -38,7 +38,7 @@ sub parse {
     my $self = shift;
     $self = $self->new unless ref $self;
     my $grammar_text = shift;
-    $self->grammar({});
+    $self->tree({});
 
     require Pegex::Compiler::Grammar;
     my $grammar = Pegex::Compiler::Grammar->new(
@@ -54,23 +54,25 @@ sub parse {
 #------------------------------------------------------------------------------#
 # Combination
 #------------------------------------------------------------------------------#
+has '_tree';
+
 sub combinate {
     my $self = shift;
-    my $rule = shift || $self->grammar->{_FIRST_RULE};
-    $self->_grammar({
-        map {($_, $self->grammar->{$_})} grep { /^_/ } keys %{$self->grammar}
+    my $rule = shift || $self->tree->{_FIRST_RULE};
+    $self->_tree({
+        map {($_, $self->tree->{$_})} grep { /^_/ } keys %{$self->tree}
     });
     $self->combinate_rule($rule);
-    $self->grammar($self->_grammar);
+    $self->tree($self->_tree);
     return $self;
 }
 
 sub combinate_rule {
     my $self = shift;
     my $rule = shift;
-    return if exists $self->_grammar->{$rule};
+    return if exists $self->_tree->{$rule};
 
-    my $object = $self->_grammar->{$rule} = $self->grammar->{$rule};
+    my $object = $self->_tree->{$rule} = $self->tree->{$rule};
     $self->combinate_object($object);
 }
 
@@ -82,13 +84,13 @@ sub combinate_object {
     }
     elsif (exists $object->{'+rule'}) {
         my $rule = $object->{'+rule'};
-        if (exists $self->grammar->{$rule}) {
+        if (exists $self->tree->{$rule}) {
             $self->combinate_rule($rule);
         }
     }
     elsif (exists $object->{'+not'}) {
         my $rule = $object->{'+not'};
-        if (exists $self->grammar->{$rule}) {
+        if (exists $self->tree->{$rule}) {
             $self->combinate_rule($rule);
         }
     }
@@ -116,8 +118,8 @@ sub combinate_re {
     while (1) {
         my $re = $regexp->{'+re'};
         $re =~ s[<(\w+)>][
-            $self->grammar->{$1} and
-            $self->grammar->{$1}{'+re'}
+            $self->tree->{$1} and
+            $self->tree->{$1}{'+re'}
                 or $atoms->{$1}
                 or die "'$1' not defined in the grammar"
         ]e;
@@ -132,24 +134,24 @@ sub combinate_re {
 sub to_yaml {
     require YAML::XS;
     my $self = shift;
-    return YAML::XS::Dump($self->grammar);
+    return YAML::XS::Dump($self->tree);
 }
 
 sub to_json {
     require JSON::XS;
     my $self = shift;
-    return JSON::XS->new->utf8->canonical->pretty->encode($self->grammar);
+    return JSON::XS->new->utf8->canonical->pretty->encode($self->tree);
 }
 
 sub to_perl {
     my $self = shift;
-    $self->perl_regexes($self->grammar);
+    $self->perl_regexes($self->tree);
     require Data::Dumper;
     no warnings 'once';
     $Data::Dumper::Terse = 1;
     $Data::Dumper::Indent = 1;
     $Data::Dumper::Sortkeys = 1;
-    return Data::Dumper::Dumper($self->grammar);
+    return Data::Dumper::Dumper($self->tree);
 }
 
 sub perl_regexes {
@@ -245,13 +247,13 @@ has 'stack' => [];
 sub got_rule_name {
     my $self = shift;
     my $name = shift;
-    $self->grammar->{_FIRST_RULE} ||= $name;
+    $self->tree->{_FIRST_RULE} ||= $name;
     push @{$self->stack}, [$name];
 }
 
 sub got_rule_definition {
     my $self = shift;
-    $self->grammar->{$self->stack->[0]->[0]} = $self->stack->[0]->[1];
+    $self->tree->{$self->stack->[0]->[0]} = $self->stack->[0]->[1];
     $self->stack([]);
 }
 

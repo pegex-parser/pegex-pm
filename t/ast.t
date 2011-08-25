@@ -36,15 +36,17 @@ Address:
 my $ast1 = <<'...';
 ...
 
-use XXX;
 use Pegex::Grammar;
 use Pegex::Compiler;
 use Pegex::Compiler::Bootstrap;
-Pegex::Grammar->new(
-#     grammar => Pegex::Compiler
-    grammar => Pegex::Compiler::Bootstrap
-        ->new(debug => 0)
-        ->compile($grammar1)
-)->parse($text1);
-
-pass 'ok';
+eval {
+    Pegex::Grammar->new(
+#         tree => Pegex::Compiler
+        tree => Pegex::Compiler::Bootstrap
+            ->new(debug => 0)
+            ->compile($grammar1)
+            ->tree
+    )->parse($text1);
+}; $@
+? fail $@
+: pass 'Grammar compiled and parsed the address text';

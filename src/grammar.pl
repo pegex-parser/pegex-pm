@@ -16,12 +16,13 @@ print <<"...";
 # license:   perl
 # copyright: 2010, 2011
 
+# XXX Should be renamed to Pegex::Grammar::Pegex
 package Pegex::Compiler::Grammar;
 use base 'Pegex::Grammar';
 use strict;
 use warnings;
 
-sub grammar_tree {
+sub tree {
     return +$perl;
 }
 

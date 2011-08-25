@@ -4,11 +4,12 @@ use Pegex;
 
 ok defined(&pegex), 'pegex is exported';
 
-my $p1 = pegex('foo');
+my $p1 = pegex('foo: <bar>');
 
 is ref($p1), 'Pegex', 'pegex returns a Pegex object';
 
-is $p1->grammar->grammar_text, 'foo', 'pegex() sets grammar_text property';
+is $p1->grammar->tree->{'_FIRST_RULE'}, 'foo',
+    'pegex() contains a grammar with a compiled tree';
 
 my $p2 = pegex(<<'...');
 number: /<DIGIT>+/
@@ -24,7 +25,7 @@ fail $@ if $@;
 
 is ref $p2->grammar, 'Pegex::Grammar', 'grammar property is Pegex::Grammar object';
 
-ok $p2->grammar->grammar_text, 'Grammar object has grammar_text';
-ok $p2->grammar->grammar, 'Grammar object is compiled to a tree';
+ok $p2->grammar->tree, 'Grammar object has tree';
+ok ref($p2->grammar->tree), 'Grammar object is compiled to a tree';
 
-is $p2->grammar->grammar->{_FIRST_RULE}, 'number', '_FIRST_RULE is set correctly';
+is $p2->grammar->tree->{_FIRST_RULE}, 'number', '_FIRST_RULE is set correctly';

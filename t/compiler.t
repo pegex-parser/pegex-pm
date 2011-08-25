@@ -7,14 +7,12 @@ use YAML::XS;
 
 sub pegex_compile {
     my $grammar_text = (shift)->value;
-    my $compiler = Pegex::Compiler->new(debug => 0);
-    return $compiler->parse($grammar_text)->grammar;
+    Pegex::Compiler->new(debug => 0)->parse($grammar_text)->tree;
 }
 
 sub bootstrap_compile {
     my $grammar_text = (shift)->value;
-    my $compiler = Pegex::Compiler::Bootstrap->new;
-    return $compiler->parse($grammar_text)->grammar;
+    Pegex::Compiler::Bootstrap->new->parse($grammar_text)->tree;
 }
 
 sub compress {

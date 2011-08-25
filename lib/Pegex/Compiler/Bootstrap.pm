@@ -12,7 +12,7 @@ sub parse {
     my $self = shift;
     $self = $self->new unless ref $self;
     my $grammar_text = shift;
-    $self->grammar({});
+    $self->tree({});
     $grammar_text =~ s/^#.*\n+//gm;
     $grammar_text =~ s/^\s*\n//;
     $grammar_text .= "\n" unless $grammar_text =~ /\n\z/;
@@ -22,13 +22,13 @@ sub parse {
         my $key = $1;
         $value =~ s/\s+/ /g;
         $value =~ s/^\s*(.*?)\s*$/$1/;
-        $self->grammar->{$key} = $value;
-        $self->grammar->{_FIRST_RULE} ||= $key;
+        $self->tree->{$key} = $value;
+        $self->tree->{_FIRST_RULE} ||= $key;
     }
 
-    for my $rule (sort keys %{$self->grammar}) {
+    for my $rule (sort keys %{$self->tree}) {
         next if $rule =~ /^_/;
-        my $text = $self->grammar->{$rule};
+        my $text = $self->tree->{$rule};
         my @tokens = ($text =~ m{(
             /[^/]*/ |
             [\!\=]?<\w+>[\?\*\+]? |
@@ -44,7 +44,7 @@ sub parse {
         unshift @tokens, '[';
         push @tokens, ']';
         my $tree = $self->make_tree(\@tokens);
-        $self->grammar->{$rule} = $self->compile_next($tree);  
+        $self->tree->{$rule} = $self->compile_next($tree);  
     }
     return $self;
 }
@@ -135,7 +135,7 @@ sub compile_rule {
     $node =~ s!^<(.*)>$!$1! or die;
     $object->{'+rule'} = $node;
     if (defined(my $re = $self->atoms->{$node})) {
-        $self->grammar->{$node} ||= {'+re' => $re};
+        $self->tree->{$node} ||= {'+re' => $re};
     }
 
     return $object;

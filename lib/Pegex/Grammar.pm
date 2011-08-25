@@ -1,6 +1,6 @@
 ##
 # name:      Pegex::Grammar
-# abstract:  Pegex Grammar Class
+# abstract:  Pegex Grammar Runtime
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2010, 2011
@@ -11,9 +11,7 @@ use warnings;
 use 5.008003;
 use Pegex::Base -base;
 
-has 'grammar';
-has 'grammar_text';
-has 'grammar_tree';
+has 'tree';
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
 has 'debug' => 0;
 
@@ -30,18 +28,22 @@ sub parse {
     $self->match_groups([]);
     my $start_rule = shift || undef;
 
-    if (not $self->grammar) {
-        $self->compile;
-    }
+    die ref($self) . " has no grammar 'tree' property"
+        if not $self->tree;
 
+    if (not $self->receiver) {
+        $self->receiver('Pegex::Return');
+    }
     if (not ref $self->receiver) {
-        $self->receiver($self->receiver->new);
+        my $receiver = $self->receiver;
+        eval "require $receiver";
+        $self->receiver($receiver->new);
     }
 
     $start_rule ||= 
-        $self->grammar->{TOP}
+        $self->tree->{TOP}
             ? 'TOP'
-            : $self->grammar->{_FIRST_RULE};
+            : $self->tree->{_FIRST_RULE};
 
     $self->action("__begin__");
     $self->match($start_rule);
@@ -58,24 +60,6 @@ sub parse {
     }
 }
 
-sub compile {
-    my $self = shift;
-    my $grammar_tree = $self->grammar_tree;
-    if (not $grammar_tree) {
-        my $grammar_text = $self->grammar_text;
-        if (not $grammar_text) {
-            die ref($self) . " object has no grammar";
-        }
-        #require Pegex::Compiler;
-        require Pegex::Compiler::Bootstrap;
-        $grammar_tree =
-            # Pegex::Compiler->new->compile($grammar_text)
-            Pegex::Compiler::Bootstrap->new->compile($grammar_text)
-    }
-    $self->grammar($grammar_tree);
-    return $self;
-}
-
 sub match {
     my $self = shift;
     my $rule = shift or die "No rule passed to match";
@@ -83,9 +67,9 @@ sub match {
     my $state = undef;
     if (not ref($rule) and $rule =~ /^\w+$/) {
         die "\n\n*** No grammar support for '$rule'\n\n"
-            unless $self->grammar->{$rule};
+            unless $self->tree->{$rule};
         $state = $rule;
-        $rule = $self->grammar->{$rule}
+        $rule = $self->tree->{$rule}
     }
 
     my $kind;
@@ -247,3 +231,23 @@ Error parsing Pegex document:
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    my $grammar = Pegex::Grammar::Subclass->new(
+        receiver => Pegex::Receiver::Subclass->new,
+    );
+
+    my $data = $grammar->parse($input_text);
+
+=head1 DESCRIPTION
+
+Pegex::Grammar is the runtime engine for all the grammar modules that subclass
+it.
+
+The subclass provides a compiled grammar tree, via the C<tree> method.
+
+The C<parse> method applies the grammar against the text, and tells the
+receiver object what is happening as it happens. If the parse fails, an error
+is thrown. If it succeeds, then C<parse> returns the C<data> property of the
+C<receiver> object.

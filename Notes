@@ -25,7 +25,7 @@ any parse.
 The Pegex::Grammar subclass representing Pegex itself. It has a precompiled
 grammar_tree in it.
 
-Should be rename
+Should be renamed to Pegex::Grammar::Pegex
 
 == lib/Pegex/Compiler.pm
 
