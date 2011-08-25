@@ -31,12 +31,12 @@ sub parse {
         my $text = $self->grammar->{$rule};
         my @tokens = ($text =~ m{(
             /[^/]*/ |
-            <[\!\&]?\w+>[\?\*\+]? |
+            [\!\=]?<\w+>[\?\*\+]? |
             `[^`]*` |
             \| |
-            \[[\!\&?]? |
+            [\!\=?]?\[ |
             \][\?\*\+]? |
-            \([\!\&?]? |
+            \([\!\=?]? |
             \)[\?\*\+]?
         )}gx);
         die "No tokens found for rule <$rule> => '$text'"
@@ -56,7 +56,7 @@ sub make_tree {
     my $tree = [];
     push @$stack, $tree;
     for my $token (@$tokens) {
-        if ($token =~ /^[\[\(]/) {
+        if ($token =~ /^[\!\=?]?[\[\(]/) {
             push @$stack, [];
         }
         push @{$stack->[-1]}, $token;
@@ -91,14 +91,11 @@ sub compile_group {
     my $node = shift;
     my $type = shift;
     die unless @$node > 2;
-    if ($node->[0] =~ s/\&$//) {
-        return $self->compile_has($node);
-    }
-    if ($node->[0] =~ s/\!$//) {
-        return $self->compile_not($node);
-    }
     my $object = {};
-    if ($node->[-1] =~ /([\?\*\+])$/) {
+    if ($node->[0] =~ /^([\=\!])/) {
+        $object->{'<'} = $1;
+    }
+    if ($node->[-1] =~ /([\?\*\+])$/ and not $object->{'<'}) {
         $object->{'<'} = $1;
     }
     shift @$node;
@@ -129,16 +126,14 @@ sub compile_rule {
     my $self = shift;
     my $node = shift;
     my $object = {};
-    if ($node =~ s/([\?\*\+])$//) {
+    if ($node =~ s/^([\=\!])//) {
+        $object->{'<'} = $1;
+    }
+    if ($node =~ s/([\?\*\+])$// and not $object->{'<'}) {
         $object->{'<'} = $1;
     }
     $node =~ s!^<(.*)>$!$1! or die;
-    if ($node =~ s/^!//) {
-        $object->{'+not'} = $node;
-    }
-    else {
-        $object->{'+rule'} = $node;
-    }
+    $object->{'+rule'} = $node;
     if (defined(my $re = $self->atoms->{$node})) {
         $self->grammar->{$node} ||= {'+re' => $re};
     }

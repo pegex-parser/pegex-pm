@@ -32,7 +32,8 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 15;
+# Plan = 15;
+Plan = 9;
 
 test = (grammar) { 
     Label = '$BlockLabel - Does the compiler output match the bootstrap?';
@@ -69,13 +70,15 @@ a: <b> <c> <d>
 b: <c> | <d>
 
 === Not Rule
+--- SKIP
 --- grammar
-a: <!b> <c>
+a: !<b> <c>
 
 === Equivalent
+--- SKIP
 --- grammar
 a: <b>
-c: <!d>
+c: !<d>
 
 === Failing Test
 --- SKIP
