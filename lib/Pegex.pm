@@ -11,6 +11,8 @@
 use 5.008003;
 package Pegex;
 use Pegex::Base -base;
+use Pegex::Grammar;
+use Pegex::Compiler::Bootstrap;
 
 our $VERSION = '0.14';
 
@@ -18,12 +20,9 @@ our @EXPORT = qw(pegex);
 
 has 'grammar';
 
-# XXX This should compile the grammar
 sub pegex {
     die 'Pegex::pegex takes one argument ($grammar_text)'
         unless @_ == 1;
-    require Pegex::Grammar;
-    require Pegex::Compiler::Bootstrap;
     return 'Pegex'->new(
         grammar => Pegex::Grammar->new(
             tree => Pegex::Compiler::Bootstrap->compile($_[0])->tree,
@@ -61,7 +60,11 @@ or customized explicitly:       XXX - review this after refactor
 
     package MyGrammar;
     use Pegex::Grammar -base;
-    has grammar_text => "some grammar text goes here";
+    use Pegex::Compiler;
+    sub build_tree {
+        my $grammar_text => "some grammar text goes here";
+        Pegex::Compiler->compile($grammar_text)->tree;
+    }
 
     package MyReceiver;
     use Pegex::Receiver -base;
