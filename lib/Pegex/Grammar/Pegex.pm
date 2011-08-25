@@ -1,12 +1,11 @@
 ##
-# name:      Pegex::Compiler::Grammar
-# abstract:  Pegex Grammar for a Pegex Grammar
+# name:      Pegex::Grammar::Pegex
+# abstract:  Pegex Grammar for the Pegex Grammar Language
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2010, 2011
 
-# XXX Should be renamed to Pegex::Grammar::Pegex
-package Pegex::Compiler::Grammar;
+package Pegex::Grammar::Pegex;
 use base 'Pegex::Grammar';
 use strict;
 use warnings;

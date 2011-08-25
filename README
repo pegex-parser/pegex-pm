@@ -21,7 +21,11 @@ SYNOPSIS
 
         package MyGrammar;
         use Pegex::Grammar -base;
-        has grammar_text => "some grammar text goes here";
+        use Pegex::Compiler;
+        sub build_tree {
+            my $grammar_text => "some grammar text goes here";
+            Pegex::Compiler->compile($grammar_text)->tree;
+        }
 
         package MyReceiver;
         use Pegex::Receiver -base;

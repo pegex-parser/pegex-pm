@@ -1,5 +1,11 @@
+#------------------------------------------
+
 + Change compile api:
   + compile => parse->combinate->grammar
+
+#------------------------------------------
+
+- Pegex::AST - Receiver to generate an AST
 - Redo compile api
   all,any,rgx,rul,err
   +,*,?,!,&
@@ -11,11 +17,10 @@
   name:: smart <ws> rule
   name:ws1: special user-defined ws rule
 
+#------------------------------------------
 
 - Backtracking control
 - Detailed error reporting
-- Pegex::AST - Receiver to generate an AST
-
 - Parse Name: First Middle? Last
-
 - Look at Perl6::Rules on CPAN
+- Look at Regex::Grammars

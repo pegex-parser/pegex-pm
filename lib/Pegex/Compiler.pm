@@ -40,8 +40,8 @@ sub parse {
     my $grammar_text = shift;
     $self->tree({});
 
-    require Pegex::Compiler::Grammar;
-    my $grammar = Pegex::Compiler::Grammar->new(
+    require Pegex::Grammar::Pegex;
+    my $grammar = Pegex::Grammar::Pegex->new(
         receiver => 'Pegex::Compiler::AST',
         debug => $self->debug,
     );

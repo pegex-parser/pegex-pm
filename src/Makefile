@@ -1,4 +1,4 @@
-BASE=../lib/Pegex/Compiler
+BASE=../lib/Pegex/Grammar
 
-$(BASE)/Grammar.pm: pegex.pgx grammar.pl Makefile
+$(BASE)/Pegex.pm: pegex.pgx grammar.pl Makefile
 	perl grammar.pl $< > $@
