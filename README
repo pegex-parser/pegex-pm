@@ -3,20 +3,21 @@ NAME
 
 SYNOPSIS
         use Pegex;
-        my $data = pegex($grammar)->parse($input);
+        my $data = pegex($grammar_text)->parse($input_text);
 
     or more explicitly:
 
         use Pegex::Grammar;
+        use Pegex::Compiler;
         use Pegex::AST;
         my $grammar = Pegex::Grammar->new(
-            grammar => $grammar,
+            grammar => Pegex::Compiler->compile($grammar_text),
             receiver => Pegex::AST->new(),
         );
-        $grammar->parse($input, 'rule_name');
+        $grammar->parse($input_text, 'rule_name');
         my $data = $grammar->receiver->data;
 
-    or customized explicitly:
+    or customized explicitly: XXX - review this after refactor
 
         package MyGrammar;
         use Pegex::Grammar -base;
@@ -43,8 +44,8 @@ DESCRIPTION
     Pegex draws heavily from Perl 6 rules, but works equivalently in many
     modern programming languages.
 
-    With Pegex you can easily define new mini languages that can be easily
-    compiled in many programming languages.
+    With Pegex you can easily define new mini languages. These languages
+    will then automatically parse in many programming languages.
 
 A REAL WORLD EXAMPLE
     TestML is a new Acmeist unit test language. It is perfect for software
@@ -79,11 +80,10 @@ A REAL WORLD EXAMPLE
     TestML::Document object.
     http://github.com/ingydotnet/testml-pm/blob/master/lib/TestML/Parser.pm
 
-REPOSITORY AND COMMUNITY
-    The Pegex module can be found on CPAN and on GitHub:
-    <http://github.com/ingydotnet/pegex-pm>.
+SEE ALSO
+    *   <http://github.com/ingydotnet/pegex-pm>
 
-    Please join the Pegex discussion on #pegex on irc.freenode.net.
+    *   irc.freenode.net#pegex
 
 AUTHOR
     Ingy döt Net <ingy@cpan.org>

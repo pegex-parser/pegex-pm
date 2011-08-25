@@ -3,7 +3,9 @@ use Pegex::Compiler::Bootstrap;
 
 open IN, shift or die;
 my $grammar = do {local $/; <IN>};
-my $perl = Pegex::Compiler::Bootstrap->compile($grammar)->combinate->to_perl;
+my $compiler = Pegex::Compiler::Bootstrap->new;
+$compiler->compile($grammar);
+my $perl = $compiler->to_perl;
 chomp($perl);
 
 print <<"...";

@@ -1,0 +1,41 @@
+== lib/Pegex.pm
+
+Sugar wrapper for Pegex tools
+
+== lib/Pegex/Receiver.pm
+
+Receiver base class. Not really needed.
+
+== lib/Pegex/Grammar.pm
+
+This is the Pegex Runtime. It should probably be split into Pegex::Parser.
+
+It has a parse method.
+It has grammar, grammar_text and grammar_tree.
+It has a receiver.
+It has input, position and match_groups.
+
+== lib/Pegex/AST.pm
+
+This is the default receiver. It can create a meaningful data structure from
+any parse.
+
+== lib/Pegex/Compiler/Grammar.pm
+
+The Pegex::Grammar subclass representing Pegex itself. It has a precompiled
+grammar_tree in it.
+
+Should be rename
+
+== lib/Pegex/Compiler.pm
+
+Takes the Pegex grammar and uses it to parse and optimize a foobar
+grammar_text into a grammar_tree.
+
+== lib/Pegex/Compiler/Bootstrap.pm
+
+The bootstrapping hack compiler for compiling the Pegex grammar itself.
+
+== lib/Pegex/Base.pm
+
+OO base class.

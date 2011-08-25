@@ -1,11 +1,11 @@
 ##
-# name:      Pegex::Grammar
-# abstract:  Pegex Grammar Class
+# name:      Pegex::Grammar::Bootstrap
+# abstract:  Pegex Grammar Class (to Bootstrap TestML)
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2010, 2011
 
-package Pegex::Grammar;
+package Pegex::Grammar::Bootstrap;
 use strict;
 use warnings;
 use 5.008003;
@@ -80,6 +80,8 @@ sub match {
     my $self = shift;
     my $rule = shift or die "No rule passed to match";
 
+    my $not = 0;
+
     my $state = undef;
     if (not ref($rule) and $rule =~ /^\w+$/) {
         die "\n\n*** No grammar support for '$rule'\n\n"
@@ -89,21 +91,13 @@ sub match {
     }
 
     my $kind;
-    my $times = '1';
-    my $not = 0;
-    my $has = 0;
-    if (my $mod = $rule->{'<'}) {
-        if ($mod eq '!') {
-            $not = 1;
-        }
-        elsif ($mod eq '=') {
-            $has = 1;
-        }
-        else {
-            $times = $mod;
-        }
+    my $times = $rule->{'<'} || '1';
+    if ($rule->{'+not'}) {
+        $rule = $rule->{'+not'};
+        $kind = 'rule';
+        $not = 1;
     }
-    if ($rule->{'+rule'}) {
+    elsif ($rule->{'+rule'}) {
         $rule = $rule->{'+rule'};
         $kind = 'rule';
     }
@@ -247,3 +241,15 @@ Error parsing Pegex document:
 }
 
 1;
+
+=head1 DESCRIPTION
+
+Pegex tests itself with TestML. TestML parses itself with Pegex. Bootstrapping
+problem. This is the solution.
+
+This is the copy of the Pegex Grammar runtime that TestML relies on. Otherwise
+it is impossible to test changes to the runtime using the TestML tests.
+
+This way we can use the last known good Pegex runtime with TestML to test new
+changes to the runtime. When the new runtime is stable, then it gets moved to
+here, and the TestML grammar gets recompiled and installed.
