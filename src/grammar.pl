@@ -22,7 +22,7 @@ use base 'Pegex::Grammar';
 use strict;
 use warnings;
 
-sub tree {
+sub build_tree {
     return +$perl;
 }
 

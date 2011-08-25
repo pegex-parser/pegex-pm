@@ -11,7 +11,8 @@ use warnings;
 use 5.008003;
 use Pegex::Base -base;
 
-has 'tree';
+has 'tree' => -init => '$self->build_tree';
+has 'build_tree' => {};
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
 has 'debug' => 0;
 
