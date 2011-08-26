@@ -1,3 +1,6 @@
+# BEGIN { $TestML::Test::Differences = 1 }
+# BEGIN { $Pegex::Compile::Debug = 1 }
+
 use TestML -run,
     -require_or_skip => 'YAML::XS';
 
@@ -7,7 +10,7 @@ use YAML::XS;
 
 sub pegex_compile {
     my $grammar_text = (shift)->value;
-    Pegex::Compiler->new(debug => 0)->parse($grammar_text)->tree;
+    Pegex::Compiler->new->parse($grammar_text)->tree;
 }
 
 sub bootstrap_compile {
@@ -70,6 +73,11 @@ b: <c> | <d>
 === Not Rule
 --- grammar
 a: !<b> <c>
+
+=== Any Group Plus Rule
+--- SKIP
+--- grammar
+a: [ <b> | <c> ] <d>
 
 === Equivalent
 --- SKIP

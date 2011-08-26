@@ -19,7 +19,7 @@ sub build_tree {
         '.rul' => 'rule_item'
       },
       {
-        '+mod' => '+',
+        '+mod' => '*',
         '.all' => [
           {
             '.rgx' => qr/(?-xism:\G\s*)/
@@ -100,16 +100,6 @@ sub build_tree {
       {
         '.all' => [
           {
-            '.rgx' => qr/(?-xism:\G(?=\[))/
-          },
-          {
-            '.rul' => 'bracketed_group'
-          }
-        ]
-      },
-      {
-        '.all' => [
-          {
             '.rgx' => qr/(?-xism:\G(?=\/))/
           },
           {
@@ -118,10 +108,21 @@ sub build_tree {
         ]
       },
       {
-        '.rul' => 'rule_group'
+        '.all' => [
+          {
+            '.rgx' => qr/(?-xism:\G(?=\[))/
+          },
+          {
+            '.rul' => 'bracketed_group'
+          },
+          {
+            '+mod' => '?',
+            '.rul' => 'all_group'
+          }
+        ]
       },
       {
-        '.rul' => 'rule_reference'
+        '.rul' => 'rule_group'
       }
     ]
   },
