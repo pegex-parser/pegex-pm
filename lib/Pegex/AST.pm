@@ -8,15 +8,9 @@
 package Pegex::AST;
 use Pegex::Receiver -base;
 
-has 'ast';
-has 'stack';
-
-# use XXX;
-
 sub __begin__ {
     my $self = shift;
-    $self->ast({});
-    $self->stack([]);
+    $self->data({});
 }
 
 sub __try__ {
@@ -40,7 +34,6 @@ sub __not__ {
 
 sub __end__ {
     my $self = shift;
-    $self->data($self->ast);
 }
 
 1;

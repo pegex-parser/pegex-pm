@@ -70,7 +70,7 @@ sub match {
         die "\n\n*** No grammar support for '$rule'\n\n"
             unless $self->tree->{$rule};
         $state = $rule;
-        $rule = $self->tree->{$rule}
+        $rule = $self->tree->{$rule};
     }
 
     my $kind;
@@ -138,11 +138,12 @@ sub match {
 
         $result
             ? $self->action("__got__", $state, $method)
-            : $self->callback("__not__", $state, $method);
+            : $self->action("__not__", $state, $method);
         $result
             ? $self->callback("got_$state")
             : $self->callback("not_$state");
-        $self->callback("end_$state");
+# XXX doesn't seem to be used.
+#         $self->callback("end_$state");
     }
     return $result;
 }
@@ -186,10 +187,9 @@ sub match_regexp {
 
     pos($self->{input}) = $self->position;
     $self->{input} =~ /$regexp/g or return 0;
-    if (defined $1) {
-        $self->match_groups([
-            grep defined($_), ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        ]);
+    {
+        no strict 'refs';
+        $self->match_groups([ map ${$_}, 1..$#+ ]);
     }
     $self->position(pos($self->{input}));
 
