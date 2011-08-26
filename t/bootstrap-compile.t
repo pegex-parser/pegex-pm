@@ -10,7 +10,7 @@ sub bootstrap_compile {
     my $grammar_text = (shift)->value;
     my $compiler = Pegex::Compiler::Bootstrap->new;
     my $tree = $compiler->compile($grammar_text)->tree;
-    delete $tree->{_FIRST_RULE};
+    delete $tree->{'+top'};
     return $tree;
 }
 
@@ -40,29 +40,29 @@ c: <x>
 
 --- yaml
 a:
-  +all:
-  - +rule: b
-  - +rule: c
+  .all:
+  - .rul: b
+  - .rul: c
     <: '*'
   <: +
 b:
-  +re: x
+  .rgx: x
 c:
-  +rule: x
+  .rul: x
 
 === Single Rule
 --- grammar
 a: <x>
 --- yaml
 a:
-  +rule: x
+  .rul: x
 
 === Single Rule With Trailing Modifier
 --- grammar
 a: <x>*
 --- yaml
 a:
-  +rule: x
+  .rul: x
   <: '*'
 
 === Single Rule With Leading Modifier
@@ -70,7 +70,7 @@ a:
 a: =<x>
 --- yaml
 a:
-  +rule: x
+  .rul: x
   <: =
 
 === Single Regex
@@ -78,51 +78,51 @@ a:
 a: /x/
 --- yaml
 a:
-  +re: x
+  .rgx: x
 
 === Single Error
 --- grammar
 a: `x`
 --- yaml
 a:
-  +error: x
+  .err: x
 
 === Unbracketed All Group
 --- grammar
 a: <x> <y>
 --- yaml
 a:
-  +all:
-  - +rule: x
-  - +rule: y
+  .all:
+  - .rul: x
+  - .rul: y
 
 === Unbracketed Any Group
 --- grammar
 a: /x/ | <y> | `z`
 --- yaml
 a:
-  +any:
-  - +re: x
-  - +rule: y
-  - +error: z
+  .any:
+  - .rgx: x
+  - .rul: y
+  - .err: z
 
 === Bracketed All Group
 --- grammar
 a: [ <x> <y> ]
 --- yaml
 a:
-  +all:
-  - +rule: x
-  - +rule: y
+  .all:
+  - .rul: x
+  - .rul: y
 
 === Bracketed Group With Trailing Modifier
 --- grammar
 a: [ <x> <y> ]?
 --- yaml
 a:
-  +all:
-  - +rule: x
-  - +rule: y
+  .all:
+  - .rul: x
+  - .rul: y
   <: '?'
 
 === Bracketed Group With Leading Modifier
@@ -130,10 +130,10 @@ a:
 a: ![ =<x> <y> ]
 --- yaml
 a:
-  +all:
-  - +rule: x
+  .all:
+  - .rul: x
     <: =
-  - +rule: y
+  - .rul: y
   <: '!'
 
 === Multiple Groups
@@ -141,11 +141,11 @@ a:
 a: [ <x> <y> ] [ <z> | /.../ ]
 --- yaml
 a:
-  +all:
-  - +all:
-    - +rule: x
-    - +rule: y
-  - +any:
-    - +rule: z
-    - +re: '...'
+  .all:
+  - .all:
+    - .rul: x
+    - .rul: y
+  - .any:
+    - .rul: z
+    - .rgx: '...'
 

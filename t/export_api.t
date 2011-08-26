@@ -8,7 +8,7 @@ my $p1 = pegex('foo: <bar>');
 
 is ref($p1), 'Pegex', 'pegex returns a Pegex object';
 
-is $p1->grammar->tree->{'_FIRST_RULE'}, 'foo',
+is $p1->grammar->tree->{'+top'}, 'foo',
     'pegex() contains a grammar with a compiled tree';
 
 my $p2 = pegex(<<'...');
@@ -28,4 +28,4 @@ is ref $p2->grammar, 'Pegex::Grammar', 'grammar property is Pegex::Grammar objec
 ok $p2->grammar->tree, 'Grammar object has tree';
 ok ref($p2->grammar->tree), 'Grammar object is compiled to a tree';
 
-is $p2->grammar->tree->{_FIRST_RULE}, 'number', '_FIRST_RULE is set correctly';
+is $p2->grammar->tree->{'+top'}, 'number', '_FIRST_RULE is set correctly';

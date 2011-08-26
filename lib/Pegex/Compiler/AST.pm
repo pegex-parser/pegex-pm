@@ -59,7 +59,7 @@ sub got_rule_reference {
     my $rule =
         $modifier eq '!' ?
             { '.not' => $name } :
-            { '.rule' => $name };
+            { '.rul' => $name };
     $rule->{'<'} = $quantifier if $quantifier;
     my $current = $self->stack->[-1];
     # A single reference
