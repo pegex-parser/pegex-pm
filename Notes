@@ -1,6 +1,6 @@
 == lib/Pegex.pm
 
-Sugar wrapper for Pegex tools
+Sugar wrapper for Pegex tools.
 
 == lib/Pegex/Receiver.pm
 
@@ -20,17 +20,19 @@ It has input, position and match_groups.
 This is the default receiver. It can create a meaningful data structure from
 any parse.
 
-== lib/Pegex/Compiler/Grammar.pm
+== lib/Pegex/Grammar/Pegex.pm
 
 The Pegex::Grammar subclass representing Pegex itself. It has a precompiled
 grammar_tree in it.
-
-Should be renamed to Pegex::Grammar::Pegex
 
 == lib/Pegex/Compiler.pm
 
 Takes the Pegex grammar and uses it to parse and optimize a foobar
 grammar_text into a grammar_tree.
+
+== lib/Pegex/Compiler/AST.pm
+
+The receiver class for Pegex::Compiler. Produces a grammar AST.
 
 == lib/Pegex/Compiler/Bootstrap.pm
 

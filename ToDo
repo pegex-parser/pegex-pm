@@ -2,20 +2,36 @@
 
 + Change compile api:
   + compile => parse->combinate->grammar
++ Redo compile api
+  all,any,rgx,rul,err
+  +,*,?,!,&
+    []+*?, !&[|], <>+*?, !=<>
+    //, ``
 
 #------------------------------------------
 
+- Make Pegex self-hosting!!
+  - Test against bootstrap compiler against:
+    - pegex-pgx
+    - testml-pgx
 - Pegex::AST - Receiver to generate an AST
-- Redo compile api
-  all,any,rgx,rul,err
-  +,*,?,!,&
-    []+*?, !&[|], <>+*?, !&<>
-    //, ``
-
+  - Test/Compare to Rx:G 
+- Pegex::Regex - =~ sugar from Rx::G
+  - $string =~ qr{pegex grammar string}
+  - $ast = \%/;
+  - $ast = \%MATCH
+- Support <.rule>
+  - Match but don't save in AST
+- Support <rule> ** <rule>
+  - And <rule> ++ <rule>
+- Support <+DEBUG> and <-DEBUG>
 - Smart whitespace
-  name: normal rule
-  name:: smart <ws> rule
-  name:ws1: special user-defined ws rule
+  - name: normal rule
+  - name:: smart <ws> rule
+  - name:ws1: special user-defined ws rule
+- Pegex ->optimize (after combinate)
+  - Combine consecutive .rgx
+  - .all or .any of 1 elem => .rul
 
 #------------------------------------------
 
