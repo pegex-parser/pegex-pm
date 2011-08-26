@@ -40,11 +40,11 @@ c: <x>
 
 --- yaml
 a:
+  +mod: +
   .all:
   - .rul: b
-  - .rul: c
-    <: '*'
-  <: +
+  - +mod: '*'
+    .rul: c
 b:
   .rgx: x
 c:
@@ -62,16 +62,16 @@ a:
 a: <x>*
 --- yaml
 a:
+  +mod: '*'
   .rul: x
-  <: '*'
 
 === Single Rule With Leading Modifier
 --- grammar
 a: =<x>
 --- yaml
 a:
+  +mod: =
   .rul: x
-  <: =
 
 === Single Regex
 --- grammar
@@ -120,21 +120,21 @@ a:
 a: [ <x> <y> ]?
 --- yaml
 a:
+  +mod: '?'
   .all:
   - .rul: x
   - .rul: y
-  <: '?'
 
 === Bracketed Group With Leading Modifier
 --- grammar
 a: ![ =<x> <y> ]
 --- yaml
 a:
+  +mod: '!'
   .all:
-  - .rul: x
-    <: =
+  - +mod: =
+    .rul: x
   - .rul: y
-  <: '!'
 
 === Multiple Groups
 --- grammar

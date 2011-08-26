@@ -93,10 +93,10 @@ sub compile_group {
     die unless @$node > 2;
     my $object = {};
     if ($node->[0] =~ /^([\=\!])/) {
-        $object->{'<'} = $1;
+        $object->{'+mod'} = $1;
     }
-    if ($node->[-1] =~ /([\?\*\+])$/ and not $object->{'<'}) {
-        $object->{'<'} = $1;
+    if ($node->[-1] =~ /([\?\*\+])$/ and not $object->{'+mod'}) {
+        $object->{'+mod'} = $1;
     }
     shift @$node;
     pop @$node;
@@ -127,10 +127,10 @@ sub compile_rule {
     my $node = shift;
     my $object = {};
     if ($node =~ s/^([\=\!])//) {
-        $object->{'<'} = $1;
+        $object->{'+mod'} = $1;
     }
-    if ($node =~ s/([\?\*\+])$// and not $object->{'<'}) {
-        $object->{'<'} = $1;
+    if ($node =~ s/([\?\*\+])$// and not $object->{'+mod'}) {
+        $object->{'+mod'} = $1;
     }
     $node =~ s!^<(.*)>$!$1! or die;
     $object->{'.rul'} = $node;

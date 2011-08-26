@@ -60,7 +60,7 @@ sub got_rule_reference {
         $modifier eq '!' ?
             { '.not' => $name } :
             { '.rul' => $name };
-    $rule->{'<'} = $quantifier if $quantifier;
+    $rule->{'+mod'} = $quantifier if $quantifier;
     my $current = $self->stack->[-1];
     # A single reference
     if (ref $current ne 'HASH') {

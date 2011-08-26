@@ -19,6 +19,7 @@ sub build_tree {
         '.rul' => 'rule_item'
       },
       {
+        '+mod' => '+',
         '.all' => [
           {
             '.rgx' => qr/(?-xism:\G\s*)/
@@ -26,8 +27,7 @@ sub build_tree {
           {
             '.rul' => 'rule_item'
           }
-        ],
-        '<' => '+'
+        ]
       }
     ]
   },
@@ -37,6 +37,7 @@ sub build_tree {
         '.rul' => 'rule_item'
       },
       {
+        '+mod' => '+',
         '.all' => [
           {
             '.rgx' => qr/(?-xism:\G\s*\|\s*)/
@@ -44,8 +45,7 @@ sub build_tree {
           {
             '.rul' => 'rule_item'
           }
-        ],
-        '<' => '+'
+        ]
       }
     ]
   },
@@ -61,8 +61,8 @@ sub build_tree {
         '.rgx' => qr/(?-xism:\G\s*\])/
       },
       {
-        '.rul' => 'group_quantifier',
-        '<' => '?'
+        '+mod' => '?',
+        '.rul' => 'group_quantifier'
       }
     ]
   },
@@ -72,20 +72,20 @@ sub build_tree {
   'grammar' => {
     '.all' => [
       {
+        '+mod' => '+',
         '.all' => [
           {
-            '.rul' => 'comment',
-            '<' => '*'
+            '+mod' => '*',
+            '.rul' => 'comment'
           },
           {
             '.rul' => 'rule_definition'
           }
-        ],
-        '<' => '+'
+        ]
       },
       {
-        '.rul' => 'comment',
-        '<' => '*'
+        '+mod' => '*',
+        '.rul' => 'comment'
       }
     ]
   },
