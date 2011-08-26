@@ -79,7 +79,7 @@ sub match {
     my $times = '1';
     my $not = 0;
     my $has = 0;
-    if (my $mod = $rule->{'<'}) {
+    if (my $mod = $rule->{'+mod'}) {
         if ($mod eq '!') {
             $not = 1;
         }
