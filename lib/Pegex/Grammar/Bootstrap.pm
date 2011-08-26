@@ -6,6 +6,8 @@
 # copyright: 2010, 2011
 
 package Pegex::Grammar::Bootstrap;
+# !!! Keep contents above.
+# !!! Replace contents below:
 use strict;
 use warnings;
 use 5.008003;
@@ -44,7 +46,7 @@ sub parse {
     $start_rule ||= 
         $self->tree->{TOP}
             ? 'TOP'
-            : $self->tree->{_FIRST_RULE};
+            : $self->tree->{'+top'};
 
     $self->action("__begin__");
     $self->match($start_rule);
@@ -88,27 +90,28 @@ sub match {
             $times = $mod;
         }
     }
-    if ($rule->{'+rule'}) {
-        $rule = $rule->{'+rule'};
+    if ($rule->{'.rul'}) {
+        $rule = $rule->{'.rul'};
         $kind = 'rule';
     }
-    elsif (defined $rule->{'+re'}) {
-        $rule = $rule->{'+re'};
+    elsif (defined $rule->{'.rgx'}) {
+        $rule = $rule->{'.rgx'};
         $kind = 'regexp';
     }
-    elsif ($rule->{'+all'}) {
-        $rule = $rule->{'+all'};
+    elsif ($rule->{'.all'}) {
+        $rule = $rule->{'.all'};
         $kind = 'all';
     }
-    elsif ($rule->{'+any'}) {
-        $rule = $rule->{'+any'};
+    elsif ($rule->{'.any'}) {
+        $rule = $rule->{'.any'};
         $kind = 'any';
     }
-    elsif ($rule->{'+error'}) {
-        my $error = $rule->{'+error'};
+    elsif ($rule->{'.err'}) {
+        my $error = $rule->{'.err'};
         $self->throw_error($error);
     }
     else {
+        WWW $rule;
         require Carp;
         Carp::confess("no support for $rule");
     }
@@ -232,6 +235,9 @@ Error parsing Pegex document:
 }
 
 1;
+
+# !!! Replace contents above.
+# !!! Keep contents below:
 
 =head1 DESCRIPTION
 
