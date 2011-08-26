@@ -174,7 +174,7 @@ sub build_tree {
     '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*))/
   },
   'rule_reference' => {
-    '.rgx' => qr/(?-xism:\G<([!&]?)([a-zA-Z]\w*)>([\*\+\?]?))/
+    '.rgx' => qr/(?-xism:\G([!&]?)<([a-zA-Z]\w*)>([\*\+\?]?))/
   }
 };
 }

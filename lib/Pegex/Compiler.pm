@@ -11,7 +11,7 @@ use Pegex::Base -base;
 # has 'grammar';
 # has 'grammar_file';
 has 'tree';
-has 'debug' => 0;
+has 'debug' => -init => '$Pegex::Compile::Debug';
 
 my $atoms;
 

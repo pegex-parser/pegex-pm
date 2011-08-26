@@ -56,11 +56,9 @@ sub got_rule_group {
 sub got_rule_reference {
     my $self = shift;
     my ($modifier, $name, $quantifier) = @_;
-    my $rule =
-        $modifier eq '!' ?
-            { '.not' => $name } :
-            { '.rul' => $name };
+    my $rule = { '.rul' => $name };
     $rule->{'+mod'} = $quantifier if $quantifier;
+    $rule->{'+mod'} = $modifier if $modifier;
     my $current = $self->stack->[-1];
     # A single reference
     if (ref $current ne 'HASH') {

@@ -1,10 +1,10 @@
+# BEGIN { $TestML::Test::Differences = 1 }
+
 use TestML -run,
     -require_or_skip => 'YAML::XS';
 
 use Pegex::Compiler::Bootstrap;
 use YAML::XS;
-
-# use Test::Differences (); use Test::Builder; *Test::Builder::is_eq = sub { my $self = shift; \&Test::Differences::eq_or_diff(@_) };
 
 sub bootstrap_compile {
     my $grammar_text = (shift)->value;
