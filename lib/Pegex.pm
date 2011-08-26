@@ -8,7 +8,7 @@
 # - http://github.com/ingydotnet/pegex-pm
 # - irc.freenode.net#pegex
 
-use 5.008003;
+use 5.010;
 package Pegex;
 use Pegex::Base -base;
 use Pegex::Grammar;
