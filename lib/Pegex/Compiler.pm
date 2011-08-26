@@ -59,9 +59,9 @@ has '_tree';
 
 sub combinate {
     my $self = shift;
-    my $rule = shift || $self->tree->{_FIRST_RULE};
+    my $rule = shift || $self->tree->{'+top'};
     $self->_tree({
-        map {($_, $self->tree->{$_})} grep { /^_/ } keys %{$self->tree}
+        map {($_, $self->tree->{$_})} grep { /^\+/ } keys %{$self->tree}
     });
     $self->combinate_rule($rule);
     $self->tree($self->_tree);
@@ -80,32 +80,26 @@ sub combinate_rule {
 sub combinate_object {
     my $self = shift;
     my $object = shift;
-    if (exists $object->{'+re'}) {
+    if (exists $object->{'.rgx'}) {
         $self->combinate_re($object);
     }
-    elsif (exists $object->{'+rule'}) {
-        my $rule = $object->{'+rule'};
+    elsif (exists $object->{'.rul'}) {
+        my $rule = $object->{'.rul'};
         if (exists $self->tree->{$rule}) {
             $self->combinate_rule($rule);
         }
     }
-    elsif (exists $object->{'+not'}) {
-        my $rule = $object->{'+not'};
-        if (exists $self->tree->{$rule}) {
-            $self->combinate_rule($rule);
-        }
-    }
-    elsif (exists $object->{'+any'}) {
-        for my $elem (@{$object->{'+any'}}) {
+    elsif (exists $object->{'.any'}) {
+        for my $elem (@{$object->{'.any'}}) {
             $self->combinate_object($elem);
         }
     }
-    elsif (exists $object->{'+all' }) {
-        for my $elem (@{$object->{'+all'}}) {
+    elsif (exists $object->{'.all' }) {
+        for my $elem (@{$object->{'.all'}}) {
             $self->combinate_object($elem);
         }
     }
-    elsif (exists $object->{'+error' }) {
+    elsif (exists $object->{'.err' }) {
     }
     else {
         require YAML::XS;
@@ -117,15 +111,15 @@ sub combinate_re {
     my $self = shift;
     my $regexp = shift;
     while (1) {
-        my $re = $regexp->{'+re'};
+        my $re = $regexp->{'.rgx'};
         $re =~ s[<(\w+)>][
             $self->tree->{$1} and
-            $self->tree->{$1}{'+re'}
+            $self->tree->{$1}{'.rgx'}
                 or $atoms->{$1}
                 or die "'$1' not defined in the grammar"
         ]e;
-        last if $re eq $regexp->{'+re'};
-        $regexp->{'+re'} = $re;
+        last if $re eq $regexp->{'.rgx'};
+        $regexp->{'.rgx'} = $re;
     }
 }
 
@@ -159,9 +153,9 @@ sub perl_regexes {
     my $self = shift;
     my $node = shift;
     if (ref($node) eq 'HASH') {
-        if (exists $node->{'+re'}) {
-            my $re = $node->{'+re'};
-            $node->{'+re'} = qr/\G$re/;
+        if (exists $node->{'.rgx'}) {
+            my $re = $node->{'.rgx'};
+            $node->{'.rgx'} = qr/\G$re/;
         }
         else {
             for (keys %$node) {

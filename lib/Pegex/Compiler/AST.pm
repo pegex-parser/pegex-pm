@@ -13,7 +13,7 @@ has 'stack' => [];
 sub got_rule_name {
     my $self = shift;
     my $name = shift;
-    $self->data->{_FIRST_RULE} ||= $name;
+    $self->data->{'+top'} ||= $name;
     push @{$self->stack}, [$name];
 }
 
@@ -26,12 +26,12 @@ sub got_rule_definition {
 sub got_regular_expression {
     my $self = shift;
     my $re = shift;
-    push @{$self->stack->[-1]}, {'+re' => $re};
+    push @{$self->stack->[-1]}, {'.rgx' => $re};
 }
 
 sub try_any_group {
     my $self = shift;
-    push @{$self->stack}, {'+any' => []};
+    push @{$self->stack}, {'.any' => []};
 }
 sub not_any_group {
     my $self = shift;
@@ -40,7 +40,7 @@ sub not_any_group {
 
 sub try_all_group {
     my $self = shift;
-    push @{$self->stack}, {'+all' => []};
+    push @{$self->stack}, {'.all' => []};
 }
 sub not_all_group {
     my $self = shift;
@@ -58,8 +58,8 @@ sub got_rule_reference {
     my ($modifier, $name, $quantifier) = @_;
     my $rule =
         $modifier eq '!' ?
-            { '+not' => $name } :
-            { '+rule' => $name };
+            { '.not' => $name } :
+            { '.rule' => $name };
     $rule->{'<'} = $quantifier if $quantifier;
     my $current = $self->stack->[-1];
     # A single reference
@@ -67,12 +67,12 @@ sub got_rule_reference {
         push @{$self->stack->[-1]}, $rule;
     }
     # An 'all' group
-    elsif ($current->{'+all'}) {
-        push @{$current->{'+all'}}, $rule;
+    elsif ($current->{'.all'}) {
+        push @{$current->{'.all'}}, $rule;
     }
     # An 'any' group
-    elsif ($current->{'+any'}) {
-        push @{$current->{'+any'}}, $rule;
+    elsif ($current->{'.any'}) {
+        push @{$current->{'.any'}}, $rule;
     }
 }
 

@@ -11,9 +11,8 @@ use warnings;
 use 5.008003;
 use Pegex::Base -base;
 
-has 'grammar';
-has 'grammar_text';
-has 'grammar_tree';
+has 'tree' => -init => '$self->build_tree';
+has 'build_tree' => {};
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
 has 'debug' => 0;
 
@@ -30,18 +29,22 @@ sub parse {
     $self->match_groups([]);
     my $start_rule = shift || undef;
 
-    if (not $self->grammar) {
-        $self->compile;
-    }
+    die ref($self) . " has no grammar 'tree' property"
+        if not $self->tree;
 
+    if (not $self->receiver) {
+        $self->receiver('Pegex::Return');
+    }
     if (not ref $self->receiver) {
-        $self->receiver($self->receiver->new);
+        my $receiver = $self->receiver;
+        eval "require $receiver";
+        $self->receiver($receiver->new);
     }
 
     $start_rule ||= 
-        $self->grammar->{TOP}
+        $self->tree->{TOP}
             ? 'TOP'
-            : $self->grammar->{_FIRST_RULE};
+            : $self->tree->{_FIRST_RULE};
 
     $self->action("__begin__");
     $self->match($start_rule);
@@ -58,46 +61,34 @@ sub parse {
     }
 }
 
-sub compile {
-    my $self = shift;
-    my $grammar_tree = $self->grammar_tree;
-    if (not $grammar_tree) {
-        my $grammar_text = $self->grammar_text;
-        if (not $grammar_text) {
-            die ref($self) . " object has no grammar";
-        }
-        #require Pegex::Compiler;
-        require Pegex::Compiler::Bootstrap;
-        $grammar_tree =
-            # Pegex::Compiler->new->compile($grammar_text)
-            Pegex::Compiler::Bootstrap->new->compile($grammar_text)
-    }
-    $self->grammar($grammar_tree);
-    return $self;
-}
-
 sub match {
     my $self = shift;
     my $rule = shift or die "No rule passed to match";
 
-    my $not = 0;
-
     my $state = undef;
     if (not ref($rule) and $rule =~ /^\w+$/) {
         die "\n\n*** No grammar support for '$rule'\n\n"
-            unless $self->grammar->{$rule};
+            unless $self->tree->{$rule};
         $state = $rule;
-        $rule = $self->grammar->{$rule}
+        $rule = $self->tree->{$rule};
     }
 
     my $kind;
-    my $times = $rule->{'<'} || '1';
-    if ($rule->{'+not'}) {
-        $rule = $rule->{'+not'};
-        $kind = 'rule';
-        $not = 1;
+    my $times = '1';
+    my $not = 0;
+    my $has = 0;
+    if (my $mod = $rule->{'<'}) {
+        if ($mod eq '!') {
+            $not = 1;
+        }
+        elsif ($mod eq '=') {
+            $has = 1;
+        }
+        else {
+            $times = $mod;
+        }
     }
-    elsif ($rule->{'+rule'}) {
+    if ($rule->{'+rule'}) {
         $rule = $rule->{'+rule'};
         $kind = 'rule';
     }
@@ -147,11 +138,12 @@ sub match {
 
         $result
             ? $self->action("__got__", $state, $method)
-            : $self->callback("__not__", $state, $method);
+            : $self->action("__not__", $state, $method);
         $result
             ? $self->callback("got_$state")
             : $self->callback("not_$state");
-        $self->callback("end_$state");
+# XXX doesn't seem to be used.
+#         $self->callback("end_$state");
     }
     return $result;
 }
@@ -195,10 +187,9 @@ sub match_regexp {
 
     pos($self->{input}) = $self->position;
     $self->{input} =~ /$regexp/g or return 0;
-    if (defined $1) {
-        $self->match_groups([
-            grep defined($_), ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        ]);
+    {
+        no strict 'refs';
+        $self->match_groups([ map ${$_}, 1..$#+ ]);
     }
     $self->position(pos($self->{input}));
 

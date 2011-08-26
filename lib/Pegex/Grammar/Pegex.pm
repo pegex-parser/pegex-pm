@@ -12,19 +12,19 @@ use warnings;
 
 sub build_tree {
     return +{
-  '_FIRST_RULE' => 'grammar',
+  '+top' => 'grammar',
   'all_group' => {
-    '+all' => [
+    '.all' => [
       {
-        '+rule' => 'rule_item'
+        '.rul' => 'rule_item'
       },
       {
-        '+all' => [
+        '.all' => [
           {
-            '+re' => qr/(?-xism:\G\s*)/
+            '.rgx' => qr/(?-xism:\G\s*)/
           },
           {
-            '+rule' => 'rule_item'
+            '.rul' => 'rule_item'
           }
         ],
         '<' => '+'
@@ -32,17 +32,17 @@ sub build_tree {
     ]
   },
   'any_group' => {
-    '+all' => [
+    '.all' => [
       {
-        '+rule' => 'rule_item'
+        '.rul' => 'rule_item'
       },
       {
-        '+all' => [
+        '.all' => [
           {
-            '+re' => qr/(?-xism:\G\s*\|\s*)/
+            '.rgx' => qr/(?-xism:\G\s*\|\s*)/
           },
           {
-            '+rule' => 'rule_item'
+            '.rul' => 'rule_item'
           }
         ],
         '<' => '+'
@@ -50,131 +50,131 @@ sub build_tree {
     ]
   },
   'bracketed_group' => {
-    '+all' => [
+    '.all' => [
       {
-        '+re' => qr/(?-xism:\G\[\s*)/
+        '.rgx' => qr/(?-xism:\G\[\s*)/
       },
       {
-        '+rule' => 'rule_group'
+        '.rul' => 'rule_group'
       },
       {
-        '+re' => qr/(?-xism:\G\s*\])/
+        '.rgx' => qr/(?-xism:\G\s*\])/
       },
       {
-        '+rule' => 'group_quantifier',
+        '.rul' => 'group_quantifier',
         '<' => '?'
       }
     ]
   },
   'comment' => {
-    '+re' => qr/(?-xism:\G(?:[\ \t]*\r?\n|\#.*\r?\n))/
+    '.rgx' => qr/(?-xism:\G(?:[\ \t]*\r?\n|\#.*\r?\n))/
   },
   'grammar' => {
-    '+all' => [
+    '.all' => [
       {
-        '+all' => [
+        '.all' => [
           {
-            '+rule' => 'comment',
+            '.rul' => 'comment',
             '<' => '*'
           },
           {
-            '+rule' => 'rule_definition'
+            '.rul' => 'rule_definition'
           }
         ],
         '<' => '+'
       },
       {
-        '+rule' => 'comment',
+        '.rul' => 'comment',
         '<' => '*'
       }
     ]
   },
   'group_quantifier' => {
-    '+re' => qr/(?-xism:\G([\*\+\?]))/
+    '.rgx' => qr/(?-xism:\G([\*\+\?]))/
   },
   'regular_expression' => {
-    '+re' => qr/(?-xism:\G\/([^\/]*)\/)/
+    '.rgx' => qr/(?-xism:\G\/([^\/]*)\/)/
   },
   'rule_body' => {
-    '+any' => [
+    '.any' => [
       {
-        '+all' => [
+        '.all' => [
           {
-            '+re' => qr/(?-xism:\G(?=\[))/
+            '.rgx' => qr/(?-xism:\G(?=\[))/
           },
           {
-            '+rule' => 'bracketed_group'
+            '.rul' => 'bracketed_group'
           }
         ]
       },
       {
-        '+all' => [
+        '.all' => [
           {
-            '+re' => qr/(?-xism:\G(?=\/))/
+            '.rgx' => qr/(?-xism:\G(?=\/))/
           },
           {
-            '+rule' => 'regular_expression'
+            '.rul' => 'regular_expression'
           }
         ]
       },
       {
-        '+rule' => 'rule_group'
+        '.rul' => 'rule_group'
       },
       {
-        '+rule' => 'rule_reference'
+        '.rul' => 'rule_reference'
       }
     ]
   },
   'rule_definition' => {
-    '+all' => [
+    '.all' => [
       {
-        '+re' => qr/(?-xism:\G\s*)/
+        '.rgx' => qr/(?-xism:\G\s*)/
       },
       {
-        '+rule' => 'rule_name'
+        '.rul' => 'rule_name'
       },
       {
-        '+re' => qr/(?-xism:\G[\ \t]*:\s*)/
+        '.rgx' => qr/(?-xism:\G[\ \t]*:\s*)/
       },
       {
-        '+rule' => 'rule_body'
+        '.rul' => 'rule_body'
       },
       {
-        '+rule' => 'rule_ending'
+        '.rul' => 'rule_ending'
       }
     ]
   },
   'rule_ending' => {
-    '+re' => qr/(?-xism:\G\s*?(?:\n\s*|;\s*|\z))/
+    '.rgx' => qr/(?-xism:\G\s*?(?:\n\s*|;\s*|\z))/
   },
   'rule_group' => {
-    '+any' => [
+    '.any' => [
       {
-        '+rule' => 'any_group'
+        '.rul' => 'any_group'
       },
       {
-        '+rule' => 'all_group'
+        '.rul' => 'all_group'
       }
     ]
   },
   'rule_item' => {
-    '+any' => [
+    '.any' => [
       {
-        '+rule' => 'bracketed_group'
+        '.rul' => 'bracketed_group'
       },
       {
-        '+rule' => 'regular_expression'
+        '.rul' => 'regular_expression'
       },
       {
-        '+rule' => 'rule_reference'
+        '.rul' => 'rule_reference'
       }
     ]
   },
   'rule_name' => {
-    '+re' => qr/(?-xism:\G([a-zA-Z]\w*))/
+    '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*))/
   },
   'rule_reference' => {
-    '+re' => qr/(?-xism:\G<([!&]?)([a-zA-Z]\w*)>([\*\+\?]?))/
+    '.rgx' => qr/(?-xism:\G<([!&]?)([a-zA-Z]\w*)>([\*\+\?]?))/
   }
 };
 }

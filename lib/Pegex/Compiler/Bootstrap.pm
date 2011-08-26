@@ -23,11 +23,11 @@ sub parse {
         $value =~ s/\s+/ /g;
         $value =~ s/^\s*(.*?)\s*$/$1/;
         $self->tree->{$key} = $value;
-        $self->tree->{_FIRST_RULE} ||= $key;
+        $self->tree->{'+top'} ||= $key;
     }
 
     for my $rule (sort keys %{$self->tree}) {
-        next if $rule =~ /^_/;
+        next if $rule =~ /^\+/;
         my $text = $self->tree->{$rule};
         my @tokens = ($text =~ m{(
             /[^/]*/ |
@@ -80,8 +80,8 @@ sub compile_next {
         : $node =~ m!`! ? $self->compile_error($node)
         : die $node;
 
-    while (defined $unit->{'+all'} and @{$unit->{'+all'}} == 1) {
-        $unit = $unit->{'+all'}->[0];
+    while (defined $unit->{'.all'} and @{$unit->{'.all'}} == 1) {
+        $unit = $unit->{'.all'}->[0];
     }
     return $unit;
 }
@@ -101,12 +101,12 @@ sub compile_group {
     shift @$node;
     pop @$node;
     if ($type eq 'any') {
-        $object->{'+any'} = [
+        $object->{'.any'} = [
             map $self->compile_next($_), grep {$_ ne '|'} @$node
         ];
     }
     elsif ($type eq 'all') {
-        $object->{'+all'} = [
+        $object->{'.all'} = [
             map $self->compile_next($_), @$node
         ];
     }
@@ -118,7 +118,7 @@ sub compile_re {
     my $node = shift;
     my $object = {};
     $node =~ s!^/(.*)/$!$1! or die $node;
-    $object->{'+re'} = $node;
+    $object->{'.rgx'} = $node;
     return $object;
 }
 
@@ -133,9 +133,9 @@ sub compile_rule {
         $object->{'<'} = $1;
     }
     $node =~ s!^<(.*)>$!$1! or die;
-    $object->{'+rule'} = $node;
+    $object->{'.rul'} = $node;
     if (defined(my $re = $self->atoms->{$node})) {
-        $self->tree->{$node} ||= {'+re' => $re};
+        $self->tree->{$node} ||= {'.rgx' => $re};
     }
 
     return $object;
@@ -146,7 +146,7 @@ sub compile_error {
     my $node = shift;
     my $object = {};
     $node =~ s!^`(.*)`$!$1! or die $node;
-    $object->{'+error'} = $node;
+    $object->{'.err'} = $node;
     return $object;
 }
 
