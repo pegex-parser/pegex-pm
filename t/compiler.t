@@ -34,25 +34,63 @@ __DATA__
 %TestML 1.0
 
 # Plan = 15;
-Plan = 12;
+Plan = 8;
 
 test = (grammar) { 
     Label = '$BlockLabel - Does the compiler output match the bootstrap?';
     grammar.pegex_compile.yaml
       == grammar.bootstrap_compile.yaml;
 
-    Label = '$BlockLabel - Does the compressed grammar compile the same?';
-    grammar.compress.pegex_compile.yaml
-      == grammar.compress.bootstrap_compile.yaml;
-
-    Label =
-        '$BlockLabel - Does the compressed grammar match the uncompressed?';
-    grammar.compress.pegex_compile.yaml
-      == grammar.pegex_compile.yaml;
+#     Label = '$BlockLabel - Does the compressed grammar compile the same?';
+#     grammar.compress.pegex_compile.yaml
+#       == grammar.compress.bootstrap_compile.yaml;
+# 
+#     Label =
+#         '$BlockLabel - Does the compressed grammar match the uncompressed?';
+#     grammar.compress.pegex_compile.yaml
+#       == grammar.pegex_compile.yaml;
 };
 
 test(*grammar);
 
+
+=== Single Regex
+--- grammar
+a: /x/
+
+=== Single Reference
+--- grammar
+a: <b>
+
+=== Single Error
+--- grammar
+a: `b`
+
+=== Simple All Group
+--- grammar
+a: /b/ <c>
+
+=== Simple Any Group
+--- grammar
+a: <b> | <c>
+
+=== Bracketed All Group
+--- grammar
+a: [ <b> /c/ ]
+
+=== Bracketed Any Group
+--- grammar
+a: [ <b> | /c/ | `d` ]
+
+=== Bracketed Group in Unbracketed Group
+--- grammar
+a: <b> [ <c> | <d> ]
+--- LAST
+
+=== Multiple Rules
+--- grammar
+a: <b>
+b: <c>
 
 === Simple Grammar
 --- grammar
@@ -75,9 +113,10 @@ b: <c> | <d>
 a: !<b> <c>
 
 === Any Group Plus Rule
---- SKIP
 --- grammar
-a: [ <b> | <c> ] <d>
+a: /w/
+--- grammarx
+a: /w/ [ <x>+ | <y>* ] <z>?
 
 === Equivalent
 --- SKIP

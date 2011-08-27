@@ -31,6 +31,7 @@ sub compile_file {
     my $file = shift;
     open IN, $file or die "Can't open '$file'";
     my $grammar_text = do {local $/; <IN>};
+    close IN;
     return $self->compile($grammar_text);
 }
 
@@ -186,6 +187,7 @@ $atoms = {
     BREAK   => '\n',
     CR      => '\r',
     EOL     => '\r?\n',
+    DOS     => '\r\n',
     EOS     => '\z',
     ALPHA   => '[a-zA-Z]',
     LOWER   => '[a-z]',

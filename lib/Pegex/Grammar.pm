@@ -121,7 +121,7 @@ sub match {
         Carp::confess("no support for $rule");
     }
 
-    $self->callback("try", $state)
+    $self->callback("try", $state, $kind)
         if $state and not $not;
 
     my $position = $self->position;
@@ -138,7 +138,7 @@ sub match {
     my $result = (($count or $times =~ /^[\?\*]$/) ? 1 : 0) ^ $not;
     $self->position($position) unless $result;
 
-    $self->callback(($result ? "got" : "not"), $state)
+    $self->callback(($result ? "got" : "not"), $state, $kind)
         if $state and not $not;
 
     return $result;
@@ -178,8 +178,9 @@ sub match_regexp {
 }
 
 sub callback {
-    my ($self, $adj, $state) = @_;
+    my ($self, $adj, $state, $kind) = @_;
     my $callback = "${adj}_$state";
+    my $got = $adj eq 'got';
 
     $self->trace($callback) if $self->debug;
 
@@ -190,18 +191,18 @@ sub callback {
     }
     $callback = "end_$state";
     if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $self->receiver->$callback(@{$self->match_groups});
+        $self->receiver->$callback($got, @{$self->match_groups});
         $done++
     }
     return if $done;
 
     $callback = "__${adj}__";
     if ($self->receiver->can($callback)) {
-        $self->receiver->$callback($state, $self->match_groups);
+        $self->receiver->$callback($state, $kind, $self->match_groups);
     }
     $callback = "__end__";
     if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $self->receiver->$callback($state, $self->match_groups);
+        $self->receiver->$callback($got, $state, $kind, $self->match_groups);
     }
 }
 

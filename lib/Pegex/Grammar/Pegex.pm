@@ -62,12 +62,15 @@ sub build_tree {
       },
       {
         '+mod' => '?',
-        '.rul' => 'group_quantifier'
+        '.rul' => 'rule_quantifier'
       }
     ]
   },
   'comment' => {
     '.rgx' => qr/(?-xism:\G(?:[\ \t]*\r?\n|\#.*\r?\n))/
+  },
+  'error_message' => {
+    '.rgx' => qr/(?-xism:\G`([^`\r\n]*)`)/
   },
   'grammar' => {
     '.all' => [
@@ -89,42 +92,8 @@ sub build_tree {
       }
     ]
   },
-  'group_quantifier' => {
-    '.rgx' => qr/(?-xism:\G([\*\+\?]))/
-  },
   'regular_expression' => {
-    '.rgx' => qr/(?-xism:\G\/([^\/]*)\/)/
-  },
-  'rule_body' => {
-    '.any' => [
-      {
-        '.all' => [
-          {
-            '.rgx' => qr/(?-xism:\G(?=\/))/
-          },
-          {
-            '.rul' => 'regular_expression'
-          }
-        ]
-      },
-      {
-        '.all' => [
-          {
-            '.rgx' => qr/(?-xism:\G(?=\[))/
-          },
-          {
-            '.rul' => 'bracketed_group'
-          },
-          {
-            '+mod' => '?',
-            '.rul' => 'all_group'
-          }
-        ]
-      },
-      {
-        '.rul' => 'rule_group'
-      }
-    ]
+    '.rgx' => qr/(?-xism:\G\/([^\/\r\n]*)\/)/
   },
   'rule_definition' => {
     '.all' => [
@@ -138,7 +107,7 @@ sub build_tree {
         '.rgx' => qr/(?-xism:\G[\ \t]*:\s*)/
       },
       {
-        '.rul' => 'rule_body'
+        '.rul' => 'rule_group'
       },
       {
         '.rul' => 'rule_ending'
@@ -161,18 +130,24 @@ sub build_tree {
   'rule_item' => {
     '.any' => [
       {
-        '.rul' => 'bracketed_group'
+        '.rul' => 'rule_reference'
       },
       {
         '.rul' => 'regular_expression'
       },
       {
-        '.rul' => 'rule_reference'
+        '.rul' => 'bracketed_group'
+      },
+      {
+        '.rul' => 'error_message'
       }
     ]
   },
   'rule_name' => {
     '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*))/
+  },
+  'rule_quantifier' => {
+    '.rgx' => qr/(?-xism:\G[\*\+\?])/
   },
   'rule_reference' => {
     '.rgx' => qr/(?-xism:\G([!=]?)<([a-zA-Z]\w*)>([\*\+\?]?))/

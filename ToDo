@@ -32,6 +32,7 @@
 - Pegex ->optimize (after combinate)
   - Combine consecutive .rgx
   - .all or .any of 1 elem => .rul
+- Add a TIMER option
 
 #------------------------------------------
 
