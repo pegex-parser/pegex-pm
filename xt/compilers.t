@@ -1,5 +1,5 @@
 # BEGIN { $TestML::Test::Differences = 1 }
-BEGIN { $Pegex::Compile::Debug = 1 }
+# BEGIN { $Pegex::Compile::Debug = 1 }
 
 use TestML -run,
     -require_or_skip => 'YAML::XS';
@@ -40,8 +40,8 @@ test(*grammar);
 --- grammar: ../pegex-pgx/pegex.pgx
 
 === TestML Grammar
+--- SKIP
 --- grammar: ../testml-pgx/testml.pgx
 
 === YAML Grammar
---- ONLY
 --- grammar: ../yaml-pgx/yaml.pgx

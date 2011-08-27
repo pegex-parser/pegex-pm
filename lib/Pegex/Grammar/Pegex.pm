@@ -58,11 +58,7 @@ sub build_tree {
         '.rul' => 'rule_group'
       },
       {
-        '.rgx' => qr/(?-xism:\G\s*\])/
-      },
-      {
-        '+mod' => '?',
-        '.rul' => 'rule_quantifier'
+        '.rgx' => qr/(?-xism:\G\s*\]([\*\+\?]?))/
       }
     ]
   },
@@ -145,9 +141,6 @@ sub build_tree {
   },
   'rule_name' => {
     '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*))/
-  },
-  'rule_quantifier' => {
-    '.rgx' => qr/(?-xism:\G[\*\+\?])/
   },
   'rule_reference' => {
     '.rgx' => qr/(?-xism:\G([!=]?)<([a-zA-Z]\w*)>([\*\+\?]?))/

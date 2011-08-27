@@ -33,22 +33,21 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-# Plan = 15;
-Plan = 8;
+Plan = 60;
 
 test = (grammar) { 
     Label = '$BlockLabel - Does the compiler output match the bootstrap?';
     grammar.pegex_compile.yaml
       == grammar.bootstrap_compile.yaml;
 
-#     Label = '$BlockLabel - Does the compressed grammar compile the same?';
-#     grammar.compress.pegex_compile.yaml
-#       == grammar.compress.bootstrap_compile.yaml;
-# 
-#     Label =
-#         '$BlockLabel - Does the compressed grammar match the uncompressed?';
-#     grammar.compress.pegex_compile.yaml
-#       == grammar.pegex_compile.yaml;
+    Label = '$BlockLabel - Does the compressed grammar compile the same?';
+    grammar.compress.pegex_compile.yaml
+      == grammar.compress.bootstrap_compile.yaml;
+
+    Label =
+        '$BlockLabel - Does the compressed grammar match the uncompressed?';
+    grammar.compress.pegex_compile.yaml
+      == grammar.pegex_compile.yaml;
 };
 
 test(*grammar);
@@ -85,7 +84,6 @@ a: [ <b> | /c/ | `d` ]
 === Bracketed Group in Unbracketed Group
 --- grammar
 a: <b> [ <c> | <d> ]
---- LAST
 
 === Multiple Rules
 --- grammar
@@ -100,8 +98,9 @@ c: /y+/
 
 === Semicolons OK
 --- grammar
-a: /x/;
-b: /y/;
+a: <b>;
+b: <c>
+c: /d/;
 
 === Unbracketed
 --- grammar
@@ -112,26 +111,51 @@ b: <c> | <d>
 --- grammar
 a: !<b> <c>
 
+=== Multiline
+--- grammar
+a: <b>
+   <c>
+b:
+    /c/ <d>
+    <e>;
+c:
+    <d> |
+    [ /e/ <f> ]
+    | `g`
+
+=== Various Groups
+--- grammar
+a: <b> [ <c> | <d> ]
+b: [ <c> | <d> ] <e>
+c: <d> | [ <e> <f> ] | <g>
+d: <e> | [ <f> <g> ] | <h> | [ `i` ]
+e: [ <f> ]
+
+=== Modifiers
+--- grammar
+a: !<a> =<b>
+b: [ /c/ <d> ]+
+c: [ /c/ <d> ]+
+
 === Any Group Plus Rule
 --- grammar
-a: /w/
---- grammarx
 a: /w/ [ <x>+ | <y>* ] <z>?
 
 === Equivalent
---- SKIP
 --- grammar
 a: <b>
 c: !<d>
 
 === Failing Test
---- SKIP
 --- grammar
 a_b: /c/ <d>
 
+=== Failures to test later
+--- grammar
+a: <b> [ <c>* | <d>+ ]+
+e: [ <f> !<g> ]?
 
 === Failures to test later
 --- SKIP
 --- grammar
-a: <b> [ <c>* | <d>+ ]?
-e: [ <f> ]
+b: [ /x/ ]+

@@ -5,6 +5,14 @@
 # license:   perl
 # copyright: 2010, 2011
 
+# To Do:
+#
+# match() needs to be split into:
+# - match() - api entry point
+# - match_next() - dispatcher
+# - match_rule() - rule matching
+# position reversion needs refactoring
+
 package Pegex::Grammar;
 use strict;
 use warnings;
@@ -147,8 +155,9 @@ sub match {
 sub match_all {
     my $self = shift;
     my $list = shift;
+    my $pos = $self->position;
     for my $elem (@$list) {
-        $self->match($elem) or return 0;
+        $self->match($elem) or $self->position($pos) and return 0;
     }
     return 1;
 }
