@@ -20,6 +20,7 @@ has 'input';
 has 'position';
 has 'match_groups';
 
+# XXX Split this Grammar class into Grammar & Parser classes
 sub parse {
     my $self = shift;
     die 'Pegex::Grammar->parse() takes one or two arguments ($input, $start_rule)'
@@ -46,12 +47,18 @@ sub parse {
             ? 'TOP'
             : $self->tree->{'+top'};
 
-    $self->action("__begin__");
+    my $callback = "__begin__";
+    $self->receiver->$callback()
+        if $self->receiver->can($callback);
+
     $self->match($start_rule);
     if ($self->position < length($self->input)) {
         $self->throw_error("Parse document failed for some reason");
     }
-    $self->action("__end__");
+
+    $callback = "__final__";
+    $self->receiver->$callback()
+        if $self->receiver->can($callback);
 
     if ($self->receiver->can('data')) {
         return $self->receiver->data;
@@ -114,11 +121,8 @@ sub match {
         Carp::confess("no support for $rule");
     }
 
-    if ($state and not $not) {
-        $self->trace("try_$state", 1);
-        $self->callback("try_$state");
-        $self->action("__try__", $state, $kind);
-    }
+    $self->callback("try", $state)
+        if $state and not $not;
 
     my $position = $self->position;
     my $count = 0;
@@ -134,34 +138,10 @@ sub match {
     my $result = (($count or $times =~ /^[\?\*]$/) ? 1 : 0) ^ $not;
     $self->position($position) unless $result;
 
-    if ($state and not $not) {
-        $self->trace(($result ? "got" : "not") . "_$state");
+    $self->callback(($result ? "got" : "not"), $state)
+        if $state and not $not;
 
-        $result
-            ? $self->action("__got__", $state, $method)
-            : $self->action("__not__", $state, $method);
-        $result
-            ? $self->callback("got_$state")
-            : $self->callback("not_$state");
-# XXX doesn't seem to be used.
-#         $self->callback("end_$state");
-    }
     return $result;
-}
-
-sub trace {
-    my $self = shift;
-    return unless $self->debug;
-    my $action = shift;
-    my $indent = shift || 0;
-    $self->{indent} ||= 0;
-    $self->{indent}-- unless $indent;
-    print ' ' x $self->{indent};
-    $self->{indent}++ if $indent;
-    my $snippet = substr($self->input, $self->position);
-    $snippet = substr($snippet, 0, 30) . "..." if length $snippet > 30;
-    $snippet =~ s/\n/\\n/g;
-    print sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
 }
 
 sub match_all {
@@ -197,22 +177,46 @@ sub match_regexp {
     return 1;
 }
 
-sub action {
-    my $self = shift;
-    my $method = shift;
+sub callback {
+    my ($self, $adj, $state) = @_;
+    my $callback = "${adj}_$state";
 
-    if ($self->receiver->can($method)) {
-        $self->receiver->$method(@_, $self->match_groups);
+    $self->trace($callback) if $self->debug;
+
+    my $done = 0;
+    if ($self->receiver->can($callback)) {
+        $self->receiver->$callback(@{$self->match_groups});
+        $done++;
+    }
+    $callback = "end_$state";
+    if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
+        $self->receiver->$callback(@{$self->match_groups});
+        $done++
+    }
+    return if $done;
+
+    $callback = "__${adj}__";
+    if ($self->receiver->can($callback)) {
+        $self->receiver->$callback($state, $self->match_groups);
+    }
+    $callback = "__end__";
+    if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
+        $self->receiver->$callback($state, $self->match_groups);
     }
 }
 
-sub callback {
+sub trace {
     my $self = shift;
-    my $method = shift;
-
-    if ($self->receiver->can($method)) {
-        $self->receiver->$method(@{$self->match_groups});
-    }
+    my $action = shift;
+    my $indent = ($action =~ /^try_/) ? 1 : 0;
+    $self->{indent} ||= 0;
+    $self->{indent}-- unless $indent;
+    print ' ' x $self->{indent};
+    $self->{indent}++ if $indent;
+    my $snippet = substr($self->input, $self->position);
+    $snippet = substr($snippet, 0, 30) . "..." if length $snippet > 30;
+    $snippet =~ s/\n/\\n/g;
+    print sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
 }
 
 sub throw_error {
