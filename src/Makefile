@@ -1,4 +1,5 @@
 BASE=../lib/Pegex/Grammar
 
 $(BASE)/Pegex.pm: pegex.pgx grammar.pl Makefile
-	perl grammar.pl $< > $@
+	perl grammar.pl $< > $@.tmp
+	mv $@.tmp $@

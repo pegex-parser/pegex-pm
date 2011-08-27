@@ -12,7 +12,7 @@ use 5.010;
 package Pegex;
 use Pegex::Base -base;
 use Pegex::Grammar;
-use Pegex::Compiler::Bootstrap;
+use Pegex::Compiler;
 
 our $VERSION = '0.14';
 
@@ -25,7 +25,7 @@ sub pegex {
         unless @_ == 1;
     return 'Pegex'->new(
         grammar => Pegex::Grammar->new(
-            tree => Pegex::Compiler::Bootstrap->compile($_[0])->tree,
+            tree => Pegex::Compiler->compile($_[0])->tree,
         ),
     );
 }

@@ -1,11 +1,7 @@
 use lib "$ENV{HOME}/src/pegex-pm/lib";
-use Pegex::Compiler::Bootstrap;
+use Pegex::Compiler;
 
-open IN, shift or die;
-my $grammar = do {local $/; <IN>};
-my $compiler = Pegex::Compiler::Bootstrap->new;
-$compiler->compile($grammar);
-my $perl = $compiler->to_perl;
+my $perl = Pegex::Compiler->compile_file(shift)->to_perl;
 chomp($perl);
 
 print <<"...";
