@@ -7,9 +7,11 @@
 
 package Pegex::Compiler::AST;
 use Pegex::Receiver -base;
+use Pegex::Compiler;
 
 has 'name';
 has 'body';
+has 'atoms' => Pegex::Compiler->atoms;
 
 sub __final__ {
     my $self = shift;
@@ -80,6 +82,9 @@ sub end_bracketed_group {
 
 sub got_rule_reference {
     my ($self, $pre, $name, $post) = @_;
+    if (my $re = $self->atoms->{$name}) {
+        $self->data->{$name} = {'.rgx' => $re};
+    }
     my $ref = {
         '.rul' => $name,
         $pre ? ('+mod' => $pre) : $post? ('+mod' => $post) : (),

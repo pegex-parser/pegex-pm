@@ -40,7 +40,6 @@ test(*grammar);
 --- grammar: ../pegex-pgx/pegex.pgx
 
 === TestML Grammar
---- SKIP
 --- grammar: ../testml-pgx/testml.pgx
 
 === YAML Grammar
