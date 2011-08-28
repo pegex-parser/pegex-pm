@@ -103,8 +103,8 @@ sub match {
             $times = $mod;
         }
     }
-    if ($rule->{'.rul'}) {
-        $rule = $rule->{'.rul'};
+    if ($rule->{'.ref'}) {
+        $rule = $rule->{'.ref'};
         $kind = 'rule';
     }
     elsif (defined $rule->{'.rgx'}) {

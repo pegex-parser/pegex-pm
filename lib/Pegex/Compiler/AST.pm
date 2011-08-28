@@ -86,7 +86,7 @@ sub got_rule_reference {
         $self->data->{$name} = {'.rgx' => $re};
     }
     my $ref = {
-        '.rul' => $name,
+        '.ref' => $name,
         $pre ? ('+mod' => $pre) : $post? ('+mod' => $post) : (),
     };
     push @{$self->{body}[-1]}, $ref;

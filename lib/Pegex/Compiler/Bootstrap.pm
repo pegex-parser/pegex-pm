@@ -133,7 +133,7 @@ sub compile_rule {
         $object->{'+mod'} = $1;
     }
     $node =~ s!^<(.*)>$!$1! or die;
-    $object->{'.rul'} = $node;
+    $object->{'.ref'} = $node;
     if (defined(my $re = $self->atoms->{$node})) {
         $self->tree->{$node} ||= {'.rgx' => $re};
     }

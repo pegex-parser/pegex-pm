@@ -16,7 +16,7 @@ sub build_tree {
   'all_group' => {
     '.all' => [
       {
-        '.rul' => 'rule_item'
+        '.ref' => 'rule_item'
       },
       {
         '+mod' => '*',
@@ -25,7 +25,7 @@ sub build_tree {
             '.rgx' => qr/(?-xism:\G\s*)/
           },
           {
-            '.rul' => 'rule_item'
+            '.ref' => 'rule_item'
           }
         ]
       }
@@ -34,7 +34,7 @@ sub build_tree {
   'any_group' => {
     '.all' => [
       {
-        '.rul' => 'rule_item'
+        '.ref' => 'rule_item'
       },
       {
         '+mod' => '+',
@@ -43,7 +43,7 @@ sub build_tree {
             '.rgx' => qr/(?-xism:\G\s*\|\s*)/
           },
           {
-            '.rul' => 'rule_item'
+            '.ref' => 'rule_item'
           }
         ]
       }
@@ -55,7 +55,7 @@ sub build_tree {
         '.rgx' => qr/(?-xism:\G\[\s*)/
       },
       {
-        '.rul' => 'rule_group'
+        '.ref' => 'rule_group'
       },
       {
         '.rgx' => qr/(?-xism:\G\s*\]([\*\+\?]?))/
@@ -75,16 +75,16 @@ sub build_tree {
         '.all' => [
           {
             '+mod' => '*',
-            '.rul' => 'comment'
+            '.ref' => 'comment'
           },
           {
-            '.rul' => 'rule_definition'
+            '.ref' => 'rule_definition'
           }
         ]
       },
       {
         '+mod' => '*',
-        '.rul' => 'comment'
+        '.ref' => 'comment'
       }
     ]
   },
@@ -97,16 +97,16 @@ sub build_tree {
         '.rgx' => qr/(?-xism:\G\s*)/
       },
       {
-        '.rul' => 'rule_name'
+        '.ref' => 'rule_name'
       },
       {
         '.rgx' => qr/(?-xism:\G[\ \t]*:\s*)/
       },
       {
-        '.rul' => 'rule_group'
+        '.ref' => 'rule_group'
       },
       {
-        '.rul' => 'rule_ending'
+        '.ref' => 'rule_ending'
       }
     ]
   },
@@ -116,26 +116,26 @@ sub build_tree {
   'rule_group' => {
     '.any' => [
       {
-        '.rul' => 'any_group'
+        '.ref' => 'any_group'
       },
       {
-        '.rul' => 'all_group'
+        '.ref' => 'all_group'
       }
     ]
   },
   'rule_item' => {
     '.any' => [
       {
-        '.rul' => 'rule_reference'
+        '.ref' => 'rule_reference'
       },
       {
-        '.rul' => 'regular_expression'
+        '.ref' => 'regular_expression'
       },
       {
-        '.rul' => 'bracketed_group'
+        '.ref' => 'bracketed_group'
       },
       {
-        '.rul' => 'error_message'
+        '.ref' => 'error_message'
       }
     ]
   },

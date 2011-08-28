@@ -43,20 +43,20 @@ c: <x>
 a:
   +mod: +
   .all:
-  - .rul: b
+  - .ref: b
   - +mod: '*'
-    .rul: c
+    .ref: c
 b:
   .rgx: x
 c:
-  .rul: x
+  .ref: x
 
 === Single Rule
 --- grammar
 a: <x>
 --- yaml
 a:
-  .rul: x
+  .ref: x
 
 === Single Rule With Trailing Modifier
 --- grammar
@@ -64,7 +64,7 @@ a: <x>*
 --- yaml
 a:
   +mod: '*'
-  .rul: x
+  .ref: x
 
 === Single Rule With Leading Modifier
 --- grammar
@@ -72,7 +72,7 @@ a: =<x>
 --- yaml
 a:
   +mod: =
-  .rul: x
+  .ref: x
 
 === Single Regex
 --- grammar
@@ -94,8 +94,8 @@ a: <x> <y>
 --- yaml
 a:
   .all:
-  - .rul: x
-  - .rul: y
+  - .ref: x
+  - .ref: y
 
 === Unbracketed Any Group
 --- grammar
@@ -104,7 +104,7 @@ a: /x/ | <y> | `z`
 a:
   .any:
   - .rgx: x
-  - .rul: y
+  - .ref: y
   - .err: z
 
 === Bracketed All Group
@@ -113,8 +113,8 @@ a: [ <x> <y> ]
 --- yaml
 a:
   .all:
-  - .rul: x
-  - .rul: y
+  - .ref: x
+  - .ref: y
 
 === Bracketed Group With Trailing Modifier
 --- grammar
@@ -123,8 +123,8 @@ a: [ <x> <y> ]?
 a:
   +mod: '?'
   .all:
-  - .rul: x
-  - .rul: y
+  - .ref: x
+  - .ref: y
 
 === Bracketed Group With Leading Modifier
 --- grammar
@@ -134,8 +134,8 @@ a:
   +mod: '!'
   .all:
   - +mod: =
-    .rul: x
-  - .rul: y
+    .ref: x
+  - .ref: y
 
 === Multiple Groups
 --- grammar
@@ -144,9 +144,9 @@ a: [ <x> <y> ] [ <z> | /.../ ]
 a:
   .all:
   - .all:
-    - .rul: x
-    - .rul: y
+    - .ref: x
+    - .ref: y
   - .any:
-    - .rul: z
+    - .ref: z
     - .rgx: '...'
 

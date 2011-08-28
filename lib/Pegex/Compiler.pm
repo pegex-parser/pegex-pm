@@ -84,8 +84,8 @@ sub combinate_object {
     if (exists $object->{'.rgx'}) {
         $self->combinate_re($object);
     }
-    elsif (exists $object->{'.rul'}) {
-        my $rule = $object->{'.rul'};
+    elsif (exists $object->{'.ref'}) {
+        my $rule = $object->{'.ref'};
         if (exists $self->tree->{$rule}) {
             $self->combinate_rule($rule);
         }

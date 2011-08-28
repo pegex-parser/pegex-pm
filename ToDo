@@ -7,19 +7,20 @@
   +,*,?,!,&
     []+*?, !&[|], <>+*?, !=<>
     //, ``
++ Make Pegex self-hosting!!
+  + Test against bootstrap compiler against:
+    + pegex-pgx
+    + testml-pgx
 
 #------------------------------------------
 
-- Make Pegex self-hosting!!
-  - Test against bootstrap compiler against:
-    - pegex-pgx
-    - testml-pgx
 - Pegex::AST - Receiver to generate an AST
   - Test/Compare to Rx:G 
 - Pegex::Regex - =~ sugar from Rx::G
   - $string =~ qr{pegex grammar string}
   - $ast = \%/;
   - $ast = \%MATCH
+
 - Support <.rule>
   - Match but don't save in AST
 - Support <rule> ** <rule>
