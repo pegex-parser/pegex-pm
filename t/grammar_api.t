@@ -1,0 +1,19 @@
+use Test::More tests => 1;
+
+package MyGrammar1;
+use Pegex::Grammar -base;
+
+has text => <<'...';
+foo: /xyz/ <bar>
+bar:
+    /abc/ |
+    <baz>
+baz: /def/
+...
+
+package main;
+
+my $g1 = MyGrammar1->new;
+
+is $g1->tree->{'+top'}, 'foo',
+    'MyGrammar1 compiled a tree from its text';

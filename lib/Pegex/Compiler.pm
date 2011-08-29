@@ -66,6 +66,7 @@ sub combinate {
     });
     $self->combinate_rule($rule);
     $self->tree($self->_tree);
+    delete $self->{_tree};
     return $self;
 }
 
