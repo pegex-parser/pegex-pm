@@ -5,6 +5,8 @@
 # license:   perl
 # copyright: 2010, 2011
 # see:
+# - Pegex::Regex
+# - Pegex::Grammar
 # - http://github.com/ingydotnet/pegex-pm
 # - irc.freenode.net#pegex
 
@@ -44,6 +46,12 @@ sub parse {
     use Pegex;
     my $data = pegex($grammar_text)->parse($input_text);
 
+or with regular expression sugar:
+
+    use Pegex::Regex;
+    $input_text =~ qr{<pegex> $grammar_text}x;
+    my $data = \%/;
+
 or more explicitly:
 
     use Pegex::Grammar;
@@ -53,18 +61,15 @@ or more explicitly:
         grammar => Pegex::Compiler->compile($grammar_text),
         receiver => Pegex::AST->new(),
     );
-    $grammar->parse($input_text, 'rule_name');
-    my $data = $grammar->receiver->data;
+    my $data = $grammar->parse($input_text, 'rule_name');
 
 or customized explicitly:       XXX - review this after refactor
 
     package MyGrammar;
     use Pegex::Grammar -base;
-    use Pegex::Compiler;
-    sub build_tree {
-        my $grammar_text => "some grammar text goes here";
-        Pegex::Compiler->compile($grammar_text)->tree;
-    }
+
+    has text => "your grammar definition text goes here";
+    has receiver => "MyReceiver";
 
     package MyReceiver;
     use Pegex::Receiver -base;
@@ -72,24 +77,44 @@ or customized explicitly:       XXX - review this after refactor
     got_other_rule { ... }
 
     package main;
-    use MyReceiver;
     use MyGrammar;
-    my $receiver = MyReceiver->new();
-    my $grammar = MyGrammar->new(
-        receiver => $receiver,
-    );
+    my $grammar = MyGrammar->new();
     $grammar->parse($input);
     my $data = $receiver->data;
 
 =head1 DESCRIPTION
 
-Pegex is a Acmeist parser framework. It is a PEG parser grammar syntax,
-combined with PCRE compatible regular expressions as the match tokens. Pegex
-draws heavily from Perl 6 rules, but works equivalently in many modern
-programming languages.
+Pegex is a Acmeist parser framework. It allows you to easily create parsers
+that will work equivalently in lots of programming langugages!
 
-With Pegex you can easily define new mini languages. These languages will then
-automatically parse in many programming languages.
+Pegex gets it name by combining Parsing Expression Grammars (PEG), with
+Regular Expessions (regex). That's actually what Pegex does.
+
+PEG is the cool new way to elegantly specify recursive descent grammars. The
+Perl 6 language is defined in terms of a self modifying PEG language called
+B<Perl 6 Rules>. Regular expressions are familar to programmers of most modern
+programming languages. Pegex defines a simple PEG syntax, where all the
+terminals are regular expressions. This means that Pegex can be quite fast and
+powerful.
+
+Pegex attempts to be the simplest way to define new (or old) Domain Specific
+Languages (DSLs) that need to be used in several programming languages and
+environments.
+
+=
+
+=head1 FYI
+
+Pegex is self-hosting. This means that the Pegex grammar language syntax is
+defined by a Pegex grammar! This is important because (just like any Pegex
+based language) it makes it easier to port to new programming languages. You
+can find the Pegex grammar for Pegex grammars here:
+L<http://github.com/ingydotnet/pegex-pgx/>.
+
+Pegex was originally inspired by Perl 6 Rules. It also takes ideas from Damian
+Conway's Perl 5 module, Regex::Grammars. Pegex tries to take the best ideas
+from these great works, and make them work in as many languages as possible.
+That's Acmeism.
 
 =head1 A REAL WORLD EXAMPLE
 
@@ -107,17 +132,17 @@ http://github.com/ingydotnet/testml-pgx/blob/master/testml.pgx
 
 In Perl 5, Pegex::Compiler is used to compile the grammar into this simple
 data structure (shown in YAML):
-http://github.com/ingydotnet/testml-pgx/blob/master/grammar.yaml
+http://github.com/ingydotnet/testml-pgx/testml.yaml
 
 The grammar can also be precompiled to JSON:
-http://github.com/ingydotnet/testml-pgx/blob/master/grammar.json
+http://github.com/ingydotnet/testml-pgx/testml.json
 
 Pegex::Compiler further compiles this into a Perl 5 only graamar tree, which
 becomes this module:
-http://github.com/ingydotnet/testml-pm/blob/master/lib/TestML/Parser/Grammar.pm
+http://github.com/ingydotnet/testml-pm/lib/TestML/Parser/Grammar.pm
 
 TestML::Parser::Grammar is a subclass of Pegex::Grammar. It can be used to
 parse TestML files. TestML::Parser calls the C<parse()> method of the grammar
 with a TestML::Receiver object that receives callbacks when various rules
 match, and uses the information to build a TestML::Document object.
-http://github.com/ingydotnet/testml-pm/blob/master/lib/TestML/Parser.pm
+http://github.com/ingydotnet/testml-pm/lib/TestML/Parser.pm
