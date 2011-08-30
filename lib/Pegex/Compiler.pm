@@ -22,6 +22,14 @@ sub compile {
 
     $self->parse($grammar_text);
     $self->combinate;
+#     $self->optimize;
+#     $self->perl;
+    return $self;
+}
+
+sub perl {
+    my $self = shift;
+    $self->perl_regexes($self->tree);
     return $self;
 }
 

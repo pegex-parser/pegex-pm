@@ -101,7 +101,46 @@ Pegex attempts to be the simplest way to define new (or old) Domain Specific
 Languages (DSLs) that need to be used in several programming languages and
 environments.
 
-=
+=head1 OVERVIEW
+
+In the diagram below, there is a simple language called Foo. The diagram shows
+how Pegex can take a text grammar defining Foo and generate a parser that can
+parse Foo sources into data (abstract syntax trees).
+
+                            Parsing a language called "Foo"
+                               with the Pegex toolset.    
+
+                              .-----------------------.
+  .--------------------.      |    Pegex::Compiler    |
+  |    Foo Language    |      |-----------------------|    Serialize
+  |--------------------|----->| Pegex::Grammar::Pegex |---------.
+  | Pegex grammar text |      | Pegex::AST receiver   |         |
+  '--------------------'      '-----------------------'         v
+  ......................                  |                 .------.
+  |                    |                  | compile()       | YAML |
+  |foo:: <verb> <noun> |                  v                 '------'
+  |verb: /Hello/       |       .--------------------.       .------.
+  |noun: /world/       |       | Foo grammar tree   |       | JSON |
+  |                    |       '--------------------'       '------'
+  ......................                  |                 .------.
+                                          |                 | Perl |
+                                          v                 '------'
+                               .---------------------.      .--------.
+                               | Pegex::Grammar::Foo |      | Python |
+                               |---------------------|      '--------'
+                               | Pegex::Parser       |      .-----.
+                               | Pegex::AST::Foo     |      | etc |
+   .-----------------.         '---------------------'      '-----'
+   |  Foo Language   |                    |
+   |-----------------|------------------->| parse()
+   | Foo source text |                    v
+   '-----------------'        .----------------------.
+   ...................        | Parsed Foo Data Tree |
+   |Hello world      |        '----------------------'
+   ...................        ........................
+                              |- verb: Hello         |
+                              |- noun: world         |
+                              ........................
 
 =head1 FYI
 

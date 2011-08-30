@@ -40,7 +40,7 @@ sub build_tree {
     my ($self) = @_;
     my $text = $self->text
         or die "No text for grammar";
-    Pegex::Compiler->new->compile($text)->tree;
+    Pegex::Compiler->new->compile($text)->perl->tree;
 }
 
 # XXX Split this Grammar class into Grammar & Parser classes
