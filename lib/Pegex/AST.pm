@@ -23,6 +23,7 @@ sub __got__ {
     my $self = shift;
     my $rule = shift;
     my $kind = shift;
+#     warn "> $rule $kind\n";
 #     WWW { rule => $rule, kind => $kind };
 }
 
