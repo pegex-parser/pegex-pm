@@ -1,5 +1,13 @@
 #------------------------------------------
 
+- Split Grammar into Parser
+- Migrate parser to new AST model
+- Write AST tests
+- Write AST module
+- Make Pegex and TestML work
+
+#------------------------------------------
+
 + Change compile api:
   + compile => parse->combinate->grammar
 + Redo compile api
