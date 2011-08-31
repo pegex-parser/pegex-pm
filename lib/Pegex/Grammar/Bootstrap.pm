@@ -13,14 +13,29 @@ use warnings;
 use 5.008003;
 use Pegex::Base -base;
 
+# Grammar can be in text or tree form. Tree will be compiled from text.
+has 'text' => '';
 has 'tree' => -init => '$self->build_tree';
-has 'build_tree' => {};
-has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
-has 'debug' => 0;
 
+# Parser, receiver and input objects/classes to use.
+has 'parser';
+has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
 has 'input';
+
+# Internal properties.
 has 'position';
 has 'match_groups';
+
+# Debug the parsing of input.
+has 'debug' => -init => '$Pegex::Grammar::Debug';
+
+sub build_tree {
+    require Pegex::Compiler;
+    my ($self) = @_;
+    my $text = $self->text
+        or die "No text for grammar";
+    Pegex::Compiler->new->compile($text)->perl->tree;
+}
 
 # XXX Split this Grammar class into Grammar & Parser classes
 sub parse {
@@ -97,8 +112,8 @@ sub match {
             $times = $mod;
         }
     }
-    if ($rule->{'.rul'}) {
-        $rule = $rule->{'.rul'};
+    if ($rule->{'.ref'}) {
+        $rule = $rule->{'.ref'};
         $kind = 'rule';
     }
     elsif (defined $rule->{'.rgx'}) {

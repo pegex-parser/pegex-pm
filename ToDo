@@ -1,5 +1,6 @@
 #------------------------------------------
 
+- Stabilize TestML with Bootstrap Grammar
 - Split Grammar into Parser
 - Migrate parser to new AST model
 - Write AST tests
