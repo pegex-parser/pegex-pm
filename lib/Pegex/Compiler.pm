@@ -11,7 +11,6 @@ use Pegex::Base -base;
 # has 'grammar';
 # has 'grammar_file';
 has 'tree';
-has 'debug' => -init => '$Pegex::Compile::Debug';
 
 my $atoms;
 
@@ -52,7 +51,6 @@ sub parse {
     require Pegex::Grammar::Pegex;
     my $grammar = Pegex::Grammar::Pegex->new(
         receiver => 'Pegex::Compiler::AST',
-        debug => $self->debug,
     );
 
     my $tree = $grammar->parse($grammar_text);

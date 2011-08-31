@@ -8,6 +8,8 @@ use Pegex::Compiler;
 use Pegex::Compiler::Bootstrap;
 use YAML::XS;
 
+# BEGIN { XXX \%INC}
+
 sub pegex_compile {
     my $grammar_text = (shift)->value;
     Pegex::Compiler->new->parse($grammar_text)->tree;

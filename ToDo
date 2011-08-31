@@ -1,11 +1,19 @@
 #------------------------------------------
 
-- Stabilize TestML with Bootstrap Grammar
-- Split Grammar into Parser
-- Migrate parser to new AST model
-- Write AST tests
-- Write AST module
-- Make Pegex and TestML work
++ Stabilize TestML with Bootstrap Grammar
++ Split Grammar into Parser
+  + Look for all instances of build_tree (tree_)
++ Make Pegex and TestML work
+- Pegex::AST - Receiver to generate an AST
+  - Write AST tests
+  - Write Pegex::AST module
+  - Migrate parser to new AST model
+  - Test/Compare to Rx:G 
+
+- Pegex::Regex - =~ sugar from Rx::G
+  - $string =~ qr{pegex grammar string}
+  - $ast = \%/;
+  - $ast = \%MATCH
 
 #------------------------------------------
 
@@ -22,13 +30,6 @@
     + testml-pgx
 
 #------------------------------------------
-
-- Pegex::AST - Receiver to generate an AST
-  - Test/Compare to Rx:G 
-- Pegex::Regex - =~ sugar from Rx::G
-  - $string =~ qr{pegex grammar string}
-  - $ast = \%/;
-  - $ast = \%MATCH
 
 - Support <.rule>
   - Match but don't save in AST

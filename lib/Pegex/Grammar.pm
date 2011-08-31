@@ -1,284 +1,164 @@
 ##
 # name:      Pegex::Grammar
-# abstract:  Pegex Grammar Runtime
+# abstract:  Pegex Grammar Base Class
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2010, 2011
 
-# To Do:
-#
-# match() needs to be split into:
-# - match() - api entry point
-# - match_next() - dispatcher
-# - match_rule() - rule matching
-# position reversion needs refactoring
-
 package Pegex::Grammar;
-use strict;
-use warnings;
-use 5.008003;
 use Pegex::Base -base;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
-has 'text' => '';
-has 'tree' => -init => '$self->build_tree';
-
-# Parser, receiver and input objects/classes to use.
-has 'parser';
-has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
-has 'input';
-
-# Internal properties.
-has 'position';
-has 'match_groups';
-
-# Debug the parsing of input.
-has 'debug' => -init => '$Pegex::Grammar::Debug';
-
-sub build_tree {
+has 'text' => -init =>
+    q{die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'."};
+has 'tree' => -init => '$self->tree_';
+sub tree_ {
     require Pegex::Compiler;
-    my ($self) = @_;
-    my $text = $self->text
-        or die "No text for grammar";
-    Pegex::Compiler->new->compile($text)->perl->tree;
+    # XXX 'perl' should be part of 'compile'
+    Pegex::Compiler->new->compile($_[0]->text)->perl->tree;
 }
 
-# XXX Split this Grammar class into Grammar & Parser classes
+# Parser and receiver classes to use.
+has 'parser'    => 'Pegex::Parser';
+has 'receiver'  => -init =>
+    q{die ref($self) . " does not define a 'receiver' property"};
+
 sub parse {
     my $self = shift;
-    die 'Pegex::Grammar->parse() takes one or two arguments ($input, $start_rule)'
-        unless @_ >= 1 and @_ <= 2;
-    $self->input(shift);
-    $self->position(0);
-    $self->match_groups([]);
-    my $start_rule = shift || undef;
+    $self = $self->new unless ref $self;
 
-    die ref($self) . " has no grammar 'tree' property"
-        if not $self->tree;
+    die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
+        unless 1 <= @_ and @_ <= 2;
 
-    if (not $self->receiver) {
-        $self->receiver('Pegex::Return');
-    }
-    if (not ref $self->receiver) {
+    my $parser = $self->parser;
+    if (not ref $parser) {
+        eval "require $parser";
         my $receiver = $self->receiver;
-        eval "require $receiver";
-        $self->receiver($receiver->new);
+        $receiver = do {
+            eval "require $receiver";
+            $receiver->new;
+        } unless ref $receiver;
+        $parser = $parser->new(
+            grammar => $self,
+            receiver => $receiver,
+        );
     }
 
-    $start_rule ||= 
-        $self->tree->{TOP}
-            ? 'TOP'
-            : $self->tree->{'+top'};
-
-    my $callback = "__begin__";
-    $self->receiver->$callback()
-        if $self->receiver->can($callback);
-
-    $self->match($start_rule);
-    if ($self->position < length($self->input)) {
-        $self->throw_error("Parse document failed for some reason");
-    }
-
-    $callback = "__final__";
-    $self->receiver->$callback()
-        if $self->receiver->can($callback);
-
-    if ($self->receiver->can('data')) {
-        return $self->receiver->data;
-    }
-    else {
-        return 1;
-    }
-}
-
-sub match {
-    my $self = shift;
-    my $rule = shift or die "No rule passed to match";
-
-    my $state = undef;
-    if (not ref($rule) and $rule =~ /^\w+$/) {
-        die "\n\n*** No grammar support for '$rule'\n\n"
-            unless $self->tree->{$rule};
-        $state = $rule;
-        $rule = $self->tree->{$rule};
-    }
-
-    my $kind;
-    my $times = '1';
-    my $not = 0;
-    my $has = 0;
-    if (my $mod = $rule->{'+mod'}) {
-        if ($mod eq '!') {
-            $not = 1;
-        }
-        elsif ($mod eq '=') {
-            $has = 1;
-        }
-        else {
-            $times = $mod;
-        }
-    }
-    if ($rule->{'.ref'}) {
-        $rule = $rule->{'.ref'};
-        $kind = 'rule';
-    }
-    elsif (defined $rule->{'.rgx'}) {
-        $rule = $rule->{'.rgx'};
-        $kind = 'regexp';
-    }
-    elsif ($rule->{'.all'}) {
-        $rule = $rule->{'.all'};
-        $kind = 'all';
-    }
-    elsif ($rule->{'.any'}) {
-        $rule = $rule->{'.any'};
-        $kind = 'any';
-    }
-    elsif ($rule->{'.err'}) {
-        my $error = $rule->{'.err'};
-        $self->throw_error($error);
-    }
-    else {
-        WWW $rule;
-        require Carp;
-        Carp::confess("no support for $rule");
-    }
-
-    $self->callback("try", $state, $kind)
-        if $state and not $not;
-
-    my $position = $self->position;
-    my $count = 0;
-    my $method = ($kind eq 'rule') ? 'match' : "match_$kind";
-    while ($self->$method($rule)) {
-        $position = $self->position unless $not;
-        $count++;
-        last if $times eq '1' or $times eq '?';
-    }
-    if ($count and $times =~ /[\+\*]/) {
-        $self->position($position);
-    }
-    my $result = (($count or $times =~ /^[\?\*]$/) ? 1 : 0) ^ $not;
-    $self->position($position) unless $result;
-
-    $self->callback(($result ? "got" : "not"), $state, $kind)
-        if $state and not $not;
-
-    return $result;
-}
-
-sub match_all {
-    my $self = shift;
-    my $list = shift;
-    my $pos = $self->position;
-    for my $elem (@$list) {
-        $self->match($elem) or $self->position($pos) and return 0;
-    }
-    return 1;
-}
-
-sub match_any {
-    my $self = shift;
-    my $list = shift;
-    for my $elem (@$list) {
-        $self->match($elem) and return 1;
-    }
-    return 0;
-}
-
-sub match_regexp {
-    my $self = shift;
-    my $regexp = shift;
-
-    pos($self->{input}) = $self->position;
-    $self->{input} =~ /$regexp/g or return 0;
-    {
-        no strict 'refs';
-        $self->match_groups([ map ${$_}, 1..$#+ ]);
-    }
-    $self->position(pos($self->{input}));
-
-    return 1;
-}
-
-sub callback {
-    my ($self, $adj, $state, $kind) = @_;
-    my $callback = "${adj}_$state";
-    my $got = $adj eq 'got';
-
-    $self->trace($callback) if $self->debug;
-
-    my $done = 0;
-    if ($self->receiver->can($callback)) {
-        $self->receiver->$callback(@{$self->match_groups});
-        $done++;
-    }
-    $callback = "end_$state";
-    if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $self->receiver->$callback($got, @{$self->match_groups});
-        $done++
-    }
-    return if $done;
-
-    $callback = "__${adj}__";
-    if ($self->receiver->can($callback)) {
-        $self->receiver->$callback($state, $kind, $self->match_groups);
-    }
-    $callback = "__end__";
-    if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $self->receiver->$callback($got, $state, $kind, $self->match_groups);
-    }
-}
-
-sub trace {
-    my $self = shift;
-    my $action = shift;
-    my $indent = ($action =~ /^try_/) ? 1 : 0;
-    $self->{indent} ||= 0;
-    $self->{indent}-- unless $indent;
-    print ' ' x $self->{indent};
-    $self->{indent}++ if $indent;
-    my $snippet = substr($self->input, $self->position);
-    $snippet = substr($snippet, 0, 30) . "..." if length $snippet > 30;
-    $snippet =~ s/\n/\\n/g;
-    print sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
-}
-
-sub throw_error {
-    my $self = shift;
-    my $msg = shift;
-#     die $msg;
-    my $line = @{[substr($self->input, 0, $self->position) =~ /(\n)/g]} + 1;
-    my $context = substr($self->input, $self->position, 50);
-    $context =~ s/\n/\\n/g;
-    my $position = $self->position;
-    die <<"...";
-Error parsing Pegex document:
-  msg: $msg
-  line: $line
-  context: "$context"
-  position: $position
-...
+    return $parser->parse(@_);
 }
 
 1;
 
 =head1 SYNOPSIS
 
-    my $grammar = Pegex::Grammar::Subclass->new(
-        receiver => Pegex::Receiver::Subclass->new,
-    );
+Define a Pegex grammar (for the Foo syntax):
 
-    my $data = $grammar->parse($input_text);
+    package Pegex::Grammar::Foo;
+    use base 'Pegex::Grammar';
+
+    use constant text => q{
+    foo: <bar> <baz>
+    ... rest of Foo grammar ...
+    };
+    use constant receiver => 'Pegex::AST';
+
+then use it to parse some Foo:
+
+    use Pegex::Grammar::Foo;
+    my $ast = Pegex::Grammar::Foo->parse('my/file.foo');
 
 =head1 DESCRIPTION
 
-Pegex::Grammar is the runtime engine for all the grammar modules that subclass
-it.
+Pegex::Grammar is a base class for defining your own Pegex grammar classes. It
+provides a single action method, `parse()`, that invokes a Pegex parser
+(usually Pegex::Parser) for you, and then returns the kind of result that you
+want it to. In other words, subclassing Pegex::Grammar is usually all you need
+to do to create a parser/compiler for your language/syntax.
 
-The subclass provides a compiled grammar tree, via the C<tree> method.
+Pegex::Grammar classes are very simple. You just need to define a C<text>
+property that returns your Pegex grammar string, or (if you don't want to
+incur the compilation of the grammar each time) a C<tree> property which
+returns a precompiled grammar.
+
+You also need to define the receiver class or object that will produce a
+result from your parse. 'Pegex::AST' is the easiest choice, as long as you are
+satisfied which its results. Otherwise you can subclass it or define something
+different.
+
+=head1 PROPERTIES
+
+There are 4 properties of a Pegex::Grammar: C<tree>, C<text>, C<parser> and
+C<receiver>.
+
+=over
+
+=item tree
+
+This is the data structure containing the compiled grammar for your syntax. It
+is usually produced by C<Pegex::Compiler>. You can inline it in the C<tree>
+method, or else the C<tree_> method will be called to produce it.
+
+The C<tree_> method will call on Pegex::Compiler to compile the C<text>
+property by default. You can define your own C<tree_> method to do override
+this behavior.
+
+Often times you will want to generate your own Pegex::Grammar subclasses in an
+automated fashion. The Pegex and TestML modules do this to be performant. This
+also allows you to keep your grammar text in a separate file, and often in a
+separate repository, so it can be shared by multiple programming language's
+module implementations. See the src/ subdirectory in
+L<http://github.com/ingydotnet/pegex-pm/>.
+
+=item text
+
+This is simply the text of your grammar, if you define this, you should
+(probably) not define the C<tree> property. This grammar text will be
+automatically compiled when the C<tree> is required.
+
+=item parser
+
+This will default to C<Pegex::Parser> and you should probably never need to
+change that. It's the Parser class that will handle the work for the
+C<parse()> method. If you need to subclass the parser for some reason, you
+would set the sublass here.
+
+=item receiver
+
+This property is required. It is the class or object that will handle all the
+callbacks from the parser, and do something with them. Usually it will create
+an Abstract Syntax Tree (AST) representing the parsed input, but you can have
+it do whatever you want. C<Pegex::AST> is a common value for this. You may
+want to specify your own subclass of C<Pegex::AST>.
+
+You can also set this to a reference of your Grammar object, if you want to
+specify all your receiver callbacks inline. You can do that like this
+(assuming a Moose compliant subclass):
+
+    has receiver => (
+        is => 'ro',
+        default => sub { shift },
+    );
+
+=back
+
+=head1 METHODS
+
+There is only one public method:
+
+=over
+
+=item parse($input [ , $start_rule ])
 
 The C<parse> method applies the grammar against the text, and tells the
 receiver object what is happening as it happens. If the parse fails, an error
-is thrown. If it succeeds, then C<parse> returns the C<data> property of the
-C<receiver> object.
+is thrown. If it succeeds, then C<parse> returns the data structure created by
+the receiver object.
+
+This method is really just a handy proxy for C<Pegex::Parser::parse>. It takes
+the same input arguments and produces the same outputs.
+
+The first (required) argument is the input to be parsed. This can be a text
+string, a file path, or a L<Pegex::Input> object.
+
+The second (optional) argument is the starting rule name. By default, this is
+the first rule specified in the grammar, or the rule named 'TOP' (if present).

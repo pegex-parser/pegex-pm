@@ -17,7 +17,7 @@ use base 'Pegex::Grammar';
 use strict;
 use warnings;
 
-sub build_tree {
+sub tree_ {
     return +$perl;
 }
 
