@@ -8,17 +8,54 @@
 # copyright: 2010, 2011
 
 package Pegex::Grammar::Bootstrap;
-use strict;
-use warnings;
-use 5.008003;
 use Pegex::Base -base;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
-has 'text' => '';
-has 'tree' => -init => '$self->build_tree';
+has 'text' => -init =>
+    q{die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'."};
+has 'tree' => -init => '$self->tree_';
+sub tree_ {
+    require Pegex::Compiler;
+    # XXX 'perl' should be part of 'compile'
+    Pegex::Compiler->new->compile($_[0]->text)->perl->tree;
+}
+
+# Parser and receiver classes to use.
+has 'parser'    => 'Pegex::Parser';
+has 'receiver'  => -init =>
+    q{die ref($self) . " does not define a 'receiver' property"};
+
+sub parse {
+    my $self = shift;
+    $self = $self->new unless ref $self;
+
+    die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
+        unless 1 <= @_ and @_ <= 2;
+
+    my $parser = $self->parser;
+    if (not ref $parser) {
+        eval "require $parser";
+        my $receiver = $self->receiver;
+        $receiver = do {
+            eval "require $receiver";
+            $receiver->new;
+        } unless ref $receiver;
+        $parser = $parser->new(
+            grammar => $self,
+            receiver => $receiver,
+        );
+    }
+
+    return $parser->parse(@_);
+}
+
+
+BEGIN { $INC{'Pegex/Parser.pm'} = 'inlined' }
+package Pegex::Parser;
+use Pegex::Base -base;
 
 # Parser, receiver and input objects/classes to use.
-has 'parser';
+has 'grammar';
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
 has 'input';
 
@@ -27,62 +64,52 @@ has 'position';
 has 'match_groups';
 
 # Debug the parsing of input.
-has 'debug' => -init => '$Pegex::Grammar::Debug';
+has 'debug' => -init => '$self->debug_';
 
-sub build_tree {
-    require Pegex::Compiler;
-    my ($self) = @_;
-    my $text = $self->text
-        or die "No text for grammar";
-    Pegex::Compiler->new->compile($text)->perl->tree;
+sub debug_ {
+    exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
+    defined($Pegex::Grammar::Debug) ? $Pegex::Grammar::Debug :
+    0;
 }
 
-# XXX Split this Grammar class into Grammar & Parser classes
 sub parse {
     my $self = shift;
-    die 'Pegex::Grammar->parse() takes one or two arguments ($input, $start_rule)'
-        unless @_ >= 1 and @_ <= 2;
-    $self->input(shift);
+    $self = $self->new unless ref $self;
+
+    die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
+        unless 1 <= @_ and @_ <= 2;
+
+    $self->input(shift); # XXX Change to Pegex::Input object
+
     $self->position(0);
     $self->match_groups([]);
     my $start_rule = shift || undef;
 
-    die ref($self) . " has no grammar 'tree' property"
-        if not $self->tree;
-
-    if (not $self->receiver) {
-        $self->receiver('Pegex::Return');
-    }
-    if (not ref $self->receiver) {
-        my $receiver = $self->receiver;
+    my $receiver = $self->receiver or die;
+    if (not ref $receiver) {
         eval "require $receiver";
         $self->receiver($receiver->new);
     }
 
     $start_rule ||= 
-        $self->tree->{TOP}
+        $self->grammar->tree->{TOP}
             ? 'TOP'
-            : $self->tree->{'+top'};
+            : $self->grammar->tree->{'+top'}
+        or die "No starting rule for Pegex::Parser::parse";
 
-    my $callback = "__begin__";
-    $self->receiver->$callback()
-        if $self->receiver->can($callback);
+    $self->receiver->__begin__()
+        if $self->receiver->can("__begin__");
 
     $self->match($start_rule);
     if ($self->position < length($self->input)) {
         $self->throw_error("Parse document failed for some reason");
     }
 
-    $callback = "__final__";
-    $self->receiver->$callback()
-        if $self->receiver->can($callback);
+    $self->receiver->__final__()
+        if $self->receiver->can("__final__");
 
-    if ($self->receiver->can('data')) {
-        return $self->receiver->data;
-    }
-    else {
-        return 1;
-    }
+    # Parse was successful!
+    return ($self->receiver->can('data') ? $self->receiver->data : 1);
 }
 
 sub match {
@@ -92,9 +119,9 @@ sub match {
     my $state = undef;
     if (not ref($rule) and $rule =~ /^\w+$/) {
         die "\n\n*** No grammar support for '$rule'\n\n"
-            unless $self->tree->{$rule};
+            unless $self->grammar->tree->{$rule};
         $state = $rule;
-        $rule = $self->tree->{$rule};
+        $rule = $self->grammar->tree->{$rule};
     }
 
     my $kind;
@@ -200,7 +227,7 @@ sub callback {
     my $callback = "${adj}_$state";
     my $got = $adj eq 'got';
 
-#     $self->trace($callback) if $self->debug;
+    $self->trace($callback) if $self->debug;
 
     my $done = 0;
     if ($self->receiver->can($callback)) {
@@ -254,6 +281,7 @@ Error parsing Pegex document:
   position: $position
 ...
 }
+
 
 1;
 
