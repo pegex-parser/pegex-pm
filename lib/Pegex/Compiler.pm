@@ -26,12 +26,6 @@ sub compile {
     return $self;
 }
 
-sub perl {
-    my $self = shift;
-    $self->perl_regexes($self->tree);
-    return $self;
-}
-
 sub compile_file {
     my $self = shift;
     $self = $self->new unless ref $self;
@@ -155,6 +149,12 @@ sub to_perl {
     $Data::Dumper::Indent = 1;
     $Data::Dumper::Sortkeys = 1;
     return Data::Dumper::Dumper($self->tree);
+}
+
+sub perl {
+    my $self = shift;
+    $self->perl_regexes($self->tree);
+    return $self;
 }
 
 sub perl_regexes {

@@ -4,6 +4,8 @@
 + Split Grammar into Parser
   + Look for all instances of build_tree (tree_)
 + Make Pegex and TestML work
+- Split parse into smaller methods
+
 - Pegex::AST - Receiver to generate an AST
   - Write AST tests
   - Write Pegex::AST module
