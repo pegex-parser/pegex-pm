@@ -102,7 +102,6 @@ sub match_next {
         $rule = $self->grammar->tree->{$rule};
     }
 
-    my $kind;
     my $times = '1';
     my $not = 0;
     my $has = 0;
@@ -117,27 +116,16 @@ sub match_next {
             $times = $mod;
         }
     }
-    if ($rule->{'.ref'}) {
-        $rule = $rule->{'.ref'};
-        $kind = 'rule';
+
+    my $kind;
+    for (qw(ref rgx all any err)) {
+        if ($rule->{".$_"}) {
+            $rule = $rule->{".$_"};
+            $kind = $_;
+            last;
+        }
     }
-    elsif (defined $rule->{'.rgx'}) {
-        $rule = $rule->{'.rgx'};
-        $kind = 'regexp';
-    }
-    elsif ($rule->{'.all'}) {
-        $rule = $rule->{'.all'};
-        $kind = 'all';
-    }
-    elsif ($rule->{'.any'}) {
-        $rule = $rule->{'.any'};
-        $kind = 'any';
-    }
-    elsif ($rule->{'.err'}) {
-        my $error = $rule->{'.err'};
-        $self->throw_error($error);
-    }
-    else {
+    if (not $kind) {
         WWW $rule;
         require Carp;
         Carp::confess("no support for $rule");
@@ -166,7 +154,7 @@ sub match_next {
     return $result;
 }
 
-sub match_rule {
+sub match_ref {
     my ($self, $rule) = @_;
     $self->match_next($rule);
 }
@@ -190,7 +178,7 @@ sub match_any {
     return 0;
 }
 
-sub match_regexp {
+sub match_rgx {
     my $self = shift;
     my $regexp = shift;
 
@@ -203,6 +191,11 @@ sub match_regexp {
     $self->position(pos($self->{buffer}));
 
     return 1;
+}
+
+sub match_err {
+    my ($self, $error) = @_;
+    $self->throw_error($error);
 }
 
 sub callback {
