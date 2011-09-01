@@ -54,7 +54,13 @@ sub parse {
     $self->buffer($self->input->read);
     $self->position(0);
     $self->match_groups([]);
+
     my $start_rule = shift || undef;
+    $start_rule ||= 
+        $self->grammar->tree->{TOP}
+            ? 'TOP'
+            : $self->grammar->tree->{'+top'}
+        or die "No starting rule for Pegex::Parser::parse";
 
     my $receiver = $self->receiver or die;
     if (not ref $receiver) {
@@ -62,22 +68,7 @@ sub parse {
         $self->receiver($receiver->new);
     }
 
-    $start_rule ||= 
-        $self->grammar->tree->{TOP}
-            ? 'TOP'
-            : $self->grammar->tree->{'+top'}
-        or die "No starting rule for Pegex::Parser::parse";
-
-    $self->receiver->__begin__()
-        if $self->receiver->can("__begin__");
-
     $self->match($start_rule);
-    if ($self->position < length($self->buffer)) {
-        $self->throw_error("Parse document failed for some reason");
-    }
-
-    $self->receiver->__final__()
-        if $self->receiver->can("__final__");
 
     # Parse was successful!
     $self->input->close;
@@ -85,6 +76,21 @@ sub parse {
 }
 
 sub match {
+    my ($self, $rule) = @_;
+
+    $self->receiver->__begin__()
+        if $self->receiver->can("__begin__");
+
+    $self->match_next($rule);
+    if ($self->position < length($self->buffer)) {
+        $self->throw_error("Parse document failed for some reason");
+    }
+
+    $self->receiver->__final__()
+        if $self->receiver->can("__final__");
+}
+
+sub match_next {
     my $self = shift;
     my $rule = shift or die "No rule passed to match";
 
@@ -142,7 +148,7 @@ sub match {
 
     my $position = $self->position;
     my $count = 0;
-    my $method = ($kind eq 'rule') ? 'match' : "match_$kind";
+    my $method = "match_$kind";
     while ($self->$method($rule)) {
         $position = $self->position unless $not;
         $count++;
@@ -160,12 +166,17 @@ sub match {
     return $result;
 }
 
+sub match_rule {
+    my ($self, $rule) = @_;
+    $self->match_next($rule);
+}
+
 sub match_all {
     my $self = shift;
     my $list = shift;
     my $pos = $self->position;
     for my $elem (@$list) {
-        $self->match($elem) or $self->position($pos) and return 0;
+        $self->match_next($elem) or $self->position($pos) and return 0;
     }
     return 1;
 }
@@ -174,7 +185,7 @@ sub match_any {
     my $self = shift;
     my $list = shift;
     for my $elem (@$list) {
-        $self->match($elem) and return 1;
+        $self->match_next($elem) and return 1;
     }
     return 0;
 }
@@ -195,7 +206,7 @@ sub match_regexp {
 }
 
 sub callback {
-    my ($self, $adj, $state, $kind) = @_;
+    my ($self, $adj, $state) = @_;
     my $callback = "${adj}_$state";
     my $got = $adj eq 'got';
 
@@ -215,11 +226,11 @@ sub callback {
 
     $callback = "__${adj}__";
     if ($self->receiver->can($callback)) {
-        $self->receiver->$callback($state, $kind, $self->match_groups);
+        $self->receiver->$callback($state, $self->match_groups);
     }
     $callback = "__end__";
     if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $self->receiver->$callback($got, $state, $kind, $self->match_groups);
+        $self->receiver->$callback($got, $state, $self->match_groups);
     }
 }
 
