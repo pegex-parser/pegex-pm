@@ -7,7 +7,7 @@
 # see:
 # - Pegex::Grammar
 
-package Pegex::Parser;
+package Pegex::Parser2;
 use Pegex::Base -base;
 
 use Pegex::Input;

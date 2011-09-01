@@ -1,5 +1,4 @@
 use Test::More tests => 1;
-# $Pegex::Grammar::Debug = 1;
 use YAML::XS;
 
 my $grammar1 = <<'...';
@@ -43,6 +42,7 @@ use Pegex::Grammar;
 use Pegex::Compiler;
 my $ast1 = Pegex::Grammar->new(
     tree => Pegex::Compiler->compile($grammar1)->tree,
+    parser => 'Pegex::Parser2',
     receiver => 'Pegex::AST',
 )->parse($text1);
 
