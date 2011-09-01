@@ -11,10 +11,9 @@ use Pegex::Base -base;
 use Pegex::Parser;
 use Pegex::Grammar::Pegex;
 use Pegex::Compiler::AST;
+use Pegex::Grammar::Atoms;
 
 has 'tree';
-
-my $atoms;
 
 sub compile {
     my $self = shift;
@@ -99,6 +98,7 @@ sub combinate_object {
 sub combinate_re {
     my $self = shift;
     my $regexp = shift;
+    my $atoms = Pegex::Grammar::Atoms->atoms;
     while (1) {
         my $re = $regexp->{'.rgx'};
         $re =~ s[<(\w+)>][
@@ -162,72 +162,6 @@ sub perl_regexes {
         $self->perl_regexes($_) for @$node;
     }
 }
-
-#------------------------------------------------------------------------------#
-# Pegex regex atoms for grammars
-#------------------------------------------------------------------------------#
-# XXX This should probably be moved to Pegex::Grammar::Atoms
-$atoms = {
-    ALWAYS  => '',
-    NEVER   => '(?!)',
-    ALL     => '[\s\S]',
-    ANY     => '.',
-    BLANK   => '[\ \t]',
-    BLANKS  => '\ \t',
-    SPACE   => ' ',
-    TAB     => '\t',
-    WS      => '\s',
-    NS      => '\S',
-    BREAK   => '\n',
-    CR      => '\r',
-    EOL     => '\r?\n',
-    DOS     => '\r\n',
-    EOS     => '\z',
-    ALPHA   => '[a-zA-Z]',
-    LOWER   => '[a-z]',
-    UPPER   => '[A-Z]',
-    DIGIT   => '[0-9]',
-    XDIGIT  => '[0-9a-fA-F]',
-    ALNUM   => '[a-zA-Z0-9]',
-    WORD    => '\w',
-
-    SINGLE  => "'",
-    DOUBLE  => '"',
-    LPAREN  => '\(',
-    RPAREN  => '\)',
-    LCURLY  => '\{',
-    RCURLY  => '\}',
-    LSQUARE => '\[',
-    RSQUARE => '\]',
-    LANGLE  => '<',
-    RANGLE  => '>',
-
-    BANG    => '!',
-    AT      => '\@',
-    HASH    => '\#',
-    DOLLAR  => '\$',
-    PERCENT => '%',
-    CARET   => '\^',
-    AMP     => '&',
-    STAR    => '\*',
-
-    TILDE   => '~',
-    GRAVE   => '`',
-    UNDER   => '_',
-    DASH    => '-',
-    PLUS    => '\+',
-    EQUAL   => '=',
-    PIPE    => '\|',
-    BACK    => '\\\\',
-    COLON   => ':',
-    SEMI    => ';',
-    COMMA   => ',',
-    DOT     => '\.',
-    QMARK   => '\?',
-    SLASH   => '/',
-};
-
-sub atoms { return $atoms }
 
 1;
 

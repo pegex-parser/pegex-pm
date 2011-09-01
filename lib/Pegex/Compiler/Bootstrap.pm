@@ -8,6 +8,8 @@
 package Pegex::Compiler::Bootstrap;
 use Pegex::Compiler -base;
 
+use Pegex::Grammar::Atoms;
+
 sub parse {
     my $self = shift;
     $self = $self->new unless ref $self;
@@ -134,7 +136,7 @@ sub compile_rule {
     }
     $node =~ s!^<(.*)>$!$1! or die;
     $object->{'.ref'} = $node;
-    if (defined(my $re = $self->atoms->{$node})) {
+    if (defined(my $re = Pegex::Grammar::Atoms->atoms->{$node})) {
         $self->tree->{$node} ||= {'.rgx' => $re};
     }
 

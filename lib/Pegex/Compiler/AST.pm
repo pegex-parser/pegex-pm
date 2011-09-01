@@ -8,11 +8,11 @@
 package Pegex::Compiler::AST;
 use Pegex::Receiver -base;
 
-use Pegex::Compiler;
+use Pegex::Grammar::Atoms;
 
 has 'name';
 has 'body';
-has 'atoms' => -init => 'Pegex::Compiler->atoms';
+has 'atoms' => -init => 'Pegex::Grammar::Atoms->atoms';
 
 sub __final__ {
     my $self = shift;
