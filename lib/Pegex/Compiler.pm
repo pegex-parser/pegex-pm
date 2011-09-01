@@ -8,8 +8,10 @@
 package Pegex::Compiler;
 use Pegex::Base -base;
  
-# has 'grammar';
-# has 'grammar_file';
+use Pegex::Parser;
+use Pegex::Grammar::Pegex;
+use Pegex::Compiler::AST;
+
 has 'tree';
 
 my $atoms;
@@ -17,38 +19,23 @@ my $atoms;
 sub compile {
     my $self = shift;
     $self = $self->new unless ref $self;
-    my $grammar_text = shift;
 
-    $self->parse($grammar_text);
+    $self->parse(shift);
     $self->combinate;
-#     $self->optimize;
-#     $self->perl;
-    return $self;
-}
 
-sub compile_file {
-    my $self = shift;
-    $self = $self->new unless ref $self;
-    my $file = shift;
-    open IN, $file or die "Can't open '$file'";
-    my $grammar_text = do {local $/; <IN>};
-    close IN;
-    return $self->compile($grammar_text);
+    return $self;
 }
 
 sub parse {
     my $self = shift;
     $self = $self->new unless ref $self;
-    my $grammar_text = shift;
-    $self->tree({});
 
-    require Pegex::Grammar::Pegex;
-    my $grammar = Pegex::Grammar::Pegex->new(
-        receiver => 'Pegex::Compiler::AST',
+    my $parser = Pegex::Parser->new(
+        grammar => Pegex::Grammar::Pegex->new,
+        receiver => Pegex::Compiler::AST->new,
     );
 
-    my $tree = $grammar->parse($grammar_text);
-    $self->tree($tree);
+    $self->tree($parser->parse(@_));
 
     return $self;
 }
@@ -142,7 +129,7 @@ sub to_json {
 
 sub to_perl {
     my $self = shift;
-    $self->perl_regexes($self->tree);
+    $self->perl;
     require Data::Dumper;
     no warnings 'once';
     $Data::Dumper::Terse = 1;
@@ -249,7 +236,7 @@ sub atoms { return $atoms }
     use Pegex::Compiler;
     my $grammar_text = '... grammar text ...';
     my $pegex_compiler = Pegex::Compiler->new();
-    my $grammar_tree = $pegex_compiler->compile($grammar_text);
+    my $grammar_tree = $pegex_compiler->compile($grammar_text)->tree;
 
 =head1 DESCRIPTION
 
@@ -271,21 +258,14 @@ The following public methods are available:
 
 Return a new Pegex::Compiler object.
 
-You can optionally, preset these values:
-
-    grammar => $grammar_text,
-    grammar_file => $grammar_file_path,
-
-=item $grammar_tree = $compiler->compile($grammar_text);
+=item $grammar_tree = $compiler->compile($grammar_input);
 
 Compile a grammar text into a grammar tree that can be used by a
 Pegex::Parser. This method is calls the C<parse> and C<combinate> methods and
 returns the resulting tree.
 
-=item $grammar_tree = $compiler->compile_file($grammar_file_path);
-
-This method calls compile with the grammar string it reads from the file you
-give it. It returns the resulting tree.
+Input can be a string, a string ref, a file path, a file handle, or a
+Pegex::Input object. Return C<$self> so you can chain it to other methods.
 
 =item $compiler->parse($grammar_text)
 
@@ -300,7 +280,7 @@ Before a Pegex grammar tree can be used to parse things, it needs to be
 combinated. This process turns the regex tokens into real regexes. It also
 combines some rules together and eliminates rules that are not needed or have
 been combinated. The result is a Pegex grammar tree that can be used by a
-Pegex Parser.
+Pegex::Parser.
 
 NOTE: While the parse phase of a compile is always the same for various
 programming langugaes, the combinate phase takes into consideration and

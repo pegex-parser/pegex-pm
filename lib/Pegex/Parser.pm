@@ -3,7 +3,7 @@
 # abstract:  Pegex Parser Runtime
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2010, 2011
+# copyright: 2011
 # see:
 # - Pegex::Grammar
 
@@ -18,12 +18,15 @@
 package Pegex::Parser;
 use Pegex::Base -base;
 
-# Parser, receiver and input objects/classes to use.
+use Pegex::Input;
+
+# Parser and receiver objects/classes to use.
 has 'grammar';
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
-has 'input';
 
 # Internal properties.
+has 'input';
+has 'buffer';
 has 'position';
 has 'match_groups';
 
@@ -43,8 +46,12 @@ sub parse {
     die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
         unless 1 <= @_ and @_ <= 2;
 
-    $self->input(shift); # XXX Change to Pegex::Input object
+    my $input =
+        (ref $_[0] and UNIVERSAL::isa($_[0], 'Pegex::Input')) ? $_[0] :
+        Pegex::Input->new->open(shift);
+    $self->input($input);
 
+    $self->buffer($self->input->read);
     $self->position(0);
     $self->match_groups([]);
     my $start_rule = shift || undef;
@@ -65,7 +72,7 @@ sub parse {
         if $self->receiver->can("__begin__");
 
     $self->match($start_rule);
-    if ($self->position < length($self->input)) {
+    if ($self->position < length($self->buffer)) {
         $self->throw_error("Parse document failed for some reason");
     }
 
@@ -73,6 +80,7 @@ sub parse {
         if $self->receiver->can("__final__");
 
     # Parse was successful!
+    $self->input->close;
     return ($self->receiver->can('data') ? $self->receiver->data : 1);
 }
 
@@ -175,13 +183,13 @@ sub match_regexp {
     my $self = shift;
     my $regexp = shift;
 
-    pos($self->{input}) = $self->position;
-    $self->{input} =~ /$regexp/g or return 0;
+    pos($self->{buffer}) = $self->position;
+    $self->{buffer} =~ /$regexp/g or return 0;
     {
         no strict 'refs';
         $self->match_groups([ map ${$_}, 1..$#+ ]);
     }
-    $self->position(pos($self->{input}));
+    $self->position(pos($self->{buffer}));
 
     return 1;
 }
@@ -223,7 +231,7 @@ sub trace {
     $self->{indent}-- unless $indent;
     print ' ' x $self->{indent};
     $self->{indent}++ if $indent;
-    my $snippet = substr($self->input, $self->position);
+    my $snippet = substr($self->buffer, $self->position);
     $snippet = substr($snippet, 0, 30) . "..." if length $snippet > 30;
     $snippet =~ s/\n/\\n/g;
     print sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
@@ -232,9 +240,8 @@ sub trace {
 sub throw_error {
     my $self = shift;
     my $msg = shift;
-#     die $msg;
-    my $line = @{[substr($self->input, 0, $self->position) =~ /(\n)/g]} + 1;
-    my $context = substr($self->input, $self->position, 50);
+    my $line = @{[substr($self->buffer, 0, $self->position) =~ /(\n)/g]} + 1;
+    my $context = substr($self->buffer, $self->position, 50);
     $context =~ s/\n/\\n/g;
     my $position = $self->position;
     die <<"...";

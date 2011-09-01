@@ -7,11 +7,12 @@
 
 package Pegex::Compiler::AST;
 use Pegex::Receiver -base;
+
 use Pegex::Compiler;
 
 has 'name';
 has 'body';
-has 'atoms' => Pegex::Compiler->atoms;
+has 'atoms' => -init => 'Pegex::Compiler->atoms';
 
 sub __final__ {
     my $self = shift;

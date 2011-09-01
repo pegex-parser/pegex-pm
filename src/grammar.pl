@@ -1,7 +1,7 @@
 use lib "$ENV{HOME}/src/pegex-pm/lib";
-use Pegex::Compiler::Bootstrap;
+use Pegex::Compiler;
 
-my $perl = Pegex::Compiler::Bootstrap->compile_file(shift)->to_perl;
+my $perl = Pegex::Compiler->compile_file(shift)->to_perl;
 chomp($perl);
 
 print <<"...";
