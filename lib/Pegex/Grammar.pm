@@ -14,8 +14,7 @@ has 'text' => -init =>
 has 'tree' => -init => '$self->tree_';
 sub tree_ {
     require Pegex::Compiler;
-    # XXX 'perl' should be part of 'compile'
-    Pegex::Compiler->new->compile($_[0]->text)->perl->tree;
+    Pegex::Compiler->compile($_[0]->text)->tree;
 }
 
 # Parser and receiver classes to use.

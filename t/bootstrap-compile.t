@@ -10,7 +10,7 @@ use YAML::XS;
 sub bootstrap_compile {
     my $grammar_text = (shift)->value;
     my $compiler = Pegex::Compiler::Bootstrap->new;
-    my $tree = $compiler->compile($grammar_text)->tree;
+    my $tree = $compiler->compile_raw($grammar_text)->tree;
     delete $tree->{'+top'};
     return $tree;
 }

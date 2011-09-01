@@ -21,6 +21,17 @@ sub compile {
 
     $self->parse(shift);
     $self->combinate;
+    $self->perlify;
+
+    return $self;
+}
+
+sub compile_raw {
+    my $self = shift;
+    $self = $self->new unless ref $self;
+
+    $self->parse(shift);
+    $self->combinate;
 
     return $self;
 }
@@ -113,32 +124,9 @@ sub combinate_re {
 }
 
 #------------------------------------------------------------------------------#
-# Output formatter methods
+# Perlify regexes
 #------------------------------------------------------------------------------#
-sub to_yaml {
-    require YAML::XS;
-    my $self = shift;
-    return YAML::XS::Dump($self->tree);
-}
-
-sub to_json {
-    require JSON::XS;
-    my $self = shift;
-    return JSON::XS->new->utf8->canonical->pretty->encode($self->tree);
-}
-
-sub to_perl {
-    my $self = shift;
-    $self->perl;
-    require Data::Dumper;
-    no warnings 'once';
-    $Data::Dumper::Terse = 1;
-    $Data::Dumper::Indent = 1;
-    $Data::Dumper::Sortkeys = 1;
-    return Data::Dumper::Dumper($self->tree);
-}
-
-sub perl {
+sub perlify {
     my $self = shift;
     $self->perl_regexes($self->tree);
     return $self;
@@ -161,6 +149,31 @@ sub perl_regexes {
     elsif (ref($node) eq 'ARRAY') {
         $self->perl_regexes($_) for @$node;
     }
+}
+
+#------------------------------------------------------------------------------#
+# Serialization formatter methods
+#------------------------------------------------------------------------------#
+sub to_yaml {
+    require YAML::XS;
+    my $self = shift;
+    return YAML::XS::Dump($self->tree);
+}
+
+sub to_json {
+    require JSON::XS;
+    my $self = shift;
+    return JSON::XS->new->utf8->canonical->pretty->encode($self->tree);
+}
+
+sub to_perl {
+    my $self = shift;
+    require Data::Dumper;
+    no warnings 'once';
+    $Data::Dumper::Terse = 1;
+    $Data::Dumper::Indent = 1;
+    $Data::Dumper::Sortkeys = 1;
+    return Data::Dumper::Dumper($self->tree);
 }
 
 1;

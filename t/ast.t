@@ -42,7 +42,7 @@ my $want1 = <<'...';
 use Pegex::Grammar;
 use Pegex::Compiler;
 my $ast1 = Pegex::Grammar->new(
-    tree => Pegex::Compiler->new->compile($grammar1)->perl->tree,
+    tree => Pegex::Compiler->compile($grammar1)->tree,
     receiver => 'Pegex::AST',
 )->parse($text1);
 
