@@ -48,7 +48,7 @@ sub parse {
 
     my $input =
         (ref $_[0] and UNIVERSAL::isa($_[0], 'Pegex::Input')) ? $_[0] :
-        Pegex::Input->new->open(shift);
+        Pegex::Input->new(shift)->open;
     $self->input($input);
 
     $self->buffer($self->input->read);
