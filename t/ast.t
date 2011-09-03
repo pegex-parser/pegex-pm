@@ -26,7 +26,7 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 3;
+Plan = 4;
 
 *grammar.parse(*input).yaml == *ast;
 
@@ -61,3 +61,15 @@ a:
   - xxx
   - zzz
 
+=== Any rule group
+--- grammar
+a: [ <b> | <c> ]
+b: /(bleh)/
+c: /(x*)y*(z*)<EOL>?/
+--- input
+xxxyyyyzzz
+--- ast
+a:
+  c:
+  - xxx
+  - zzz
