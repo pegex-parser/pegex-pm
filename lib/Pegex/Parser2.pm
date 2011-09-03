@@ -98,10 +98,14 @@ sub match_next {
 
     my ($position, $count, $method) =
         ($self->position, 0, "match_$kind");
-    while ($match = $self->$method($rule)) {
+    while (my $return = $self->$method($rule)) {
         $position = $self->position unless $not;
         $count++;
-        last if $times =~ /^[1?]$/;
+        if ($times =~ /^[1?]$/) {
+            $match = $return;
+            last;
+        }
+        push @$match, $return;
     }
     $self->position($position) if $count and $times =~ /^[+*]$/;
     my $result = (($count or $times =~ /^[?*]$/) ? 1 : 0) ^ $not;
@@ -147,8 +151,7 @@ sub match_any {
 }
 
 sub match_rgx {
-    my $self = shift;
-    my $regexp = shift;
+    my ($self, $regexp) = @_;
 
     pos($self->{buffer}) = $self->position;
     $self->{buffer} =~ /$regexp/g or return 0;
@@ -203,12 +206,12 @@ sub trace {
     my $indent = ($action =~ /^try_/) ? 1 : 0;
     $self->{indent} ||= 0;
     $self->{indent}-- unless $indent;
-    print ' ' x $self->{indent};
+    print STDERR ' ' x $self->{indent};
     $self->{indent}++ if $indent;
     my $snippet = substr($self->buffer, $self->position);
     $snippet = substr($snippet, 0, 30) . "..." if length $snippet > 30;
     $snippet =~ s/\n/\\n/g;
-    print sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
+    print STDERR sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
 }
 
 sub throw_error {
