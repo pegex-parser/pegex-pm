@@ -70,12 +70,11 @@ sub match {
     $self->receiver->__begin__()
         if $self->receiver->can("__begin__");
 
-    $self->match_ref($rule);
-    if ($self->position < length($self->buffer)) {
-        $self->throw_error("Parse document failed for some reason");
-    }
+    my $match = $self->match_ref($rule);
+    $self->throw_error("Parse document failed for some reason")
+        if $self->position < length($self->buffer);
 
-    $self->receiver->__final__()
+    $self->receiver->__final__($match)
         if $self->receiver->can("__final__");
 }
 
@@ -89,22 +88,17 @@ sub match_next {
         ($times = $mod);
     }
 
-    my ($rule, $kind);
-    for ((qw(ref rgx all any err))) {
-        if ($rule = $next->{".$_"}) {
-            $kind = $_;
-            last;
-        }
-    }
-    XXX $next unless $kind;
+    my ($rule, $kind) = map {($next->{".$_"}, $_)}
+        grep {$next->{".$_"}} qw(ref rgx all any err)
+            or XXX $next;
 
-    $self->callback("try", $state, $kind)
+    my $match = [];
+    $match = $self->callback("try", $kind, $state, $match)
         if $state and not $not;
 
-    my $position = $self->position;
-    my $count = 0;
-    my $method = "match_$kind";
-    while ($self->$method($rule)) {
+    my ($position, $count, $method) =
+        ($self->position, 0, "match_$kind");
+    while ($match = $self->$method($rule)) {
         $position = $self->position unless $not;
         $count++;
         last if $times =~ /^[1?]$/;
@@ -113,34 +107,41 @@ sub match_next {
     my $result = (($count or $times =~ /^[?*]$/) ? 1 : 0) ^ $not;
     $self->position($position) unless $result;
 
-    $self->callback(($result ? "got" : "not"), $state, $kind)
+    $match = $self->callback(($result ? "got" : "not"), $kind, $state, $match)
         if $state and not $not;
 
-    return $result;
+    return ($result ? $match : 0);
 }
 
 sub match_ref {
     my ($self, $rule) = @_;
     die "\n\n*** No grammar support for '$rule'\n\n"
         unless $self->grammar->tree->{$rule};
-    $self->match_next($self->grammar->tree->{$rule}, $rule);
+    return $self->match_next($self->grammar->tree->{$rule}, $rule);
 }
 
 sub match_all {
-    my $self = shift;
-    my $list = shift;
+    my ($self, $list) = @_;
     my $pos = $self->position;
+    my $set = [];
     for my $elem (@$list) {
-        $self->match_next($elem) or $self->position($pos) and return 0;
+        if (my $match = $self->match_next($elem)) {
+            push @$set, $match;
+        }
+        else {
+            $self->position($pos);
+            return 0;
+        }
     }
-    return 1;
+    return $set;
 }
 
 sub match_any {
-    my $self = shift;
-    my $list = shift;
+    my ($self, $list) = @_;
     for my $elem (@$list) {
-        $self->match_next($elem) and return 1;
+        if (my $match = $self->match_next($elem)) {
+            return $match;
+        }
     }
     return 0;
 }
@@ -151,13 +152,14 @@ sub match_rgx {
 
     pos($self->{buffer}) = $self->position;
     $self->{buffer} =~ /$regexp/g or return 0;
+    my $match;
     {
         no strict 'refs';
-        $self->match_groups([ map $$_, 1..$#+ ]);
+        $match = [ map $$_, 1..$#+ ];
     }
     $self->position(pos($self->{buffer}));
 
-    return 1;
+    return $match;
 }
 
 sub match_err {
@@ -166,8 +168,8 @@ sub match_err {
 }
 
 sub callback {
-    my ($self, $adj, $state) = @_;
-    my $callback = "${adj}_$state";
+    my ($self, $adj, $kind, $rule, $match) = @_;
+    my $callback = "${adj}_$rule";
     my $got = $adj eq 'got';
 
     $self->trace($callback) if $self->debug;
@@ -177,21 +179,22 @@ sub callback {
         $self->receiver->$callback(@{$self->match_groups});
         $done++;
     }
-    $callback = "end_$state";
+    $callback = "end_$rule";
     if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
         $self->receiver->$callback($got, @{$self->match_groups});
         $done++
     }
-    return if $done;
+    return($match || 1) if $done;
 
     $callback = "__${adj}__";
     if ($self->receiver->can($callback)) {
-        $self->receiver->$callback($state, $self->match_groups);
+        $match = $self->receiver->$callback($kind, $rule, $match);
     }
     $callback = "__end__";
     if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $self->receiver->$callback($got, $state, $self->match_groups);
+        $match = $self->receiver->$callback($got, $kind, $rule, $match);
     }
+    return($match || 1);
 }
 
 sub trace {

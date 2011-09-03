@@ -11,6 +11,7 @@ sub parse {
     my $grammar = (shift)->value;
     my $input = (shift)->value;
     my $pegex = pegex($grammar);
+#     XXX $pegex->tree;
     $pegex->parser('Pegex::Parser2');
     return $pegex->parse($input);
 }
@@ -18,14 +19,14 @@ sub parse {
 sub yaml {
     my $data = (shift)->value;
     my $yaml = YAML::XS::Dump($data);
-    $yaml =~ s/^---\s//;
+    $yaml =~ s/^---\s+//;
     return $yaml;
 }
 
 __DATA__
 %TestML 1.0
 
-Plan = 1;
+Plan = 3;
 
 *grammar.parse(*input).yaml == *ast;
 
@@ -34,8 +35,29 @@ Plan = 1;
 a: /x*(y*)z*<EOL>/
 --- input
 xxxyyyyzzz
---- astxxx
-a: yyyy
 --- ast
-{}
+a: yyyy
+
+=== A subrule
+--- grammar
+a: <b> /(y+)/ <EOL>
+b: /(x+)/
+--- input
+xxxyyyy
+--- ast
+a:
+- b: xxx
+- yyyy
+
+=== Multi match regex in subrule
+--- grammar
+a: <b>
+b: /(x*)y*(z*)<EOL>/
+--- input
+xxxyyyyzzz
+--- ast
+a:
+  b:
+  - xxx
+  - zzz
 

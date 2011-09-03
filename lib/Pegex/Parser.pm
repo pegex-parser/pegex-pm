@@ -89,14 +89,9 @@ sub match_next {
         ($times = $mod);
     }
 
-    my ($rule, $kind);
-    for ((qw(ref rgx all any err))) {
-        if ($rule = $next->{".$_"}) {
-            $kind = $_;
-            last;
-        }
-    }
-    XXX $next unless $kind;
+    my ($rule, $kind) = map {($next->{".$_"}, $_)}
+        grep {$next->{".$_"}} qw(ref rgx all any err)
+            or XXX $next;
 
     $self->callback("try", $state, $kind)
         if $state and not $not;
