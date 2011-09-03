@@ -13,6 +13,7 @@ sub parse {
     my $pegex = pegex($grammar);
 #     XXX $pegex->tree;
     $pegex->parser('Pegex::Parser2');
+    $pegex->receiver('Pegex::AST2');
     return $pegex->parse($input);
 }
 
