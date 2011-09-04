@@ -30,6 +30,8 @@ sub debug_ {
     0;
 }
 
+my $ignore = bless {}, 'IGNORE ME';
+
 sub parse {
     my $self = shift;
     $self = $self->new unless ref $self;
@@ -95,6 +97,7 @@ sub match_next {
     my $match = [];
     $match = $self->callback("try", $kind, $state, $match)
         if $state and not $not;
+    $match ||= $ignore;
 
     my ($position, $count, $method) =
         ($self->position, 0, "match_$kind");
@@ -105,7 +108,7 @@ sub match_next {
             $match = $return;
             last;
         }
-        push @$match, $return;
+        push @$match, $return unless $return eq $ignore;
     }
     $self->position($position) if $count and $times =~ /^[+*]$/;
     my $result = (($count or $times =~ /^[?*]$/) ? 1 : 0) ^ $not;
@@ -113,6 +116,7 @@ sub match_next {
 
     $match = $self->callback(($result ? "got" : "not"), $kind, $state, $match)
         if $state and not $not;
+    $match ||= $ignore;
 
     return ($result ? $match : 0);
 }
@@ -130,7 +134,7 @@ sub match_all {
     my $set = [];
     for my $elem (@$list) {
         if (my $match = $self->match_next($elem)) {
-            push @$set, $match;
+            push @$set, $match unless $match eq $ignore;
         }
         else {
             $self->position($pos);
@@ -187,7 +191,7 @@ sub callback {
         $self->receiver->$callback($got, @{$self->match_groups});
         $done++
     }
-    return($match || 1) if $done;
+    return $match if $done;
 
     $callback = "__${adj}__";
     if ($self->receiver->can($callback)) {
@@ -197,7 +201,7 @@ sub callback {
     if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
         $match = $self->receiver->$callback($got, $kind, $rule, $match);
     }
-    return($match || 1);
+    return $match;
 }
 
 sub trace {

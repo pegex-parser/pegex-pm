@@ -27,7 +27,7 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 5;
+Plan = 6;
 
 *grammar.parse(*input).yaml == *ast;
 
@@ -88,3 +88,14 @@ a:
   - c: yy
 - - b: x
   - c: y
+
+=== Empty regex group plus rule
+--- grammar
+a: <b>* <c> <EOL>
+b: /xxx/
+c: /(yyy)/
+--- input
+xxxyyy
+--- ast
+a:
+  c: yyy

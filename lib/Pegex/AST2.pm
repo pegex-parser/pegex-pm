@@ -21,22 +21,19 @@ sub __got__ {
     elsif ($ref eq 'ARRAY') {
         my $size = @$match;
         if ($kind eq 'rgx') {
-            return [] if $size == 0;
+            return if $size == 0;
             $match = $match->[0] if $size == 1;
             return +{ $rule => $match };
         }
         if ($kind =~ /^(?:all|any)$/) {
-#             WWW $match;
-#             die if $main::x++ > 3;
-            my $value = [
-                map {
-                    (ref($_) eq 'ARRAY') ? (
-                        (not @$_) ? () :
-                        (@$_ == 1) ? $_->[0] : $_
-                    ) : $_
-                } @$match
-            ];
-            $value = $value->[0] if @$value == 1;
+            my @value = map {
+                (ref($_) eq 'ARRAY') ? (
+                    (not @$_) ? () :
+                    (@$_ == 1) ? $_->[0] : $_
+                ) : $_
+            } @$match;
+            return unless @value;
+            my $value = (@value == 1) ? $value[0] : \@value;
             return +{ $rule => $value };
         }
         else {
