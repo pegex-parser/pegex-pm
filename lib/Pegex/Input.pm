@@ -88,7 +88,7 @@ sub _guess_input {
             ? 'stringref'
             : 'handle'
         : (length($_[1]) and ($_[1] !~ /\n/) and -f $_[1])
-            ?'file'
+            ? 'file'
             : 'string';
 }
 

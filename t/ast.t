@@ -56,7 +56,7 @@ a: /x*y*z*<EOL>/
 --- input
 xxxyyyyzzz
 --- ast
-[]
+{}
 
 === A subrule
 --- grammar
@@ -135,10 +135,9 @@ grammar: [ <comment>* <rule_definition> ]+ <comment>*
 rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
 --- ast
 grammar:
-- - []
-  - rule_definition:
-    - rule_name: grammar
-    - rule_line: '[ <comment>* <rule_definition> ]+ <comment>*'
+- rule_definition:
+  - rule_name: grammar
+  - rule_line: '[ <comment>* <rule_definition> ]+ <comment>*'
 - rule_definition:
   - rule_name: rule_definition
   - rule_line: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>

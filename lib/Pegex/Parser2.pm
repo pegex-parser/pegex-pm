@@ -12,6 +12,8 @@ use Pegex::Base -base;
 
 use Pegex::Input;
 
+use Scalar::Util;
+
 # Parser and receiver objects/classes to use.
 has 'grammar';
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
@@ -60,6 +62,9 @@ sub parse {
         eval "require $receiver";
         $self->receiver($receiver->new);
     }
+    # Add circular ref and weaken it.
+    $self->receiver->parser($self);
+    Scalar::Util::weaken($self->receiver->{parser});
 
     $self->match($start_rule) or return;
 
@@ -98,13 +103,10 @@ sub match_next {
         grep {$next->{".$_"}} qw(ref rgx all any err)
             or XXX $next;
 
-    my $match = [];
-    $match = $self->callback("try", $kind, $state, $match)
-        if $state and not $not;
-    $match ||= $ignore;
+    $self->callback("try", $state) if $state and not($has or $not);
 
-    my ($position, $count, $method) =
-        ($self->position, 0, "match_$kind");
+    my ($match, $position, $count, $method) =
+        ([], $self->position, 0, "match_$kind");
     while (my $return = $self->$method($rule)) {
         $position = $self->position unless $not;
         $count++;
@@ -114,13 +116,12 @@ sub match_next {
         }
         push @$match, $return unless $return eq $ignore;
     }
-    $match = $ignore unless $count;
     $self->position($position) if $count and $times =~ /^[+*]$/;
     my $result = (($count or $times =~ /^[?*]$/) ? 1 : 0) ^ $not;
     $self->position($position) unless $result;
 
-    $match = $self->callback(($result ? "got" : "not"), $kind, $state, $match)
-        if $state and not $not;
+    $match = $self->callback(($result ? "got" : "not"), $state, $match)
+        if $state and not($has or $not);
     $match ||= $ignore;
 
     return ($result ? $match : 0);
@@ -146,7 +147,6 @@ sub match_all {
             return 0;
         }
     }
-    $set = @$set ? (@$set == 1) ? $set->[0] : $set : $ignore;
     return $set;
 }
 
@@ -163,15 +163,12 @@ sub match_any {
 sub match_rgx {
     my ($self, $regexp) = @_;
 
-    pos($self->{buffer}) = $self->position;
+    my $start = pos($self->{buffer}) = $self->position;
     $self->{buffer} =~ /$regexp/g or return 0;
-    my $match;
-    {
-        no strict 'refs';
-        $match = [ map $$_, 1..$#+ ];
-    }
-    $self->position(pos($self->{buffer}));
-    $match = $ignore unless @$match;
+    my $finish = pos($self->{buffer});
+    no strict 'refs';
+    my $match = [ $start, $finish, map $$_, 1..$#+ ];
+    $self->position($finish);
 
     return $match;
 }
@@ -182,32 +179,14 @@ sub match_err {
 }
 
 sub callback {
-    my ($self, $adj, $kind, $rule, $match) = @_;
+    my ($self, $adj, $rule, $match) = @_;
     my $callback = "${adj}_$rule";
-    my $got = $adj eq 'got';
-
     $self->trace($callback) if $self->debug;
-
-    my $done = 0;
-    if ($self->receiver->can($callback)) {
-        $self->receiver->$callback(@{$self->match_groups});
-        $done++;
-    }
-    $callback = "end_$rule";
-    if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $self->receiver->$callback($got, @{$self->match_groups});
-        $done++
-    }
-    return $match if $done;
-
-    $callback = "__${adj}__";
-    if ($self->receiver->can($callback)) {
-        $match = $self->receiver->$callback($kind, $rule, $match);
-    }
-    $callback = "__end__";
-    if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $match = $self->receiver->$callback($got, $kind, $rule, $match);
-    }
+    return unless $adj eq 'got';
+    $match = $self->receiver->got($rule, $match)
+        if $self->receiver->can("got");
+    $match = $self->receiver->$callback($match)
+        if $self->receiver->can($callback);
     return $match;
 }
 
