@@ -27,17 +27,36 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 6;
+Plan = 9;
 
 *grammar.parse(*input).yaml == *ast;
 
-=== Single Regex
+=== Single Regex - Single Capture
 --- grammar
 a: /x*(y*)z*<EOL>/
 --- input
 xxxyyyyzzz
 --- ast
 a: yyyy
+
+=== Single Regex - Multi Capture
+--- grammar
+a: /(x*)(y*)(z*)<EOL>/
+--- input
+xxxyyyyzzz
+--- ast
+a:
+- xxx
+- yyyy
+- zzz
+
+=== Single Regex - No Capture
+--- grammar
+a: /x*y*z*<EOL>/
+--- input
+xxxyyyyzzz
+--- ast
+[]
 
 === A subrule
 --- grammar
@@ -99,3 +118,27 @@ xxxyyy
 --- ast
 a:
   c: yyy
+
+=== Part of Pegex Grammar
+--- grammar
+\# This is the Pegex grammar for Pegex grammars!
+grammar: [ <comment>* <rule_definition> ]+ <comment>*
+rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
+rule_name: /(<ALPHA><WORD>*)/
+comment: /<HASH><line><EOL>/
+line: /<ANY>*/
+rule_line: /(<line>)<EOL>/
+
+--- input
+\# This is the Pegex grammar for Pegex grammars!
+grammar: [ <comment>* <rule_definition> ]+ <comment>*
+rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
+--- ast
+grammar:
+- - []
+  - rule_definition:
+    - rule_name: grammar
+    - rule_line: '[ <comment>* <rule_definition> ]+ <comment>*'
+- rule_definition:
+  - rule_name: rule_definition
+  - rule_line: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>

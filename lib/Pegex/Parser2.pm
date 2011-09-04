@@ -30,7 +30,7 @@ sub debug_ {
     0;
 }
 
-my $ignore = bless {}, 'IGNORE ME';
+my $ignore = bless [], 'IGNORE ME';
 
 sub parse {
     my $self = shift;
@@ -110,6 +110,7 @@ sub match_next {
         }
         push @$match, $return unless $return eq $ignore;
     }
+    $match = $ignore unless $count;
     $self->position($position) if $count and $times =~ /^[+*]$/;
     my $result = (($count or $times =~ /^[?*]$/) ? 1 : 0) ^ $not;
     $self->position($position) unless $result;
@@ -141,6 +142,7 @@ sub match_all {
             return 0;
         }
     }
+    $set = @$set ? (@$set == 1) ? $set->[0] : $set : $ignore;
     return $set;
 }
 
@@ -165,6 +167,7 @@ sub match_rgx {
         $match = [ map $$_, 1..$#+ ];
     }
     $self->position(pos($self->{buffer}));
+    $match = $ignore unless @$match;
 
     return $match;
 }

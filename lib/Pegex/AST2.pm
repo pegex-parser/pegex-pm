@@ -40,6 +40,9 @@ sub __got__ {
             die "kind '$kind' not supported";
         }
     }
+    elsif ($ref eq 'IGNORE ME') {
+        return;
+    }
     else {
         XXX $match;
     }
@@ -48,6 +51,7 @@ sub __got__ {
 sub __final__ {
     my $self = shift;
     my $match = shift;
+    $match = [] if ref($match) eq 'IGNORE ME';
     $self->data($match);
 }
 
