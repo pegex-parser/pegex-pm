@@ -1,7 +1,12 @@
 # BEGIN { $TestML::Test::Differences = 1 }
 # BEGIN { $Pegex::Parser::Debug = 1 }
 
-use Test::More tests => 1;
+use Test::More;
+
+plan skip_all => 'not ready yet';
+
+plan tests => 1;
+
 
 use Pegex::Grammar;
 use XXX -with => 'YAML::XS';

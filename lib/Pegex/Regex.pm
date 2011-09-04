@@ -12,36 +12,30 @@ package Pegex::Regex;
 use Pegex::Base -base;
 
 use Pegex::Grammar;
+use Pegex::Parser2;
 
-my @grammars;
+my @parsers;
+my $PASS = '';
+my $FAIL = '(*FAIL)';
 
-#     $Pegex::Parser::Debug = 1;
 sub generate_regex {
-    use re 'eval';
-#     use re 'debug';
-    push @grammars, Pegex::Grammar->new(
-        text => shift,
-        parser => 'Pegex::Parser2',
+    push @parsers, Pegex::Parser2->new(
+        grammar => Pegex::Grammar->new( text => shift ),
         receiver => 'Pegex::AST2',
+        error => 'live',
     );
-    my $index = $#grammars;
+    my $index = $#parsers;
     my $regex = "(??{Pegex::Regex::parse($index, \$_)})";
-    my $re = qr{$regex};
-    return $re;
+    use re 'eval';
+    return qr{$regex};
 }
 
 sub parse {
     my ($index, $input) = @_;
-
-    my $grammar = $grammars[$index];
-    eval { $grammar->tree };
-    die "Pegex::Regex failed to compile:\n$@" if $@;
-
     undef %/;
-    my $ast = eval { $grammar->parse($input) }
-        or return 'XXX';
-    %/ = %$ast;
-    return '';
+    my $ast = $parsers[$index]->parse($input) or return $FAIL;
+    %/ = %$ast if ref($ast) eq 'HASH';
+    return $PASS;
 };
 
 # The following code was mutated from Damian Conway's Regexp::Grammars
@@ -99,8 +93,8 @@ You put a grammar into a C<qr{...}x> and apply it the input string you want to
 parse. If the parse is successful, you get a data structure of the content in
 C<%/>.
 
-IMHO, conflating parsing with regular expression syntax is not the clearest
-way to code. But, of course, TMTOWTDI. :)
+IMHO, building a recursive decscent parser entirely inside of a regular
+expression, is not the clearest way to code. But, of course, TMTOWTDI. :)
 
 =head1 TMTOWTDI
 
@@ -125,20 +119,30 @@ And the more explicit Pegex solution:
     my $data = $grammar->parse($input);
     print $data->{foo};
 
-And more explicit yet:
+And even more explicit yet:
 
+    use Pegex::Parser;
     use Pegex::Grammar;
     use Pegex::Compiler;
     use Pegex::AST;
-    my $grammar = Pegex::Grammar->new(
-        tree => Pegex::Compile->compile('path/to/grammar_file.pgx')->tree,
+    use Pegex::Input;
+    my $parser = Pegex::Grammar->new(
+        grammar => Pegex::Grammar->new(
+            tree => Pegex::Compile->compile(
+                Pegex::Input->new(
+                    file => 'path/to/grammar_file.pgx',
+                )
+            )->tree,
+        ),
         receiver => 'Pegex::AST',
     );
-    $grammar->parse($input);
-    print $grammar->receiver->data->{foo};
+    $parser->parse(Pegex::Input->new(string => $input));
+    print $parser->receiver->data->{foo};
 
-There are even more variations and places to use more exacting subclasses and
-options. Pegex::Regex is just a gateway drug. :)
+In the last example there are 5 components/classes, all of which you can
+subclass to make your perfect parser.
+
+Pegex::Regex is just a gateway drug. :)
 
 =head1 INPUT OPTIONS
 
@@ -152,3 +156,16 @@ There are different ways to input a grammar into a Pegex::Regex:
 
 Make sure to use the C<x> modifier if you are specifying the grammar as a
 literal string or in a variable.
+
+=head WARNING
+
+This gateway drug, er, module, technically should not even work.
+
+It turns your "grammar inside a regexp" into a Pegex::Grammar using qr{}
+overloading, and then turns your regexp itself into a shim that calls the
+parse method for you. This is highly magical and technically makes a reentrant
+call to the regex engine, which is not supported yet.  Use at your own risk.
+
+Better yet, do yourself a favor and learn how to use the Pegex toolset without
+this ::Regex sugar.  C<:-)>
+

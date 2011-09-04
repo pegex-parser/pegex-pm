@@ -21,9 +21,11 @@ has 'input';
 has 'buffer';
 has 'position' => 0;
 has 'match_groups' => [];
+has 'error' => 'die';
 
 # Debug the parsing of input.
 has 'debug' => -init => '$self->debug_';
+
 sub debug_ {
     exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
     defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
@@ -59,7 +61,7 @@ sub parse {
         $self->receiver($receiver->new);
     }
 
-    $self->match($start_rule);
+    $self->match($start_rule) or return;
 
     # Parse was successful!
     $self->input->close;
@@ -73,8 +75,10 @@ sub match {
         if $self->receiver->can("__begin__");
 
     my $match = $self->match_ref($rule);
-    $self->throw_error("Parse document failed for some reason")
-        if $self->position < length($self->buffer);
+    if ($self->position < length($self->buffer)) {
+        $self->throw_error("Parse document failed for some reason");
+        return;  # If $self->error eq 'live'
+    }
 
     $self->receiver->__final__($match)
         if $self->receiver->can("__final__");
@@ -228,13 +232,24 @@ sub throw_error {
     my $context = substr($self->buffer, $self->position, 50);
     $context =~ s/\n/\\n/g;
     my $position = $self->position;
-    die <<"...";
+    my $error = <<"...";
 Error parsing Pegex document:
   msg: $msg
   line: $line
   context: "$context"
   position: $position
 ...
+    if ($self->error eq 'die') {
+        require Carp;
+        Carp::croak($error);
+    }
+    elsif ($self->error eq 'live') {
+        $@ = $error;
+        return;
+    }
+    else {
+        die "Invalid value for Pegex::Parser::error";
+    }
 }
 
 1;
