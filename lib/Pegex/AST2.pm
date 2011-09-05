@@ -8,7 +8,6 @@
 package Pegex::AST2;
 use Pegex::Receiver -base;
 
-has 'parser';
 has regex_map => {};
 has add_full_regex_match => 0;
 has keep_positions => 0;

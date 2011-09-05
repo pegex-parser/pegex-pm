@@ -70,7 +70,7 @@ has 'debug' => -init => '$self->debug_';
 
 sub debug_ {
     exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
-    defined($Pegex::Grammar::Debug) ? $Pegex::Grammar::Debug :
+    defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
     0;
 }
 

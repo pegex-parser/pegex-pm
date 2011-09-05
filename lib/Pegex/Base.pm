@@ -9,6 +9,8 @@ use warnings;
 
 our $VERSION = '0.16';
 
+use constant XXX_skip => 1;
+
 sub import {
     my ($class, $flag) = @_;
     my ($package, $module) = caller(0);
