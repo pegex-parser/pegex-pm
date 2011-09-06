@@ -1,4 +1,4 @@
-BEGIN { $TestML::Test::Differences = 1 }
+# BEGIN { $TestML::Test::Differences = 1 }
 # BEGIN { $Pegex::Parser::Debug = 1 }
 
 use TestML -run,
