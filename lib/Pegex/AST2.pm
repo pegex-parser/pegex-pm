@@ -8,11 +8,16 @@
 package Pegex::AST2;
 use Pegex::Receiver -base;
 
-has add_full_regex_match => 0;
-has keep_positions => 0;
-has keep_empty_regex => 0;
-has keep_empty_list => 0;
-has keep_single_list => 0;
+# XXX Add these options.
+# has add_full_regex_match => 0;
+# has keep_positions => 0;
+# has keep_empty_regex => 0;
+# has keep_empty_list => 0;
+# has keep_single_list => 0;
+
+sub got {
+    return +{ $_[1] => $_[2] };
+}
 
 sub final {
     my ($self, $match, $top) = @_;
@@ -21,13 +26,6 @@ sub final {
         : $match;
     $self->data($final);
     return $final;
-}
-
-sub got {
-    my ($self, $rule, $match) = @_;
-    return +{
-        $rule => $match,
-    };
 }
 
 1;

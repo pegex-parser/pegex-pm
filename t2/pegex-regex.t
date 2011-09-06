@@ -3,7 +3,7 @@ use Test::More tests => 2;
 use Pegex::Regex;
 
 if ("xxxyyy" =~ qr{a: <b> <c>; b: /xxx/; c: /(yyy)/}) {
-    is $/{a}{c}, 'yyy', 'Pegex::Regex works';
+    is ref(\%/), 'HASH', 'Pegex::Regex works';
 }
 else {
     diag $@;

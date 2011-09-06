@@ -11,9 +11,9 @@ use Pegex::AST2 -base;
 use Pegex::Grammar::Atoms;
 
 has 'top';
-# has 'atoms' => -init => 'Pegex::Grammar::Atoms->atoms';
+has 'extra_rules' => {};
 
-
+# Uncomment this to debug. See entire raw AST.
 # sub final {
 #     my ($self, $match) = @_;
 #     XXX $match;
@@ -24,7 +24,10 @@ has 'top';
 
 sub got_grammar {
     my ($self, $match) = @_;
-    my $grammar = { '+top' => $self->top };
+    my $grammar = {
+        '+top' => $self->top,
+        %{$self->extra_rules},
+    };
     my $rules = $match->{grammar}[0];
     for (@$rules) {
         $_ = $_->[1];
@@ -90,6 +93,9 @@ sub got_rule_reference {
     my ($assertion, $ref, $quantifier) =
         @{$match->{rule_reference}}{qw(1 2 3)};
     my $node = +{ '.ref' => $ref };
+    if (my $regex = Pegex::Grammar::Atoms->atoms->{$ref}) {
+        $self->extra_rules->{$ref} = +{ '.rgx' => $regex };
+    }
     if (my $mod = $assertion || $quantifier) {
         $node->{'+mod'} = $mod;
     }

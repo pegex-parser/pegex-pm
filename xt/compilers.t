@@ -1,17 +1,17 @@
-# BEGIN { $TestML::Test::Differences = 1 }
+BEGIN { $TestML::Test::Differences = 1 }
 # BEGIN { $Pegex::Parser::Debug = 1 }
 
 use TestML -run,
     -require_or_skip => 'YAML::XS';
 
-use Pegex::Compiler;
+use Pegex::Compiler2;
 use Pegex::Compiler::Bootstrap;
 use IO::All;
 use YAML::XS;
 
 sub pegex_compile {
     my $grammar_text = io((shift)->value)->all;
-    Pegex::Compiler->new->parse($grammar_text)->tree;
+    Pegex::Compiler2->new->parse($grammar_text)->tree;
 }
 
 sub bootstrap_compile {
