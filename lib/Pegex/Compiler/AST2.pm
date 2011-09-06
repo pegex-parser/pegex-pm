@@ -25,9 +25,9 @@ has 'top';
 sub got_grammar {
     my ($self, $match) = @_;
     my $grammar = { '+top' => $self->top };
-    my $rules = $match->{grammar}[0][0];
-    shift @$rules;
+    my $rules = $match->{grammar}[0];
     for (@$rules) {
+        $_ = $_->[1];
         my ($key, $value) = %$_;
         $grammar->{$key} = $value;
     }
@@ -44,7 +44,11 @@ sub got_rule_definition {
 
 sub got_bracketed_group {
     my ($self, $match) = @_;
-    return $match->{bracketed_group}[1]{rule_group};
+    my $group = $match->{bracketed_group}[1]{rule_group};
+    if (my $mod = $match->{bracketed_group}[2]{1}) {
+        $group->{'+mod'} = $mod;
+    }
+    return $group;
 }
 
 sub got_all_group {

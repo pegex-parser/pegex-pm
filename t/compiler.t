@@ -42,14 +42,14 @@ test = (grammar) {
     grammar.pegex_compile.yaml
       == grammar.bootstrap_compile.yaml;
 
-#     Label = '$BlockLabel - Does the compressed grammar compile the same?';
-#     grammar.compress.pegex_compile.yaml
-#       == grammar.compress.bootstrap_compile.yaml;
-# 
-#     Label =
-#         '$BlockLabel - Does the compressed grammar match the uncompressed?';
-#     grammar.compress.pegex_compile.yaml
-#       == grammar.pegex_compile.yaml;
+    Label = '$BlockLabel - Does the compressed grammar compile the same?';
+    grammar.compress.pegex_compile.yaml
+      == grammar.compress.bootstrap_compile.yaml;
+
+    Label =
+        '$BlockLabel - Does the compressed grammar match the uncompressed?';
+    grammar.compress.pegex_compile.yaml
+      == grammar.pegex_compile.yaml;
 };
 
 test(*grammar);
@@ -84,7 +84,6 @@ a: [ <b> /c/ ]
 a: [ <b> | /c/ | `d` ]
 
 === Bracketed Group in Unbracketed Group
---- LAST
 --- grammar
 a: <b> [ <c> | <d> ]
 
