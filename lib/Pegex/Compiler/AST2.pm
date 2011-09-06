@@ -13,11 +13,21 @@ use Pegex::Grammar::Atoms;
 has 'top';
 # has 'atoms' => -init => 'Pegex::Grammar::Atoms->atoms';
 
+
+# sub final {
+#     my ($self, $match) = @_;
+#     XXX $match;
+# }
+# 
+# __END__
+
+
 sub got_grammar {
     my ($self, $match) = @_;
     my $grammar = { '+top' => $self->top };
-    my $list = $match->{grammar} or XXX $match;
-    for (@$list) {
+    my $rules = $match->{grammar}[0][0];
+    shift @$rules;
+    for (@$rules) {
         my ($key, $value) = %$_;
         $grammar->{$key} = $value;
     }
@@ -26,34 +36,55 @@ sub got_grammar {
 
 sub got_rule_definition {
     my ($self, $match) = @_;
-    WWW $match;
-    my $name = $match->{rule_definition}[0]{rule_name} or XXX $match;
-    my $group = $match->{rule_definition}[1]{rule_group} or XXX $match;
-#     XXX $group if $name eq 'document';
-    $self->top($name) unless $self->top;
-    return +{ $name => $group };
+    my $name = $match->{rule_definition}[1]{rule_name}{1};
+    $self->{top} ||= $name;
+    my $value = $match->{rule_definition}[3]{rule_group};
+    return +{ $name => $value };
 }
 
-# sub got_all_group {
-#     my ($self, $match) = @_;
-#     WWW $match;
-#     my ($group) = values %$match;
-#     return $group unless ref($group) eq 'ARRAY';
-#     my $list = [ map { ref eq 'ARRAY' ? @$_ : $_ } @$group ];
-#     my $return = { '.all' => $list };
-#     return $return;
-# }
+sub got_bracketed_group {
+    my ($self, $match) = @_;
+    return $match->{bracketed_group}[1]{rule_group};
+}
+
+sub got_all_group {
+    my ($self, $match) = @_;
+    my $list = $self->get_group($match->{all_group});
+    die unless @$list;
+    return $list->[0] if @$list == 1;
+    return { '.all' => $list };
+}
 
 sub got_any_group {
     my ($self, $match) = @_;
-    my ($group) = values %$match;
-    return +{ '.any' => $group };
+    my $list = $self->get_group($match->{any_group});
+    die unless @$list;
+    return $list->[0] if @$list == 1;
+    return { '.any' => $list };
+}
+
+sub get_group {
+    my ($self, $group) = @_;
+    sub get {
+        my $it = shift;
+        my $ref = ref($it) or return;
+        if ($ref eq 'HASH') {
+            return($it->{rule_item} || ());
+        }
+        elsif ($ref eq 'ARRAY') {
+            return map get($_), @$it;
+        }
+        else {
+            die;
+        }
+    };
+    return [ get($group) ];
 }
 
 sub got_rule_reference {
     my ($self, $match) = @_;
-    my ($list) = values %$match;
-    my ($assertion, $ref, $quantifier) = @$list;
+    my ($assertion, $ref, $quantifier) =
+        @{$match->{rule_reference}}{qw(1 2 3)};
     my $node = +{ '.ref' => $ref };
     if (my $mod = $assertion || $quantifier) {
         $node->{'+mod'} = $mod;
@@ -63,20 +94,13 @@ sub got_rule_reference {
 
 sub got_regular_expression {
     my ($self, $match) = @_;
-    my ($re) = values %$match;
-    return +{ '.re' => $re };
+    my ($regex) = values %$match;
+    return +{ '.rgx' => $regex->{1} };
 }
 
 sub got_error_message {
     my ($self, $match) = @_;
-    my ($error) = values %$match;
-    return +{ '.err' => $error };
-}
-
-sub got_rule_item {
-    my ($self, $match) = @_;
-    my ($item) = values %$match;
-    return $item;
+    return +{ '.err' => $match->{error_message}{1} };
 }
 
 1;

@@ -4,7 +4,7 @@
 use TestML -run,
     -require_or_skip => 'YAML::XS';
 
-use Pegex::Compiler;
+use Pegex::Compiler2;
 use Pegex::Compiler::Bootstrap;
 use YAML::XS;
 
@@ -12,7 +12,7 @@ use YAML::XS;
 
 sub pegex_compile {
     my $grammar_text = (shift)->value;
-    Pegex::Compiler->new->parse($grammar_text)->tree;
+    Pegex::Compiler2->new->parse($grammar_text)->tree;
 }
 
 sub bootstrap_compile {
@@ -42,14 +42,14 @@ test = (grammar) {
     grammar.pegex_compile.yaml
       == grammar.bootstrap_compile.yaml;
 
-    Label = '$BlockLabel - Does the compressed grammar compile the same?';
-    grammar.compress.pegex_compile.yaml
-      == grammar.compress.bootstrap_compile.yaml;
-
-    Label =
-        '$BlockLabel - Does the compressed grammar match the uncompressed?';
-    grammar.compress.pegex_compile.yaml
-      == grammar.pegex_compile.yaml;
+#     Label = '$BlockLabel - Does the compressed grammar compile the same?';
+#     grammar.compress.pegex_compile.yaml
+#       == grammar.compress.bootstrap_compile.yaml;
+# 
+#     Label =
+#         '$BlockLabel - Does the compressed grammar match the uncompressed?';
+#     grammar.compress.pegex_compile.yaml
+#       == grammar.pegex_compile.yaml;
 };
 
 test(*grammar);
@@ -84,6 +84,7 @@ a: [ <b> /c/ ]
 a: [ <b> | /c/ | `d` ]
 
 === Bracketed Group in Unbracketed Group
+--- LAST
 --- grammar
 a: <b> [ <c> | <d> ]
 
