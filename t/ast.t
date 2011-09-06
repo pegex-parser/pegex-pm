@@ -11,7 +11,7 @@ sub parse {
     my $grammar = (shift)->value;
     my $input = (shift)->value;
     my $pegex = pegex($grammar);
-#     XXX $pegex->tree;
+    $pegex->tree;
     $pegex->parser('Pegex::Parser2');
     $pegex->receiver('Pegex::AST2');
     return $pegex->parse($input);
@@ -21,6 +21,7 @@ sub yaml {
     my $data = (shift)->value;
     my $yaml = YAML::XS::Dump($data);
     $yaml =~ s/^---\s+//;
+    $yaml =~ s/'(\d+)':/$1:/g;
     return $yaml;
 }
 
@@ -37,7 +38,8 @@ a: /x*(y*)z*<EOL>/
 --- input
 xxxyyyyzzz
 --- ast
-a: yyyy
+a:
+  1: yyyy
 
 === Single Regex - Multi Capture
 --- grammar
@@ -46,9 +48,9 @@ a: /(x*)(y*)(z*)<EOL>/
 xxxyyyyzzz
 --- ast
 a:
-- xxx
-- yyyy
-- zzz
+  1: xxx
+  2: yyyy
+  3: zzz
 
 === Single Regex - No Capture
 --- grammar
@@ -56,7 +58,7 @@ a: /x*y*z*<EOL>/
 --- input
 xxxyyyyzzz
 --- ast
-{}
+a: {}
 
 === A subrule
 --- grammar
@@ -66,8 +68,10 @@ b: /(x+)/
 xxxyyyy
 --- ast
 a:
-- b: xxx
-- yyyy
+- b:
+    1: xxx
+- 1: yyyy
+- EOL: {}
 
 === Multi match regex in subrule
 --- grammar
@@ -78,8 +82,8 @@ xxxyyyyzzz
 --- ast
 a:
   b:
-  - xxx
-  - zzz
+    1: xxx
+    2: zzz
 
 === Any rule group
 --- grammar
@@ -91,8 +95,8 @@ xxxyyyyzzz
 --- ast
 a:
   c:
-  - xxx
-  - zzz
+    1: xxx
+    2: zzz
 
 === + Modifier
 --- grammar
@@ -103,10 +107,15 @@ c: /(y+)/
 xxyyxy
 --- ast
 a:
-- - b: xx
-  - c: yy
-- - b: x
-  - c: y
+- - - b:
+        1: xx
+    - c:
+        1: yy
+  - - b:
+        1: x
+    - c:
+        1: y
+- EOL: {}
 
 === Empty regex group plus rule
 --- grammar
@@ -117,7 +126,11 @@ c: /(yyy)/
 xxxyyy
 --- ast
 a:
-  c: yyy
+- - b: {}
+- c:
+    1: yyy
+- EOL: {}
+
 
 === Part of Pegex Grammar
 --- grammar
@@ -135,14 +148,27 @@ grammar: [ <comment>* <rule_definition> ]+ <comment>*
 rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
 --- ast
 grammar:
-- rule_definition:
-  - rule_name: grammar
-  - rule_line: '[ <comment>* <rule_definition> ]+ <comment>*'
-- rule_definition:
-  - rule_name: rule_definition
-  - rule_line: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
+- - - - comment: {}
+    - rule_definition:
+      - {}
+      - rule_name:
+          1: grammar
+      - {}
+      - rule_line:
+          1: '[ <comment>* <rule_definition> ]+ <comment>*'
+  - - []
+    - rule_definition:
+      - {}
+      - rule_name:
+          1: rule_definition
+      - {}
+      - rule_line:
+          1: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
+- []
+
 
 === Rule to Rule to Rule
+--- LAST
 --- grammar
 a: <b>
 b: <c>*
@@ -155,6 +181,11 @@ xyz
 a:
   b:
   - c:
-      d: y
+    - d:
+        1: y
+    - EOL: {}
   - c:
-      d: y
+    - d:
+        1: y
+    - EOL: {}
+

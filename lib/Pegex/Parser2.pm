@@ -34,7 +34,7 @@ sub debug_ {
     0;
 }
 
-my $ignore = bless [], 'IGNORE ME';
+$Pegex::Ignore = bless {}, 'Pegex-Ignore';
 
 sub parse {
     my $self = shift;
@@ -49,6 +49,12 @@ sub parse {
     $self->input($input);
 
     $self->buffer($self->input->read);
+
+    my $grammar = $self->grammar or die "No 'grammar'. Can't parse";
+    if (not ref $grammar) {
+        eval "require $grammar";
+        $self->grammar($grammar->new);
+    }
 
     my $start_rule = shift || undef;
     $start_rule ||= 
@@ -66,18 +72,18 @@ sub parse {
     $self->receiver->parser($self);
     Scalar::Util::weaken($self->receiver->{parser});
 
-    $self->match($start_rule) or return;
+    my $match = $self->match($start_rule) or return;
 
     # Parse was successful!
     $self->input->close;
-    return ($self->receiver->can('data') ? $self->receiver->data : 1);
+    return ($self->receiver->data || $match);
 }
 
 sub match {
     my ($self, $rule) = @_;
 
-    $self->receiver->__begin__()
-        if $self->receiver->can("__begin__");
+    $self->receiver->begin()
+        if $self->receiver->can("begin");
 
     my $match = $self->match_ref($rule);
     if ($self->position < length($self->buffer)) {
@@ -85,8 +91,10 @@ sub match {
         return;  # If $self->error eq 'live'
     }
 
-    $self->receiver->__final__($match)
-        if $self->receiver->can("__final__");
+    $match = $self->receiver->final($match, $rule)
+        if $self->receiver->can("final");
+
+    return $match;
 }
 
 sub match_next {
@@ -114,7 +122,7 @@ sub match_next {
             $match = $return;
             last;
         }
-        push @$match, $return unless $return eq $ignore;
+        push @$match, $return unless $return eq $Pegex::Ignore;
     }
     $self->position($position) if $count and $times =~ /^[+*]$/;
     my $result = (($count or $times =~ /^[?*]$/) ? 1 : 0) ^ $not;
@@ -122,7 +130,7 @@ sub match_next {
 
     $match = $self->callback(($result ? "got" : "not"), $state, $match)
         if $state and not($has or $not);
-    $match ||= $ignore;
+    $match ||= $Pegex::Ignore;
 
     return ($result ? $match : 0);
 }
@@ -134,19 +142,34 @@ sub match_ref {
     return $self->match_next($self->grammar->tree->{$rule}, $rule);
 }
 
+sub match_rgx {
+    my ($self, $regexp) = @_;
+
+    my $start = pos($self->{buffer}) = $self->position;
+    $self->{buffer} =~ /$regexp/g or return 0;
+    my $finish = pos($self->{buffer});
+    no strict 'refs';
+    my $match = +{ map {($_, $$_)} 1..$#+ };
+
+    $self->position($finish);
+
+    return $match;
+}
+
 sub match_all {
     my ($self, $list) = @_;
     my $pos = $self->position;
     my $set = [];
     for my $elem (@$list) {
         if (my $match = $self->match_next($elem)) {
-            push @$set, $match unless $match eq $ignore;
+            push @$set, $match unless $match eq $Pegex::Ignore;
         }
         else {
             $self->position($pos);
             return 0;
         }
     }
+    return $set->[0] if @$list == 1;
     return $set;
 }
 
@@ -158,19 +181,6 @@ sub match_any {
         }
     }
     return 0;
-}
-
-sub match_rgx {
-    my ($self, $regexp) = @_;
-
-    my $start = pos($self->{buffer}) = $self->position;
-    $self->{buffer} =~ /$regexp/g or return 0;
-    my $finish = pos($self->{buffer});
-    no strict 'refs';
-    my $match = [ $start, $finish, map $$_, 1..$#+ ];
-    $self->position($finish);
-
-    return $match;
 }
 
 sub match_err {
