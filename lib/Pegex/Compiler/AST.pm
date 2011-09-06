@@ -14,6 +14,11 @@ has 'name';
 has 'body';
 has 'atoms' => -init => 'Pegex::Grammar::Atoms->atoms';
 
+sub __begin__ {
+    my $self = shift;
+    $self->data({});
+}
+
 sub __final__ {
     my $self = shift;
 #     XXX $self->data;

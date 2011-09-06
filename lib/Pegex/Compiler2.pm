@@ -5,7 +5,7 @@
 # license:   perl
 # copyright: 2011
 
-package Pegex::Compiler::2;
+package Pegex::Compiler2;
 use Pegex::Compiler -base;
  
 use Pegex::Parser2;
