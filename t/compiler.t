@@ -4,7 +4,7 @@
 use TestML -run,
     -require_or_skip => 'YAML::XS';
 
-use Pegex::Compiler2;
+use Pegex::Compiler;
 use Pegex::Compiler::Bootstrap;
 use YAML::XS;
 
@@ -12,7 +12,7 @@ use YAML::XS;
 
 sub pegex_compile {
     my $grammar_text = (shift)->value;
-    Pegex::Compiler2->new->parse($grammar_text)->tree;
+    Pegex::Compiler->new->parse($grammar_text)->tree;
 }
 
 sub bootstrap_compile {

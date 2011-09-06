@@ -12,6 +12,8 @@ use Pegex::Base -base;
 
 use Pegex::Input;
 
+use Scalar::Util;
+
 # Parser and receiver objects/classes to use.
 has 'grammar';
 has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
@@ -21,14 +23,18 @@ has 'input';
 has 'buffer';
 has 'position' => 0;
 has 'match_groups' => [];
+has 'error' => 'die';
 
 # Debug the parsing of input.
 has 'debug' => -init => '$self->debug_';
+
 sub debug_ {
     exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
     defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
     0;
 }
+
+$Pegex::Ignore = bless {}, 'Pegex-Ignore';
 
 sub parse {
     my $self = shift;
@@ -44,6 +50,12 @@ sub parse {
 
     $self->buffer($self->input->read);
 
+    my $grammar = $self->grammar or die "No 'grammar'. Can't parse";
+    if (not ref $grammar) {
+        eval "require $grammar";
+        $self->grammar($grammar->new);
+    }
+
     my $start_rule = shift || undef;
     $start_rule ||= 
         $self->grammar->tree->{TOP}
@@ -56,27 +68,33 @@ sub parse {
         eval "require $receiver";
         $self->receiver($receiver->new);
     }
+    # Add circular ref and weaken it.
+    $self->receiver->parser($self);
+    Scalar::Util::weaken($self->receiver->{parser});
 
-    $self->match($start_rule);
+    my $match = $self->match($start_rule) or return;
 
     # Parse was successful!
     $self->input->close;
-    return ($self->receiver->can('data') ? $self->receiver->data : 1);
+    return ($self->receiver->data || $match);
 }
 
 sub match {
     my ($self, $rule) = @_;
 
-    $self->receiver->__begin__()
-        if $self->receiver->can("__begin__");
+    $self->receiver->begin()
+        if $self->receiver->can("begin");
 
-    $self->match_ref($rule);
+    my $match = $self->match_ref($rule);
     if ($self->position < length($self->buffer)) {
         $self->throw_error("Parse document failed for some reason");
+        return;  # If $self->error eq 'live'
     }
 
-    $self->receiver->__final__()
-        if $self->receiver->can("__final__");
+    $match = $self->receiver->final($match, $rule)
+        if $self->receiver->can("final");
+
+    return $match;
 }
 
 sub match_next {
@@ -93,66 +111,76 @@ sub match_next {
         grep {$next->{".$_"}} qw(ref rgx all any err)
             or XXX $next;
 
-    $self->callback("try", $state, $kind)
-        if $state and not $not;
+    $self->callback("try", $state) if $state and not($has or $not);
 
-    my $position = $self->position;
-    my $count = 0;
-    my $method = "match_$kind";
-    while ($self->$method($rule)) {
+    my ($match, $position, $count, $method) =
+        ([], $self->position, 0, "match_$kind");
+    while (my $return = $self->$method($rule)) {
         $position = $self->position unless $not;
         $count++;
-        last if $times =~ /^[1?]$/;
+        if ($times =~ /^[1?]$/) {
+            $match = $return;
+            last;
+        }
+        push @$match, $return unless $return eq $Pegex::Ignore;
     }
     $self->position($position) if $count and $times =~ /^[+*]$/;
     my $result = (($count or $times =~ /^[?*]$/) ? 1 : 0) ^ $not;
     $self->position($position) unless $result;
 
-    $self->callback(($result ? "got" : "not"), $state, $kind)
-        if $state and not $not;
+    $match = $self->callback(($result ? "got" : "not"), $state, $match)
+        if $state and not($has or $not);
+    $match ||= $Pegex::Ignore;
 
-    return $result;
+    return ($result ? $match : 0);
 }
 
 sub match_ref {
     my ($self, $rule) = @_;
     die "\n\n*** No grammar support for '$rule'\n\n"
         unless $self->grammar->tree->{$rule};
-    $self->match_next($self->grammar->tree->{$rule}, $rule);
-}
-
-sub match_all {
-    my $self = shift;
-    my $list = shift;
-    my $pos = $self->position;
-    for my $elem (@$list) {
-        $self->match_next($elem) or $self->position($pos) and return 0;
-    }
-    return 1;
-}
-
-sub match_any {
-    my $self = shift;
-    my $list = shift;
-    for my $elem (@$list) {
-        $self->match_next($elem) and return 1;
-    }
-    return 0;
+    return $self->match_next($self->grammar->tree->{$rule}, $rule);
 }
 
 sub match_rgx {
-    my $self = shift;
-    my $regexp = shift;
+    my ($self, $regexp) = @_;
 
-    pos($self->{buffer}) = $self->position;
+    my $start = pos($self->{buffer}) = $self->position;
     $self->{buffer} =~ /$regexp/g or return 0;
-    {
-        no strict 'refs';
-        $self->match_groups([ map $$_, 1..$#+ ]);
-    }
-    $self->position(pos($self->{buffer}));
+    my $finish = pos($self->{buffer});
+    no strict 'refs';
+    my $match = +{ map {($_, $$_)} 1..$#+ };
 
-    return 1;
+    $self->position($finish);
+
+    return $match;
+}
+
+sub match_all {
+    my ($self, $list) = @_;
+    my $pos = $self->position;
+    my $set = [];
+    for my $elem (@$list) {
+        if (my $match = $self->match_next($elem)) {
+            push @$set, $match unless $match eq $Pegex::Ignore;
+        }
+        else {
+            $self->position($pos);
+            return 0;
+        }
+    }
+    return $set->[0] if @$list == 1;
+    return $set;
+}
+
+sub match_any {
+    my ($self, $list) = @_;
+    for my $elem (@$list) {
+        if (my $match = $self->match_next($elem)) {
+            return $match;
+        }
+    }
+    return 0;
 }
 
 sub match_err {
@@ -161,32 +189,15 @@ sub match_err {
 }
 
 sub callback {
-    my ($self, $adj, $state) = @_;
-    my $callback = "${adj}_$state";
-    my $got = $adj eq 'got';
-
+    my ($self, $adj, $rule, $match) = @_;
+    my $callback = "${adj}_$rule";
     $self->trace($callback) if $self->debug;
-
-    my $done = 0;
-    if ($self->receiver->can($callback)) {
-        $self->receiver->$callback(@{$self->match_groups});
-        $done++;
-    }
-    $callback = "end_$state";
-    if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $self->receiver->$callback($got, @{$self->match_groups});
-        $done++
-    }
-    return if $done;
-
-    $callback = "__${adj}__";
-    if ($self->receiver->can($callback)) {
-        $self->receiver->$callback($state, $self->match_groups);
-    }
-    $callback = "__end__";
-    if ($adj =~ /ot$/ and $self->receiver->can($callback)) {
-        $self->receiver->$callback($got, $state, $self->match_groups);
-    }
+    return unless $adj eq 'got';
+    $match = $self->receiver->got($rule, $match)
+        if $self->receiver->can("got");
+    $match = $self->receiver->$callback($match)
+        if $self->receiver->can($callback);
+    return $match;
 }
 
 sub trace {
@@ -195,12 +206,12 @@ sub trace {
     my $indent = ($action =~ /^try_/) ? 1 : 0;
     $self->{indent} ||= 0;
     $self->{indent}-- unless $indent;
-    print ' ' x $self->{indent};
+    print STDERR ' ' x $self->{indent};
     $self->{indent}++ if $indent;
     my $snippet = substr($self->buffer, $self->position);
     $snippet = substr($snippet, 0, 30) . "..." if length $snippet > 30;
     $snippet =~ s/\n/\\n/g;
-    print sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
+    print STDERR sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
 }
 
 sub throw_error {
@@ -210,13 +221,24 @@ sub throw_error {
     my $context = substr($self->buffer, $self->position, 50);
     $context =~ s/\n/\\n/g;
     my $position = $self->position;
-    die <<"...";
+    my $error = <<"...";
 Error parsing Pegex document:
   msg: $msg
   line: $line
   context: "$context"
   position: $position
 ...
+    if ($self->error eq 'die') {
+        require Carp;
+        Carp::croak($error);
+    }
+    elsif ($self->error eq 'live') {
+        $@ = $error;
+        return;
+    }
+    else {
+        die "Invalid value for Pegex::Parser::error";
+    }
 }
 
 1;

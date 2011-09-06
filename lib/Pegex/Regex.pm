@@ -12,16 +12,16 @@ package Pegex::Regex;
 use Pegex::Base -base;
 
 use Pegex::Grammar;
-use Pegex::Parser2;
+use Pegex::Parser;
 
 my @parsers;
 my $PASS = '';
 my $FAIL = '(*FAIL)';
 
 sub generate_regex {
-    push @parsers, Pegex::Parser2->new(
+    push @parsers, Pegex::Parser->new(
         grammar => Pegex::Grammar->new( text => shift ),
-        receiver => 'Pegex::AST2',
+        receiver => 'Pegex::AST',
         error => 'live',
     );
     my $index = $#parsers;
