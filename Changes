@@ -1,4 +1,12 @@
 ---
+version: 0.15
+date:    Wed Sep  7 10:17:11 BST 2011
+changes:
+- With this release of Pegex, I do declare the true birthday of Acmeism. THis
+  release was performed from the living room of Leon "Acme" Brocard. How
+  fitting. His daughter Lara was present to witness her first ever CPAN
+  release.
+---
 version: 0.14
 date:    Sat Aug 20 18:19:20 CEST 2011
 changes:
