@@ -19,8 +19,7 @@ sub tree_ {
 
 # Parser and receiver classes to use.
 has 'parser'    => 'Pegex::Parser';
-has 'receiver'  => -init =>
-    q{die ref($self) . " does not define a 'receiver' property"};
+has 'receiver'  => 'Pegex::Receiver';
 
 sub parse {
     my $self = shift;
@@ -59,7 +58,7 @@ Define a Pegex grammar (for the Foo syntax):
     foo: <bar> <baz>
     ... rest of Foo grammar ...
     };
-    use constant receiver => 'Pegex::AST';
+    use constant receiver => 'Pegex::Receiver';
 
 then use it to parse some Foo:
 
@@ -80,9 +79,9 @@ incur the compilation of the grammar each time) a C<tree> property which
 returns a precompiled grammar.
 
 You also need to define the receiver class or object that will produce a
-result from your parse. 'Pegex::AST' is the easiest choice, as long as you are
-satisfied which its results. Otherwise you can subclass it or define something
-different.
+result from your parse. 'Pegex::Receiver' is the easiest choice, as long as
+you are satisfied which its results. Otherwise you can subclass it or define
+something different.
 
 =head1 PROPERTIES
 
@@ -123,14 +122,15 @@ would set the sublass here.
 
 =item receiver
 
-This property is required. It is the class or object that will handle all the
-callbacks from the parser, and do something with them. Usually it will create
-an Abstract Syntax Tree (AST) representing the parsed input, but you can have
-it do whatever you want. C<Pegex::AST> is a common value for this. You may
-want to specify your own subclass of C<Pegex::AST>.
+This will default to C<Pegex::Receiver>. It is the class or object that will
+handle all the callbacks from the parser, and do something with them. Usually
+it will create a data structure representing the parsed input, but you can
+have it do whatever you want. The default receiver creates a fairly messy data
+structure with the result of your parse, but subclassing C<TestML::Receiver>
+is easy.
 
 You can also set this to a reference of your Grammar object, if you want to
-specify all your receiver callbacks inline. You can do that like this
+specify all your grammar receiver callbacks inline. You can do that like this
 (assuming a Moose compliant subclass):
 
     has receiver => (

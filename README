@@ -17,7 +17,6 @@ SYNOPSIS
         use Pegex::Compiler;
         my $pegex_grammar = Pegex::Grammar->new(
             tree => Pegex::Compiler->compile($grammar)->tree,
-            receiver => 'Pegex::AST',
         );
         my $data = $pegex_grammar->parse($input);
 
@@ -30,7 +29,7 @@ SYNOPSIS
         has receiver => "MyReceiver";
 
         package MyReceiver;
-        use Pegex::Receiver -base;
+        use base 'Pegex::Receiver';
         got_some_rule { ... }
         got_other_rule { ... }
 
@@ -81,7 +80,7 @@ PEGEX OVERVIEW
       .--------------------.      |    Pegex::Compiler    |
       |    Foo Language    |      |-----------------------|    Serialize
       |--------------------|----->| Pegex::Grammar::Pegex |---------.
-      | Pegex grammar text |      | Pegex::AST receiver   |         |
+      | Pegex grammar text |      | Pegex::Receiver       |         |
       '--------------------'      '-----------------------'         v
       ......................                  |                 .------.
       |                    |                  | compile()       | YAML |

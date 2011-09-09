@@ -42,11 +42,10 @@ use Pegex::Grammar;
 use Pegex::Compiler;
 my $ast1 = Pegex::Grammar->new(
     tree => Pegex::Compiler->compile($grammar1)->tree,
-    receiver => 'Pegex::AST',
 )->parse($text1);
 
 pass 'parsed'; exit;
 
 my $got1 = YAML::XS::Dump($ast1);
 
-is $got1, $want1, 'AST works';
+is $got1, $want1, 'It works';

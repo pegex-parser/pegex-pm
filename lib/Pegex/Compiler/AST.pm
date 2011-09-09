@@ -5,8 +5,8 @@
 # license:   perl
 # copyright: 2011
 
-package Pegex::Compiler::AST;
-use Pegex::AST -base;
+package Pegex::Compiler::Receiver;
+use Pegex::Receiver -base;
 
 use Pegex::Grammar::Atoms;
 
@@ -28,7 +28,7 @@ sub got_grammar {
         '+top' => $self->top,
         %{$self->extra_rules},
     };
-    my $rules = $match->{grammar}[0];
+    my $rules = $match->[0];
     for (@$rules) {
         $_ = $_->[1];
         my ($key, $value) = %$_;
@@ -39,16 +39,16 @@ sub got_grammar {
 
 sub got_rule_definition {
     my ($self, $match) = @_;
-    my $name = $match->{rule_definition}[1]{rule_name}{1};
+    my $name = $match->[1]{rule_name}{1};
     $self->{top} ||= $name;
-    my $value = $match->{rule_definition}[3]{rule_group};
+    my $value = $match->[3]{rule_group};
     return +{ $name => $value };
 }
 
 sub got_bracketed_group {
     my ($self, $match) = @_;
-    my $group = $match->{bracketed_group}[1]{rule_group};
-    if (my $mod = $match->{bracketed_group}[2]{1}) {
+    my $group = $match->[1]{rule_group};
+    if (my $mod = $match->[2]{1}) {
         $group->{'+mod'} = $mod;
     }
     return $group;
@@ -56,7 +56,7 @@ sub got_bracketed_group {
 
 sub got_all_group {
     my ($self, $match) = @_;
-    my $list = $self->get_group($match->{all_group});
+    my $list = $self->get_group($match);
     die unless @$list;
     return $list->[0] if @$list == 1;
     return { '.all' => $list };
@@ -64,7 +64,7 @@ sub got_all_group {
 
 sub got_any_group {
     my ($self, $match) = @_;
-    my $list = $self->get_group($match->{any_group});
+    my $list = $self->get_group($match);
     die unless @$list;
     return $list->[0] if @$list == 1;
     return { '.any' => $list };
@@ -91,7 +91,7 @@ sub get_group {
 sub got_rule_reference {
     my ($self, $match) = @_;
     my ($assertion, $ref, $quantifier) =
-        @{$match->{rule_reference}}{qw(1 2 3)};
+        @{$match}{qw(1 2 3)};
     my $node = +{ '.ref' => $ref };
     if (my $regex = Pegex::Grammar::Atoms->atoms->{$ref}) {
         $self->extra_rules->{$ref} = +{ '.rgx' => $regex };
@@ -104,13 +104,12 @@ sub got_rule_reference {
 
 sub got_regular_expression {
     my ($self, $match) = @_;
-    my ($regex) = values %$match;
-    return +{ '.rgx' => $regex->{1} };
+    return +{ '.rgx' => $match->{1} };
 }
 
 sub got_error_message {
     my ($self, $match) = @_;
-    return +{ '.err' => $match->{error_message}{1} };
+    return +{ '.err' => $match->{1} };
 }
 
 1;

@@ -42,7 +42,7 @@ sub parse {
 
     my $parser = Pegex::Parser->new(
         grammar => Pegex::Grammar::Pegex->new,
-        receiver => Pegex::Compiler::AST->new,
+        receiver => Pegex::Compiler::Receiver->new,
     );
 
     $self->tree($parser->parse(@_));

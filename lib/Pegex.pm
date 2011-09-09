@@ -25,10 +25,7 @@ has 'grammar';
 sub pegex {
     die 'Pegex::pegex takes one argument ($grammar_text)'
         unless @_ == 1;
-    return Pegex::Grammar->new(
-        text => $_[0],
-        receiver => 'Pegex::AST',
-    );
+    return Pegex::Grammar->new( text => $_[0] );
 }
 
 1;
@@ -50,7 +47,6 @@ or more explicitly:
     use Pegex::Compiler;
     my $pegex_grammar = Pegex::Grammar->new(
         tree => Pegex::Compiler->compile($grammar)->tree,
-        receiver => 'Pegex::AST',
     );
     my $data = $pegex_grammar->parse($input);
 
@@ -63,7 +59,7 @@ or customized explicitly:
     has receiver => "MyReceiver";
 
     package MyReceiver;
-    use Pegex::Receiver -base;
+    use base 'Pegex::Receiver';
     got_some_rule { ... }
     got_other_rule { ... }
 
@@ -116,7 +112,7 @@ parse Foo sources into data (abstract syntax trees).
   .--------------------.      |    Pegex::Compiler    |
   |    Foo Language    |      |-----------------------|    Serialize
   |--------------------|----->| Pegex::Grammar::Pegex |---------.
-  | Pegex grammar text |      | Pegex::AST receiver   |         |
+  | Pegex grammar text |      | Pegex::Receiver       |         |
   '--------------------'      '-----------------------'         v
   ......................                  |                 .------.
   |                    |                  | compile()       | YAML |

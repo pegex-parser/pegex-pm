@@ -21,7 +21,7 @@ my $FAIL = '(*FAIL)';
 sub generate_regex {
     push @parsers, Pegex::Parser->new(
         grammar => Pegex::Grammar->new( text => shift ),
-        receiver => 'Pegex::AST',
+        receiver => 'Pegex::Receiver',
         error => 'live',
     );
     my $index = $#parsers;
@@ -121,10 +121,10 @@ And the more explicit Pegex solution:
 
 And even more explicit yet:
 
-    use Pegex::Parser;
     use Pegex::Grammar;
     use Pegex::Compiler;
-    use Pegex::AST;
+    use Pegex::Parser;
+    use Pegex::Receiver;
     use Pegex::Input;
     my $parser = Pegex::Grammar->new(
         grammar => Pegex::Grammar->new(
@@ -134,7 +134,8 @@ And even more explicit yet:
                 )
             )->tree,
         ),
-        receiver => 'Pegex::AST',
+        parser => 'Pegex::Parser',
+        receiver => 'Pegex::Receiver',
     );
     $parser->parse(Pegex::Input->new(string => $input));
     print $parser->receiver->data->{foo};

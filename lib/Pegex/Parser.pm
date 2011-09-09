@@ -16,7 +16,7 @@ use Scalar::Util;
 
 # Parser and receiver objects/classes to use.
 has 'grammar';
-has 'receiver' => -init => 'require Pegex::AST; Pegex::AST->new()';
+has 'receiver' => -init => 'require Pegex::Receiver; Pegex::Receiver->new()';
 
 # Internal properties.
 has 'input';
@@ -193,10 +193,16 @@ sub callback {
     my $callback = "${adj}_$rule";
     $self->trace($callback) if $self->debug;
     return unless $adj eq 'got';
-    $match = $self->receiver->got($rule, $match)
-        if $self->receiver->can("got");
-    $match = $self->receiver->$callback($match)
-        if $self->receiver->can($callback);
+    my $got;
+    if ($got = $self->receiver->can("got")) {
+        $match = $self->receiver->got($rule, $match);
+    }
+    if ($self->receiver->can($callback)) {
+        return $self->receiver->$callback($match);
+    }
+    elsif (not $got) {
+        return +{ $rule => $match };
+    }
     return $match;
 }
 

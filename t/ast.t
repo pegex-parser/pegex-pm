@@ -12,8 +12,6 @@ sub parse {
     my $input = (shift)->value;
     my $pegex = pegex($grammar);
     $pegex->tree;
-    $pegex->parser('Pegex::Parser');
-    $pegex->receiver('Pegex::AST');
     return $pegex->parse($input);
 }
 
