@@ -16,7 +16,7 @@ use Pegex::Base -base;
 
 use Pegex::Grammar;
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 our @EXPORT = qw(pegex);
 

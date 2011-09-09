@@ -1,4 +1,9 @@
 ---
+version: 0.16
+date:    Fri Sep  9 14:51:38 CEST 2011
+changes:
+- Changed AST model to be faster and simpler.
+---
 version: 0.15
 date:    Wed Sep  7 10:17:11 BST 2011
 changes:
