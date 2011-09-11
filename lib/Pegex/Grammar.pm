@@ -45,6 +45,34 @@ sub parse {
     return $parser->parse(@_);
 }
 
+sub import {
+    goto &Pegex::Base::import
+        unless ((caller))[1] eq '-e' and @_ == 2 and $_[1] eq 'compile';
+    my $package = shift;
+    $package->compile_into_module();
+    exit;
+}
+
+sub compile_into_module {
+    my ($package) = @_;
+    my $grammar = $package->text;
+    my $module = $package;
+    $module =~ s!::!/!g;
+    $module = "$module.pm";
+    my $file = $INC{$module} or return;
+    require Pegex::Compiler;
+    my $perl = Pegex::Compiler->compile_raw($grammar)->to_perl;
+    open IN, $file or die $!;
+    my $module_text = do {local $/; <IN>};
+    close IN;
+    $perl =~ s/^/  /gm;
+    $module_text =~ s/^(sub\s+tree\s*\{).*?(^\})/$1\n$perl$2/ms;
+    open OUT, '>', $file or die $!;
+    print OUT $module_text;
+    close OUT;
+}
+
+
 1;
 
 =head1 SYNOPSIS
