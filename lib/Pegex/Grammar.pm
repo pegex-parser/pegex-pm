@@ -47,7 +47,7 @@ sub parse {
 
 sub import {
     goto &Pegex::Base::import
-        unless ((caller))[1] eq '-e' and @_ == 2 and $_[1] eq 'compile';
+        unless ((caller))[1] =~ /^-e?$/ and @_ == 2 and $_[1] eq 'compile';
     my $package = shift;
     $package->compile_into_module();
     exit;
@@ -66,7 +66,7 @@ sub compile_into_module {
     my $module_text = do {local $/; <IN>};
     close IN;
     $perl =~ s/^/  /gm;
-    $module_text =~ s/^(sub\s+tree\s*\{).*?(^\})/$1\n$perl$2/ms;
+    $module_text =~ s/^(sub\s+tree_?\s*\{).*?(^\})/$1\n$perl$2/ms;
     open OUT, '>', $file or die $!;
     print OUT $module_text;
     close OUT;
