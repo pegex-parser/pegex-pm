@@ -61,7 +61,7 @@ sub compile_into_module {
     $module = "$module.pm";
     my $file = $INC{$module} or return;
     require Pegex::Compiler;
-    my $perl = Pegex::Compiler->compile_raw($grammar)->to_perl;
+    my $perl = Pegex::Compiler->compile($grammar)->to_perl;
     open IN, $file or die $!;
     my $module_text = do {local $/; <IN>};
     close IN;
