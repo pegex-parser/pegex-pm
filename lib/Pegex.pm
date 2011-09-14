@@ -12,7 +12,7 @@
 
 use 5.010;
 package Pegex;
-use Pegex::Base -base;
+use Pegex::Base;
 
 use Pegex::Grammar;
 
@@ -21,6 +21,12 @@ our $VERSION = '0.16';
 our @EXPORT = qw(pegex);
 
 has 'grammar';
+
+sub import {
+    no strict 'refs';
+    *{caller(1).'::pegex'} = \&pegex;
+    goto &Pegex::Base::import;
+}
 
 sub pegex {
     die 'Pegex::pegex takes one argument ($grammar_text)'

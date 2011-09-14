@@ -5,13 +5,14 @@
 # license:   perl
 # copyright: 2011
 
-package Pegex::Compiler::Receiver;
-use Pegex::Receiver -base;
+package Pegex::Compiler::AST;
+use Pegex::Base;
+extends 'Pegex::Receiver';
 
 use Pegex::Grammar::Atoms;
 
 has 'top';
-has 'extra_rules' => {};
+has 'extra_rules' => default => sub {+{}};
 
 # Uncomment this to debug. See entire raw AST.
 # sub final {

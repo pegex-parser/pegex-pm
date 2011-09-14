@@ -6,20 +6,22 @@
 # copyright: 2010, 2011
 
 package Pegex::Grammar;
-use Pegex::Base -base;
+use Pegex::Base;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
-has 'text' => -init =>
-    q{die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'."};
-has 'tree' => -init => '$self->tree_';
+has 'text' => default => sub {
+    my $self = shift;
+    die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'.";
+};
+has 'tree' => builder => 'tree_';
 sub tree_ {
     require Pegex::Compiler;
     Pegex::Compiler->compile($_[0]->text)->tree;
 }
 
 # Parser and receiver classes to use.
-has 'parser'    => 'Pegex::Parser';
-has 'receiver'  => 'Pegex::Receiver';
+has 'parser' => default => sub {'Pegex::Parser'};
+has 'receiver' => default => sub {'Pegex::Receiver'};
 
 sub parse {
     my $self = shift;

@@ -6,7 +6,7 @@
 # copyright: 2011
 
 package Pegex::Module;
-use Pegex::Base -base;
+use Pegex::Base;
 
 sub parse {
     my ($self, $input) = @_;

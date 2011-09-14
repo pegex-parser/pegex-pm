@@ -1,9 +1,10 @@
 use Test::More tests => 1;
 
 package MyGrammar1;
-use Pegex::Grammar -base;
+use Pegex::Base;
+extends 'Pegex::Grammar';
 
-has text => <<'...';
+has text => default => sub {<<'...'};
 foo: /xyz/ <bar>
 bar:
     /abc/ |

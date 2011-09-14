@@ -6,9 +6,8 @@
 # copyright: 2010, 2011
 
 package Pegex::Grammar::Pegex;
-use base 'Pegex::Grammar';
-use strict;
-use warnings;
+use Pegex::Base;
+extends 'Pegex::Grammar';
 
 sub tree_ {
   {

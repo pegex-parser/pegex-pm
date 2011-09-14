@@ -14,16 +14,19 @@ use Pegex::Input;
 
 # Parser and receiver objects/classes to use.
 has 'grammar';
-has 'receiver' => -init => 'require Pegex::AST::Bootstrap; Pegex::AST::Bootstrap->new()';
+has 'receiver' => default => sub {
+    require Pegex::AST::Bootstrap;
+    Pegex::AST::Bootstrap->new();
+};
 
 # Internal properties.
 has 'input';
 has 'buffer';
-has 'position' => 0;
-has 'match_groups' => [];
+has 'position' => default => sub{0};
+has 'match_groups' => default => sub{[]};
 
 # Debug the parsing of input.
-has 'debug' => -init => '$self->debug_';
+has 'debug' => builder => 'debug_';
 sub debug_ {
     exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
     defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :

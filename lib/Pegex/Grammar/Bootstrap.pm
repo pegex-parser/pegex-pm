@@ -8,21 +8,25 @@
 # copyright: 2010, 2011
 
 package Pegex::Grammar::Bootstrap;
-use Pegex::Base -base;
+use Pegex::Base;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
-has 'text' => -init =>
-    q{die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'."};
-has 'tree' => -init => '$self->tree_';
+has 'text' => default => sub {
+    my $self = shift;
+    die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'.";
+};
+has 'tree' => builder => 'tree_';
 sub tree_ {
     require Pegex::Compiler::Bootstrap;
     Pegex::Compiler::Bootstrap->compile($_[0]->text)->tree;
 }
 
 # Parser and receiver classes to use.
-has 'parser'    => 'Pegex::Parser::Bootstrap';
-has 'receiver'  => -init =>
-    q{die ref($self) . " does not define a 'receiver' property"};
+has 'parser' => default => sub {'Pegex::Parser::Bootstrap'};
+has 'receiver' => default => sub {
+    my $self = shift;
+    die ref($self) . " does not define a 'receiver' property";
+};
 
 sub parse {
     my $self = shift;

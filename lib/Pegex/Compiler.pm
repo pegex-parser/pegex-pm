@@ -6,7 +6,7 @@
 # copyright: 2011
 
 package Pegex::Compiler;
-use Pegex::Base -base;
+use Pegex::Base;
  
 use Pegex::Parser;
 use Pegex::Grammar::Pegex;
@@ -42,7 +42,7 @@ sub parse {
 
     my $parser = Pegex::Parser->new(
         grammar => Pegex::Grammar::Pegex->new,
-        receiver => Pegex::Compiler::Receiver->new,
+        receiver => Pegex::Compiler::AST->new,
     );
 
     $self->tree($parser->parse(@_));

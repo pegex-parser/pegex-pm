@@ -8,7 +8,7 @@
 # - Pegex::Grammar
 
 package Pegex::Parser;
-use Pegex::Base -base;
+use Pegex::Base;
 
 use Pegex::Input;
 
@@ -16,17 +16,20 @@ use Scalar::Util;
 
 # Parser and receiver objects/classes to use.
 has 'grammar';
-has 'receiver' => -init => 'require Pegex::Receiver; Pegex::Receiver->new()';
+has 'receiver' => default => sub {
+    require Pegex::Receiver;
+    Pegex::Receiver->new();
+};
 
 # Internal properties.
 has 'input';
 has 'buffer';
-has 'position' => 0;
-has 'match_groups' => [];
-has 'error' => 'die';
+has 'position' => default => sub {0};
+has 'match_groups' => default => sub {[]};
+has 'error' => default => sub {'die'};
 
 # Debug the parsing of input.
-has 'debug' => -init => '$self->debug_';
+has 'debug' => builder => 'debug_';
 
 sub debug_ {
     exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :

@@ -6,7 +6,7 @@
 # copyright: 2011
 
 package Pegex::AST::Bootstrap;
-use Pegex::Receiver -base;
+use Pegex::Receiver;
 
 sub __final__ {
     my $self = shift;

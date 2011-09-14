@@ -6,22 +6,22 @@
 # copyright: 2011
 
 package Pegex::Input;
-use Pegex::Base -base;
+use Pegex::Base;
 
 has 'string';
 has 'stringref';
 has 'file';
 has 'handle';
 # has 'http';
-has '_buffer' => do { my $x; \$x };
-has '_is_eof' => 0;
-has '_is_open' => 0;
-has '_is_close' => 0;
+has '_buffer' => default => sub { my $x; \$x };
+has '_is_eof' => default => sub { 0 };
+has '_is_open' => default => sub { 0 };
+has '_is_close' => default => sub { 0 };
 # has '_pos' => 0;
 # has 'maxsize' => 4096;
 # has 'minlines' => 2;
 
-sub init {
+sub BUILD {
     my $self = shift;
     die "Pegex::Input->new() requires one or 2 arguments"
         unless 1 <= @_ and @_ <= 2;
