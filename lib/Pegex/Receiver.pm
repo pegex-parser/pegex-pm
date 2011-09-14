@@ -6,7 +6,7 @@
 # copyright: 2011
 
 package Pegex::Receiver;
-use Pegex::Base -base;
+use Pegex::Base;
 
 has 'parser';
 has 'data';

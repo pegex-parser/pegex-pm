@@ -59,10 +59,13 @@ or more explicitly:
 or customized explicitly:
 
     package MyGrammar;
-    use Pegex::Grammar -base;
+    use Mo;
+    extends 'Pegex::Grammar';
 
-    has text => "your grammar definition text goes here";
-    has receiver => "MyReceiver";
+    has text => default => sub {
+        "your grammar definition text goes here";
+    };
+    has receiver => default => sub{"MyReceiver"};
 
     package MyReceiver;
     use base 'Pegex::Receiver';
