@@ -9,7 +9,7 @@
 # - Regexp::Grammars
 
 package Pegex::Regex;
-use Pegex::Base;
+use Pegex::Mo;
 
 use Pegex::Grammar;
 use Pegex::Parser;

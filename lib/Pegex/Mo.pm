@@ -1,4 +1,11 @@
-package Pegex::Base;
+##
+# name:      Pegex::Mo
+# abstract:  Mo Base Class for Pegex
+# author:    Ingy döt Net <ingy@cpan.org>
+# license:   perl
+# copyright: 2010, 2011
+
+package Pegex::Mo;
 use Mo;
 
 use constant XXX_skip => 1;

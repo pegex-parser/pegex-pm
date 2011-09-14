@@ -15,7 +15,7 @@ print <<"...";
 # copyright: 2010, 2011
 
 package Pegex::Grammar::Pegex;
-use Pegex::Base;
+use Pegex::Mo;
 extends 'Pegex::Grammar';
 
 sub tree_ {

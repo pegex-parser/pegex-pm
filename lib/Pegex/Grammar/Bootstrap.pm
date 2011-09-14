@@ -8,7 +8,7 @@
 # copyright: 2010, 2011
 
 package Pegex::Grammar::Bootstrap;
-use Pegex::Base;
+use Pegex::Mo;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
 has 'text' => default => sub {

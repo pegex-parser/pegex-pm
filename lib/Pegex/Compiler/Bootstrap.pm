@@ -6,7 +6,7 @@
 # copyright: 2010, 2011
 
 package Pegex::Compiler::Bootstrap;
-use Pegex::Base;
+use Pegex::Mo;
 extends 'Pegex::Compiler';
 
 use Pegex::Grammar::Atoms;

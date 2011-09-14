@@ -8,7 +8,7 @@
 # - Pegex::Grammar
 
 package Pegex::Parser::Bootstrap;
-use Pegex::Base;
+use Pegex::Mo;
 
 use Pegex::Input;
 

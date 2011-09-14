@@ -12,7 +12,7 @@
 
 use 5.010;
 package Pegex;
-use Pegex::Base;
+use Pegex::Mo;
 
 use Pegex::Grammar;
 
@@ -25,7 +25,7 @@ has 'grammar';
 sub import {
     no strict 'refs';
     *{caller(1).'::pegex'} = \&pegex;
-    goto &Pegex::Base::import;
+    goto &Pegex::Mo::import;
 }
 
 sub pegex {

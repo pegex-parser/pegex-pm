@@ -6,7 +6,7 @@
 # copyright: 2010, 2011
 
 package Pegex::Grammar;
-use Pegex::Base;
+use Pegex::Mo;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
 has 'text' => default => sub {
@@ -48,7 +48,7 @@ sub parse {
 }
 
 sub import {
-    goto &Pegex::Base::import
+    goto &Pegex::Mo::import
         unless ((caller))[1] =~ /^-e?$/ and @_ == 2 and $_[1] eq 'compile';
     my $package = shift;
     $package->compile_into_module();

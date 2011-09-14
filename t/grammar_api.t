@@ -1,7 +1,7 @@
 use Test::More tests => 1;
 
 package MyGrammar1;
-use Pegex::Base;
+use Pegex::Mo;
 extends 'Pegex::Grammar';
 
 has text => default => sub {<<'...'};

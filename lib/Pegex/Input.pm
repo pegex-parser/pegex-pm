@@ -6,7 +6,7 @@
 # copyright: 2011
 
 package Pegex::Input;
-use Pegex::Base;
+use Pegex::Mo;
 
 has 'string';
 has 'stringref';

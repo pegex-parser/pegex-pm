@@ -6,7 +6,7 @@
 # copyright: 2011
 
 package Pegex::Compiler;
-use Pegex::Base;
+use Pegex::Mo;
  
 use Pegex::Parser;
 use Pegex::Grammar::Pegex;

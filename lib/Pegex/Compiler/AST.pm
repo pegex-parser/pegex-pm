@@ -6,7 +6,7 @@
 # copyright: 2011
 
 package Pegex::Compiler::AST;
-use Pegex::Base;
+use Pegex::Mo;
 extends 'Pegex::Receiver';
 
 use Pegex::Grammar::Atoms;

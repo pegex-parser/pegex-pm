@@ -6,7 +6,7 @@
 # copyright: 2011
 
 package Pegex::Grammar::Atoms;
-use Pegex::Base;
+use Pegex::Mo;
 
 #------------------------------------------------------------------------------#
 # Pegex regex atoms for grammars
