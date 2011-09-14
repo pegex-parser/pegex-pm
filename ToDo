@@ -1,4 +1,10 @@
 #------------------------------------------
+- Switch to Mo
+- Support <.rule>
+  - Compare to Rx:G
+- Skip empty regex matches
+
+#------------------------------------------
 
 + Stabilize TestML with Bootstrap Grammar
 + Split Grammar into Parser
@@ -6,16 +12,16 @@
 + Make Pegex and TestML work
 + Split parse into smaller methods
 
-- Pegex::AST - Receiver to generate an AST
-  - Write AST tests
-  - Write Pegex::AST module
-  - Migrate parser to new AST model
-  - Test/Compare to Rx:G 
++ Pegex::AST - Receiver to generate an AST
+  + Write AST tests
+  + Write Pegex::AST module
+  + Migrate parser to new AST model
+  + Test/Compare to Rx:G 
 
-- Pegex::Regex - =~ sugar from Rx::G
-  - $string =~ qr{pegex grammar string}
-  - $ast = \%/;
-  - $ast = \%MATCH
++ Pegex::Regex - =~ sugar from Rx::G
+  + $string =~ qr{pegex grammar string}
+  + $ast = \%/;
+  + $ast = \%MATCH
 
 #------------------------------------------
 
