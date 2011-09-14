@@ -21,13 +21,12 @@ has '_is_close' => default => sub { 0 };
 # has 'maxsize' => 4096;
 # has 'minlines' => 2;
 
-sub BUILD {
-    my $self = shift;
+sub new {
+    my $class = shift;
     die "Pegex::Input->new() requires one or 2 arguments"
         unless 1 <= @_ and @_ <= 2;
-    my $method = @_ == 2 ? shift : $self->_guess_input(@_);
-    $self->$method(@_);
-    return $self;
+    my $method = @_ == 2 ? shift : $class->_guess_input(@_);
+    return $class->SUPER::new($method => shift);
 }
 
 # NOTE: Current implementation reads entire input into _buffer on open().
