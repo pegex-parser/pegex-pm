@@ -34,7 +34,8 @@ sub parse {
         my $text = $self->tree->{$rule};
         my @tokens = ($text =~ m{(
             /[^/]*/ |
-            [\!\=]?<\w+>[\?\*\+]? |
+            \*\* |
+            [\!\=\-\.]?<\w+>[\?\*\+]? |
             `[^`]*` |
             \| |
             [\!\=?]?\[ |
@@ -59,34 +60,65 @@ sub make_tree {
     my $tree = [];
     push @$stack, $tree;
     for my $token (@$tokens) {
-        if ($token =~ /^[\!\=?]?[\[\(]/) {
+        if ($token =~ /^[\!\=?]?[\[]/) {
             push @$stack, [];
         }
         push @{$stack->[-1]}, $token;
-        if ($token =~ /^[\]\)]/) {
+        if ($token =~ /^[\]]/) {
             my $branch = pop @$stack;
-            push @{$stack->[-1]}, $branch;
+            push @{$stack->[-1]}, $self->wilt($branch);
         }
     }
     return $tree->[0];
 }
 
+sub wilt {
+    my $self = shift;
+    my $branch = shift;
+    return $branch unless ref($branch) eq 'ARRAY';
+    my $wilted = [];
+    for (my $i = 0; $i < @$branch; $i++) {
+        push @$wilted, ($branch->[$i] eq '**')
+            ? ['**', pop(@$wilted), $branch->[++$i]]
+            : $branch->[$i];
+    }
+    return $wilted;
+}
+
 sub compile_next {
     my $self = shift;
     my $node = shift;
-    my $unit = ref($node)
-        ? $node->[2] eq '|'
+    my $unit = ref($node) ?
+        $node->[0] eq '**'
+            ? $self->compile_sep($node) :
+        $node->[2] eq '|'
             ? $self->compile_group($node, 'any')
             : $self->compile_group($node, 'all')
-        : $node =~ m!/! ? $self->compile_re($node)
-        : $node =~ m!<! ? $self->compile_rule($node)
-        : $node =~ m!`! ? $self->compile_error($node)
-        : die $node;
+    :
+        $node =~ m!/! ? $self->compile_re($node) :
+        $node =~ m!<! ? $self->compile_rule($node) :
+        $node =~ m!`! ? $self->compile_error($node) :
+            die $node;
 
     while (defined $unit->{'.all'} and @{$unit->{'.all'}} == 1) {
         $unit = $unit->{'.all'}->[0];
     }
     return $unit;
+}
+
+my %prefix = (
+    '!' => '+neg',
+    '=' => '+pos',
+    '.' => '-skip',
+    '-' => '-pass',
+);
+
+sub compile_sep {
+    my $self = shift;
+    my $node = shift;
+    my $object = $self->compile_next($node->[1]);
+    $object->{'.sep'} = $self->compile_next($node->[2]);
+    return $object;
 }
 
 sub compile_group {
@@ -96,10 +128,10 @@ sub compile_group {
     die unless @$node > 2;
     my $object = {};
     if ($node->[0] =~ /^([\=\!])/) {
-        $object->{'+mod'} = $1;
+        $object->{$prefix{$1}} = 1;
     }
-    if ($node->[-1] =~ /([\?\*\+])$/ and not $object->{'+mod'}) {
-        $object->{'+mod'} = $1;
+    if ($node->[-1] =~ /([\?\*\+])$/ and not $object->{'+qty'}) {
+        $object->{'+qty'} = $1;
     }
     shift @$node;
     pop @$node;
@@ -129,11 +161,11 @@ sub compile_rule {
     my $self = shift;
     my $node = shift;
     my $object = {};
-    if ($node =~ s/^([\=\!])//) {
-        $object->{'+mod'} = $1;
+    if ($node =~ s/^([\=\!\-\.])//) {
+        $object->{$prefix{$1}} = 1;
     }
-    if ($node =~ s/([\?\*\+])$// and not $object->{'+mod'}) {
-        $object->{'+mod'} = $1;
+    if ($node =~ s/([\?\*\+])$// and not $object->{'+qty'}) {
+        $object->{'+qty'} = $1;
     }
     $node =~ s!^<(.*)>$!$1! or die;
     $object->{'.ref'} = $node;

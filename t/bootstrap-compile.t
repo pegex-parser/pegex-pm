@@ -41,10 +41,10 @@ c: <x>
 
 --- yaml
 a:
-  +mod: +
+  +qty: +
   .all:
   - .ref: b
-  - +mod: '*'
+  - +qty: '*'
     .ref: c
 b:
   .rgx: x
@@ -58,20 +58,20 @@ a: <x>
 a:
   .ref: x
 
-=== Single Rule With Trailing Modifier
+=== Single Rule With Trailing Quantifier
 --- grammar
 a: <x>*
 --- yaml
 a:
-  +mod: '*'
+  +qty: '*'
   .ref: x
 
-=== Single Rule With Leading Modifier
+=== Single Rule With Leading Assertion
 --- grammar
 a: =<x>
 --- yaml
 a:
-  +mod: =
+  +pos: 1
   .ref: x
 
 === Single Regex
@@ -121,7 +121,7 @@ a:
 a: [ <x> <y> ]?
 --- yaml
 a:
-  +mod: '?'
+  +qty: '?'
   .all:
   - .ref: x
   - .ref: y
@@ -131,9 +131,9 @@ a:
 a: ![ =<x> <y> ]
 --- yaml
 a:
-  +mod: '!'
+  +neg: 1
   .all:
-  - +mod: =
+  - +pos: 1
     .ref: x
   - .ref: y
 

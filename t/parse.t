@@ -1,3 +1,5 @@
+# $Pegex::Parser::Debug = 1;
+
 use Test::More tests => 1;
 
 use Pegex;

@@ -103,36 +103,34 @@ sub match {
 sub match_next {
     my ($self, $next, $state) = @_;
 
-    my ($has, $not, $times) = (0, 0, '1');
-    if (my $mod = $next->{'+mod'}) {
-        ($mod eq '=') ? ($has = 1) :
-        ($mod eq '!') ? ($not = 1) :
-        ($times = $mod);
-    }
+    my ($qty, $pos, $neg) = @{$next}{qw(+qty +pos +neg)};
+    $qty ||= '1';
+    $pos ||= 0;
+    $neg ||= 0;
 
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
         grep {$next->{".$_"}} qw(ref rgx all any err)
             or XXX $next;
 
-    $self->callback("try", $state) if $state and not($has or $not);
+    $self->callback("try", $state) if $state and not($pos or $neg);
 
     my ($match, $position, $count, $method) =
         ([], $self->position, 0, "match_$kind");
     while (my $return = $self->$method($rule)) {
-        $position = $self->position unless $not;
+        $position = $self->position unless $neg;
         $count++;
-        if ($times =~ /^[1?]$/) {
+        if ($qty =~ /^[1?]$/) {
             $match = $return;
             last;
         }
         push @$match, $return unless $return eq $Pegex::Ignore;
     }
-    $self->position($position) if $count and $times =~ /^[+*]$/;
-    my $result = (($count or $times =~ /^[?*]$/) ? 1 : 0) ^ $not;
+    $self->position($position) if $count and $qty =~ /^[+*]$/;
+    my $result = (($count or $qty =~ /^[?*]$/) ? 1 : 0) ^ $neg;
     $self->position($position) unless $result;
 
     $match = $self->callback(($result ? "got" : "not"), $state, $match)
-        if $state and not($has or $not);
+        if $state and not($pos or $neg);
     $match ||= $Pegex::Ignore;
 
     return ($result ? $match : 0);

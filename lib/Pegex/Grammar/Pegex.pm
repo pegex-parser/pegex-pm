@@ -18,7 +18,7 @@ sub tree_ {
           '.ref' => 'rule_item'
         },
         {
-          '+mod' => '*',
+          '+qty' => '*',
           '.all' => [
             {
               '.rgx' => qr/(?-xism:\G\s*)/
@@ -36,7 +36,7 @@ sub tree_ {
           '.ref' => 'rule_item'
         },
         {
-          '+mod' => '+',
+          '+qty' => '+',
           '.all' => [
             {
               '.rgx' => qr/(?-xism:\G\s*\|\s*)/
@@ -70,10 +70,10 @@ sub tree_ {
     'grammar' => {
       '.all' => [
         {
-          '+mod' => '+',
+          '+qty' => '+',
           '.all' => [
             {
-              '+mod' => '*',
+              '+qty' => '*',
               '.ref' => 'comment'
             },
             {
@@ -82,7 +82,7 @@ sub tree_ {
           ]
         },
         {
-          '+mod' => '*',
+          '+qty' => '*',
           '.ref' => 'comment'
         }
       ]

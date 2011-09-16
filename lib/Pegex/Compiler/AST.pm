@@ -49,8 +49,8 @@ sub got_rule_definition {
 sub got_bracketed_group {
     my ($self, $match) = @_;
     my $group = $match->[1]{rule_group};
-    if (my $mod = $match->[2]{1}) {
-        $group->{'+mod'} = $mod;
+    if (my $qty = $match->[2]{1}) {
+        $group->{'+qty'} = $qty;
     }
     return $group;
 }
@@ -89,6 +89,11 @@ sub get_group {
     return [ get($group) ];
 }
 
+my %assertions = (
+    '!' => '+neg',
+    '=' => '+pos',
+);
+
 sub got_rule_reference {
     my ($self, $match) = @_;
     my ($assertion, $ref, $quantifier) =
@@ -97,9 +102,8 @@ sub got_rule_reference {
     if (my $regex = Pegex::Grammar::Atoms->atoms->{$ref}) {
         $self->extra_rules->{$ref} = +{ '.rgx' => $regex };
     }
-    if (my $mod = $assertion || $quantifier) {
-        $node->{'+mod'} = $mod;
-    }
+    $node->{'+qty'} = $quantifier if $quantifier;
+    $node->{$assertions{$assertion}} = 1 if $assertion;
     return $node;
 }
 
