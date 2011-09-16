@@ -15,7 +15,7 @@ sub tree_ {
     'all_group' => {
       '.all' => [
         {
-          '.ref' => 'rule_item'
+          '.ref' => 'rule_part'
         },
         {
           '+qty' => '*',
@@ -24,7 +24,7 @@ sub tree_ {
               '.rgx' => qr/(?-xism:\G\s*)/
             },
             {
-              '.ref' => 'rule_item'
+              '.ref' => 'rule_part'
             }
           ]
         }
@@ -33,7 +33,7 @@ sub tree_ {
     'any_group' => {
       '.all' => [
         {
-          '.ref' => 'rule_item'
+          '.ref' => 'rule_part'
         },
         {
           '+qty' => '+',
@@ -42,7 +42,7 @@ sub tree_ {
               '.rgx' => qr/(?-xism:\G\s*\|\s*)/
             },
             {
-              '.ref' => 'rule_item'
+              '.ref' => 'rule_part'
             }
           ]
         }
@@ -141,8 +141,26 @@ sub tree_ {
     'rule_name' => {
       '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*))/
     },
+    'rule_part' => {
+      '.all' => [
+        {
+          '.ref' => 'rule_item'
+        },
+        {
+          '+qty' => '?',
+          '.all' => [
+            {
+              '.rgx' => qr/(?-xism:\G\s+\*\*\s+)/
+            },
+            {
+              '.ref' => 'rule_item'
+            }
+          ]
+        }
+      ]
+    },
     'rule_reference' => {
-      '.rgx' => qr/(?-xism:\G([!=]?)<([a-zA-Z]\w*)>([\*\+\?]?))/
+      '.rgx' => qr/(?-xism:\G([!=\-\.]?)<([a-zA-Z]\w*)>([\*\+\?]?))/
     }
   }
 }

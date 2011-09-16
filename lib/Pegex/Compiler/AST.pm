@@ -89,21 +89,32 @@ sub get_group {
     return [ get($group) ];
 }
 
-my %assertions = (
+sub got_rule_part {
+    my ($self, $part) = @_;
+    my $sep = pop @$part;
+    if (@$sep) {
+        $part->[0]{rule_item}{'.sep'} = $sep->[1]{rule_item};
+    }
+    $part;
+}
+
+my %prefixes = (
     '!' => '+neg',
     '=' => '+pos',
+    '.' => '-skip',
+    '-' => '-pass',
 );
 
 sub got_rule_reference {
     my ($self, $match) = @_;
-    my ($assertion, $ref, $quantifier) =
+    my ($prefix, $ref, $suffix) =
         @{$match}{qw(1 2 3)};
     my $node = +{ '.ref' => $ref };
     if (my $regex = Pegex::Grammar::Atoms->atoms->{$ref}) {
         $self->extra_rules->{$ref} = +{ '.rgx' => $regex };
     }
-    $node->{'+qty'} = $quantifier if $quantifier;
-    $node->{$assertions{$assertion}} = 1 if $assertion;
+    $node->{'+qty'} = $suffix if $suffix;
+    $node->{$prefixes{$prefix}} = 1 if $prefix;
     return $node;
 }
 

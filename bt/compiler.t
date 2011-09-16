@@ -12,8 +12,8 @@ sub run {
     my $compile = $block->{points}{compile};
     my $boot_compile = fixup(yaml(bootstrap_compile($grammar)));
     is $boot_compile, $compile, "$title - Bootstrap compile is correct";
-#     my $pegex_compile = fixup(yaml(pegex_compile($grammar)));
-#     is $pegex_compile, $compile, "$title - Pegex compile is correct";
+    my $pegex_compile = fixup(yaml(pegex_compile($grammar)));
+    is $pegex_compile, $compile, "$title - Pegex compile is correct";
 }
 
 sub pegex_compile {
@@ -38,9 +38,64 @@ sub yaml {
 
 __DATA__
 
-plan: 4
+plan: 16
 
 blocks:
+- title: Single Regex
+  points:
+    grammar: |
+        a: /x/
+    compile: |
+        a:
+          .rgx: x
+
+- title: Single Reference
+  points:
+    grammar: |
+        a: <b>
+    compile: |
+        a:
+          .ref: b
+
+- title: Single Error
+  points:
+    grammar: |
+        a: `b`
+    compile: |
+        a:
+          .err: b
+
+- title: Simple All Group
+  points:
+    grammar: |
+        a: /b/ <c>
+    compile: |
+        a:
+          .all:
+          - .rgx: b
+          - .ref: c
+
+- title: Ref Quantifier
+  points:
+    grammar: |
+        a: <b>*
+    compile: |
+        a:
+          +qty: '*'
+          .ref: b
+
+- title: Negative and Positive Assertion
+  points:
+    grammar: |
+      a: !<b> =<c>
+    compile: |
+      a:
+        .all:
+        - +neg: 1
+          .ref: b
+        - +pos: 1
+          .ref: c
+
 - title: Skip and Pass Marker
   points:
     grammar: |
@@ -57,29 +112,11 @@ blocks:
 - title: List Separator
   points:
     grammar: |
-        a: <b> | <c> ** <d>
+        a: <b> | <c> ** /d/
     compile: |
         a:
           .any:
           - .ref: b
           - .ref: c
             .sep:
-              .ref: d
-
-- title: Ref Quantifier
-  points:
-    grammar: |
-        a: <b>*
-    compile: |
-        a:
-          +qty: '*'
-          .ref: b
-
-- title: Negative Assertion
-  points:
-    grammar: |
-      a: !<b>
-    compile: |
-      a:
-        +neg: 1
-        .ref: b
+              .rgx: d
