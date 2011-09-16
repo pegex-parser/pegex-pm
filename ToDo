@@ -1,5 +1,5 @@
 #------------------------------------------
-- Switch to Mo
++ Switch to Mo
 - Support <.rule>
   - Compare to Rx:G
 - Skip empty regex matches
