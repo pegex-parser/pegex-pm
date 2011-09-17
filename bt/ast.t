@@ -25,7 +25,7 @@ sub yaml {
 
 __DATA__
 
-plan: 16
+plan: 2
 
 blocks:
 - title: Single Regex
@@ -42,4 +42,18 @@ blocks:
           1: bb
       - 1: cc
 
+- title: Single Regex
+  points:
+    grammar: |
+        a: <b>* -<c>* .<d>*
+        b: /(b)/
+        c: /(c)/
+        d: /(d)/
+    input: bccdd
+    ast: |
+      a:
+      - - b:
+            1: b
+      - - 1: c
+        - 1: c
 

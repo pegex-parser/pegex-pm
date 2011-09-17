@@ -150,7 +150,7 @@ sub match_next {
     }
 
     $match = $Pegex::Ignore
-        if $skip or not $match;
+        if $next->{'-skip'} or $skip or not $match;
 
     return ($result ? $match : 0);
 }
