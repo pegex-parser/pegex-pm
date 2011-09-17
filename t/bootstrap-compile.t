@@ -71,7 +71,7 @@ a:
 a: =<x>
 --- yaml
 a:
-  +pos: 1
+  +asr: 1
   .ref: x
 
 === Single Regex
@@ -131,9 +131,9 @@ a:
 a: ![ =<x> <y> ]
 --- yaml
 a:
-  +neg: 1
+  +asr: -1
   .all:
-  - +pos: 1
+  - +asr: 1
     .ref: x
   - .ref: y
 

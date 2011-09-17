@@ -107,8 +107,8 @@ sub compile_next {
 }
 
 my %prefixes = (
-    '!' => '+neg',
-    '=' => '+pos',
+    '!' => ['+asr', -1],
+    '=' => ['+asr', 1],
     '.' => '-skip',
     '-' => '-pass',
 );
@@ -128,7 +128,9 @@ sub compile_group {
     die unless @$node > 2;
     my $object = {};
     if ($node->[0] =~ /^([\=\!])/) {
-        $object->{$prefixes{$1}} = 1;
+        my ($key, $val) = ($prefixes{$1}, 1);
+        ($key, $val) = @$key if ref $key;
+        $object->{$key} = $val;
     }
     if ($node->[-1] =~ /([\?\*\+])$/ and not $object->{'+qty'}) {
         $object->{'+qty'} = $1;
@@ -162,7 +164,9 @@ sub compile_rule {
     my $node = shift;
     my $object = {};
     if ($node =~ s/^([\=\!\-\.])//) {
-        $object->{$prefixes{$1}} = 1;
+        my ($key, $val) = ($prefixes{$1}, 1);
+        ($key, $val) = @$key if ref $key;
+        $object->{$key} = $val;
     }
     if ($node =~ s/([\?\*\+])$// and not $object->{'+qty'}) {
         $object->{'+qty'} = $1;

@@ -104,20 +104,19 @@ sub match_next {
     my ($self, $next, $rule_name, $pass, $skip) = @_;
 
     my $qty = $next->{'+qty'} || '1';
-    my $pos = $next->{'+pos'} || 0;
-    my $neg = $next->{'+neg'} || 0;
+    my $asr = $next->{'+asr'} || 0;
 
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
         grep {$next->{".$_"}} qw(ref rgx all any err)
             or XXX $next;
 
-    my $trace = ($rule_name and not($pos or $neg) and $self->debug);
+    my $trace = ($rule_name and not $asr and $self->debug);
     $self->trace("try_$rule_name") if $trace;
 
     my ($match, $position, $count, $method) =
         ([], $self->position, 0, "match_$kind");
     while (my $return = $self->$method($rule, $next)) {
-        $position = $self->position unless $neg;
+        $position = $self->position unless $asr;
         $count++;
         if ($qty =~ /^[1?]$/) {
             $match = $return;
@@ -126,14 +125,14 @@ sub match_next {
         push @$match, $return unless $return eq $Pegex::Ignore;
     }
     $self->position($position) if $count and $qty =~ /^[+*]$/;
-    my $result = (($count or $qty =~ /^[?*]$/) ? 1 : 0) ^ $neg;
+    my $result = (($count or $qty =~ /^[?*]$/) ? 1 : 0) ^ ($asr == -1);
     $self->position($position) unless $result;
 
     my $adj = $result ? "got" : "not";
     $self->trace($adj."_$rule_name") if $trace;
 
     # Call receiver callbacks
-    if ($rule_name and not($pos or $neg or $skip)) {
+    if ($rule_name and not($asr or $skip)) {
         my $callback = $adj."_$rule_name";
         my $got;
         if ($got = $self->receiver->can("got")) {

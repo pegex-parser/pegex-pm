@@ -99,8 +99,8 @@ sub got_rule_part {
 }
 
 my %prefixes = (
-    '!' => '+neg',
-    '=' => '+pos',
+    '!' => ['+asr', -1],
+    '=' => ['+asr', 1],
     '.' => '-skip',
     '-' => '-pass',
 );
@@ -114,7 +114,11 @@ sub got_rule_reference {
         $self->extra_rules->{$ref} = +{ '.rgx' => $regex };
     }
     $node->{'+qty'} = $suffix if $suffix;
-    $node->{$prefixes{$prefix}} = 1 if $prefix;
+    if ($prefix) {
+        my ($key, $val) = ($prefixes{$prefix}, 1);
+        ($key, $val) = @$key if ref $key;
+        $node->{$key} = $val;
+    }
     return $node;
 }
 

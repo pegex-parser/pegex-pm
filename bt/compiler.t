@@ -91,9 +91,9 @@ blocks:
     compile: |
       a:
         .all:
-        - +neg: 1
+        - +asr: -1
           .ref: b
-        - +pos: 1
+        - +asr: 1
           .ref: c
 
 - title: Skip and Pass Marker
