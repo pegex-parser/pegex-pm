@@ -97,6 +97,8 @@ sub match {
     $match = $self->receiver->final($match, $rule)
         if $self->receiver->can("final");
 
+    $match = {$rule => []} if $match eq $Pegex::Ignore;
+
     return $match;
 }
 
