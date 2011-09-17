@@ -48,8 +48,8 @@ sub got_rule_definition {
 
 sub got_bracketed_group {
     my ($self, $match) = @_;
-    my $group = $match->[1]{rule_group};
-    if (my $qty = $match->[2]{1}) {
+    my $group = $match->[0]{rule_group};
+    if (my $qty = $match->[1]{1}) {
         $group->{'+qty'} = $qty;
     }
     return $group;
@@ -95,7 +95,7 @@ sub got_rule_part {
     if (@$sep) {
         $part->[0]{rule_item}{'.sep'} = $sep->[1]{rule_item};
     }
-    $part;
+    return $part;
 }
 
 my %prefixes = (
