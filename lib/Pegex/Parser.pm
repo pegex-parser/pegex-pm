@@ -180,16 +180,19 @@ sub match_all {
     my ($self, $list) = @_;
     my $pos = $self->position;
     my $set = [];
+    my $len = 0;
     for my $elem (@$list) {
         if (my $match = $self->match_next($elem)) {
+            next if $elem->{'+asr'};
             push @$set, $match unless $match eq $Pegex::Ignore;
+            $len++;
         }
         else {
             $self->position($pos);
             return 0;
         }
     }
-    return $set->[0] if @$list == 1;
+    return $set->[0] if $len == 1;
     return $set;
 }
 

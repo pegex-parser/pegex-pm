@@ -25,7 +25,7 @@ sub yaml {
 
 __DATA__
 
-plan: 3
+plan: 4
 
 blocks:
 - title: Pass and Skip
@@ -69,4 +69,16 @@ blocks:
       a:
       - []
       - []
+
+- title: Negative Assertion
+  points:
+    grammar: |
+        a: !<b> <c>
+        b: /b/
+        c: /(c+)/
+    input: ccc
+    ast: |
+      a:
+        c:
+          1: ccc
 
