@@ -163,7 +163,7 @@ sub match_ref {
 }
 
 sub match_rgx {
-    my ($self, $regexp) = @_;
+    my ($self, $regexp, $parent) = @_;
 
     my $start = pos($self->{buffer}) = $self->position;
     $self->{buffer} =~ /$regexp/g or return 0;
@@ -177,13 +177,13 @@ sub match_rgx {
 }
 
 sub match_all {
-    my ($self, $list) = @_;
+    my ($self, $list, $parent) = @_;
     my $pos = $self->position;
     my $set = [];
     my $len = 0;
     for my $elem (@$list) {
         if (my $match = $self->match_next($elem)) {
-            next if $elem->{'+asr'};
+            next if $elem->{'+asr'} or $elem->{'-skip'};
             push @$set, $match unless $match eq $Pegex::Ignore;
             $len++;
         }

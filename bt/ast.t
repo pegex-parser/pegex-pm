@@ -25,7 +25,7 @@ sub yaml {
 
 __DATA__
 
-plan: 4
+plan: 5
 
 blocks:
 - title: Pass and Skip
@@ -81,4 +81,17 @@ blocks:
       a:
         c:
           1: ccc
+
+- title: Skip Bracketed
+  points:
+    grammar: |
+        a: <b> .[ <c> <d> ]
+        b: /(b)/
+        c: /(c+)/
+        d: /(d+)/
+    input: bcccd
+    ast: |
+      a:
+        b:
+          1: b
 

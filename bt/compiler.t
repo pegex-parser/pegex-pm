@@ -38,7 +38,7 @@ sub yaml {
 
 __DATA__
 
-plan: 16
+plan: 18
 
 blocks:
 - title: Single Regex
@@ -110,6 +110,7 @@ blocks:
             .ref: c
 
 - title: List Separator
+  SKIP: 1
   points:
     grammar: |
         a: <b> | <c> ** /d/
@@ -120,3 +121,29 @@ blocks:
           - .ref: c
             .sep:
               .rgx: d
+
+- title: Bracketed
+  points:
+    grammar: |
+        a: <b> [ <c> <d> ]?
+    compile: |
+        a:
+          .all:
+          - .ref: b
+          - +qty: '?'
+            .all:
+            - .ref: c
+            - .ref: d
+
+- title: Skip Bracketed
+  points:
+    grammar: |
+        a: <b> .[ <c> <d> ]
+    compile: |
+        a:
+          .all:
+          - .ref: b
+          - -skip: 1
+            .all:
+            - .ref: c
+            - .ref: d

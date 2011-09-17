@@ -38,7 +38,7 @@ sub parse {
             [\!\=\-\.]?<\w+>[\?\*\+]? |
             `[^`]*` |
             \| |
-            [\!\=?]?\[ |
+            [\!\=?\.]?\[ |
             \][\?\*\+]? |
             \([\!\=?]? |
             \)[\?\*\+]?
@@ -60,7 +60,7 @@ sub make_tree {
     my $tree = [];
     push @$stack, $tree;
     for my $token (@$tokens) {
-        if ($token =~ /^[\!\=?]?[\[]/) {
+        if ($token =~ /^[\!\=?\.]?[\[]/) {
             push @$stack, [];
         }
         push @{$stack->[-1]}, $token;
@@ -127,7 +127,7 @@ sub compile_group {
     my $type = shift;
     die unless @$node > 2;
     my $object = {};
-    if ($node->[0] =~ /^([\=\!])/) {
+    if ($node->[0] =~ /^([\=\!\.])/) {
         my ($key, $val) = ($prefixes{$1}, 1);
         ($key, $val) = @$key if ref $key;
         $object->{$key} = $val;

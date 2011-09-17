@@ -14,6 +14,13 @@ use Pegex::Grammar::Atoms;
 has 'top';
 has 'extra_rules' => default => sub {+{}};
 
+my %prefixes = (
+    '!' => ['+asr', -1],
+    '=' => ['+asr', 1],
+    '.' => '-skip',
+    '-' => '-pass',
+);
+
 # Uncomment this to debug. See entire raw AST.
 # sub final {
 #     my ($self, $match) = @_;
@@ -24,14 +31,12 @@ has 'extra_rules' => default => sub {+{}};
 
 
 sub got_grammar {
-    my ($self, $match) = @_;
+    my ($self, $rules) = @_;
     my $grammar = {
         '+top' => $self->top,
         %{$self->extra_rules},
     };
-    my $rules = $match->[0];
     for (@$rules) {
-        $_ = $_->[0];
         my ($key, $value) = %$_;
         $grammar->{$key} = $value;
     }
@@ -48,8 +53,11 @@ sub got_rule_definition {
 
 sub got_bracketed_group {
     my ($self, $match) = @_;
-    my $group = $match->[0]{rule_group};
-    if (my $qty = $match->[1]{1}) {
+    my $group = $match->[1]{rule_group};
+    if (my $prefix = $match->[0]{1}) {
+        $group->{$prefixes{$prefix}} = 1;
+    }
+    if (my $qty = $match->[2]{1}) {
         $group->{'+qty'} = $qty;
     }
     return $group;
@@ -97,13 +105,6 @@ sub got_rule_part {
     }
     return $part;
 }
-
-my %prefixes = (
-    '!' => ['+asr', -1],
-    '=' => ['+asr', 1],
-    '.' => '-skip',
-    '-' => '-pass',
-);
 
 sub got_rule_reference {
     my ($self, $match) = @_;

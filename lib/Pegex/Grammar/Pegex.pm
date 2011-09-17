@@ -51,7 +51,7 @@ sub tree_ {
     'bracketed_group' => {
       '.all' => [
         {
-          '.rgx' => qr/(?-xism:\G\[\s*)/
+          '.rgx' => qr/(?-xism:\G([\.]?)\[\s*)/
         },
         {
           '.ref' => 'rule_group'
