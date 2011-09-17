@@ -173,23 +173,18 @@ sub match {
 }
 
 sub match_next {
-    my ($self, $next, $state) = @_;
+    my ($self, $next) = @_;
 
-    my ($qty, $pos, $neg) = @{$next}{qw(+qty +pos +neg)};
-    $qty ||= '1';
-    $pos ||= 0;
-    $neg ||= 0;
-
+    my $qty = $next->{'+qty'} || '1';
+    my $asr = $next->{'+asr'} || 0;
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
         grep {$next->{".$_"}} qw(ref rgx all any err)
             or XXX $next;
 
-    $self->callback("try", $state) if $state and not($pos or $neg);
-
     my ($match, $position, $count, $method) =
         ([], $self->position, 0, "match_$kind");
-    while (my $return = $self->$method($rule)) {
-        $position = $self->position unless $neg;
+    while (my $return = $self->$method($rule, $next)) {
+        $position = $self->position unless $asr;
         $count++;
         if ($qty =~ /^[1?]$/) {
             $match = $return;
@@ -198,21 +193,43 @@ sub match_next {
         push @$match, $return unless $return eq $Pegex::Ignore;
     }
     $self->position($position) if $count and $qty =~ /^[+*]$/;
-    my $result = (($count or $qty =~ /^[?*]$/) ? 1 : 0) ^ $neg;
+    my $result = (($count or $qty =~ /^[?*]$/) ? 1 : 0) ^ ($asr == -1);
     $self->position($position) unless $result;
 
-    $match = $self->callback(($result ? "got" : "not"), $state, $match)
-        if $state and not($pos or $neg);
-    $match ||= $Pegex::Ignore;
-
+    $match = $Pegex::Ignore
+        if $next->{'-skip'} or not $match;
     return ($result ? $match : 0);
 }
 
 sub match_ref {
-    my ($self, $rule) = @_;
-    die "\n\n*** No grammar support for '$rule'\n\n"
-        unless $self->grammar->tree->{$rule};
-    return $self->match_next($self->grammar->tree->{$rule}, $rule);
+    my ($self, $ref, $parent) = @_;
+    my $rule = $self->grammar->tree->{$ref}
+        or die "\n\n*** No grammar support for '$ref'\n\n";
+
+    my $trace = (not $rule->{'+asr'} and $self->debug);
+    $self->trace("try_$ref") if $trace;
+
+    my $match = $self->match_next($rule);
+
+    # Call receiver callbacks
+    if ($match and not($rule->{'+asr'} or $parent->{'-skip'})) {
+        my $got;
+        if ($got = $self->receiver->can("got")) {
+            $match = $self->receiver->got($ref, $match);
+        }
+        my $callback = "got_$ref";
+        if ($self->receiver->can($callback)) {
+            $match = $self->receiver->$callback($match);
+        }
+        elsif (not $got) {
+            $match = $parent->{'-pass'}
+                ? $match
+                : { $ref => $match };
+        }
+    }
+
+    $self->trace(($match ? "got" : "not") . "_$ref") if $trace;
+    return $match;
 }
 
 sub match_rgx {
@@ -222,7 +239,7 @@ sub match_rgx {
     $self->{buffer} =~ /$regexp/g or return 0;
     my $finish = pos($self->{buffer});
     no strict 'refs';
-    my $match = +{ map {($_, $$_)} 1..$#+ };
+    my $match = $#+ ? +{ map {($_, $$_)} 1..$#+ } : {}; #$Pegex::Ignore;
 
     $self->position($finish);
 
@@ -259,24 +276,6 @@ sub match_any {
 sub match_err {
     my ($self, $error) = @_;
     $self->throw_error($error);
-}
-
-sub callback {
-    my ($self, $adj, $rule, $match) = @_;
-    my $callback = "${adj}_$rule";
-    $self->trace($callback) if $self->debug;
-    return unless $adj eq 'got';
-    my $got;
-    if ($got = $self->receiver->can("got")) {
-        $match = $self->receiver->got($rule, $match);
-    }
-    if ($self->receiver->can($callback)) {
-        return $self->receiver->$callback($match);
-    }
-    elsif (not $got) {
-        return +{ $rule => $match };
-    }
-    return $match;
 }
 
 sub trace {

@@ -31,7 +31,7 @@ sub got_grammar {
     };
     my $rules = $match->[0];
     for (@$rules) {
-        $_ = $_->[1];
+        $_ = $_->[0];
         my ($key, $value) = %$_;
         $grammar->{$key} = $value;
     }
@@ -40,9 +40,9 @@ sub got_grammar {
 
 sub got_rule_definition {
     my ($self, $match) = @_;
-    my $name = $match->[1]{rule_name}{1};
+    my $name = $match->[0]{rule_name}{1};
     $self->{top} ||= $name;
-    my $value = $match->[3]{rule_group};
+    my $value = $match->[1]{rule_group};
     return +{ $name => $value };
 }
 

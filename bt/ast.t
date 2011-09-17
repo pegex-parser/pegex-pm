@@ -25,10 +25,10 @@ sub yaml {
 
 __DATA__
 
-plan: 2
+plan: 3
 
 blocks:
-- title: Single Regex
+- title: Pass and Skip
   points:
     grammar: |
         a: <b> -<c> .<d>
@@ -42,7 +42,7 @@ blocks:
           1: bb
       - 1: cc
 
-- title: Single Regex
+- title: Pass and Skip Multi
   points:
     grammar: |
         a: <b>* -<c>* .<d>*
@@ -56,4 +56,17 @@ blocks:
             1: b
       - - 1: c
         - 1: c
+
+- title: Non capture Regex
+  points:
+    grammar: |
+        a: <b> <b>* -<c>* .<d>*
+        b: /b/
+        c: /c+/
+        d: /d/
+    input: bbccdd
+    ast: |
+      a:
+      - []
+      - []
 

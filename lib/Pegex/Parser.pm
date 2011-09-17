@@ -140,7 +140,9 @@ sub match_ref {
     my $match = $self->match_next($rule);
 
     # Call receiver callbacks
-    if ($match and not($rule->{'+asr'} or $parent->{'-skip'})) {
+    if ($match and $match ne $Pegex::Ignore and
+        not($rule->{'+asr'} or $parent->{'-skip'})
+    ) {
         my $got;
         if ($got = $self->receiver->can("got")) {
             $match = $self->receiver->got($ref, $match);
@@ -167,7 +169,7 @@ sub match_rgx {
     $self->{buffer} =~ /$regexp/g or return 0;
     my $finish = pos($self->{buffer});
     no strict 'refs';
-    my $match = +{ map {($_, $$_)} 1..$#+ };
+    my $match = $#+ ? +{ map {($_, $$_)} 1..$#+ } : $Pegex::Ignore;
 
     $self->position($finish);
 

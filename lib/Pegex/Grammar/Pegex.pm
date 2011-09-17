@@ -74,6 +74,7 @@ sub tree_ {
           '.all' => [
             {
               '+qty' => '*',
+              '-skip' => 1,
               '.ref' => 'comment'
             },
             {
@@ -83,6 +84,7 @@ sub tree_ {
         },
         {
           '+qty' => '*',
+          '-skip' => 1,
           '.ref' => 'comment'
         }
       ]
