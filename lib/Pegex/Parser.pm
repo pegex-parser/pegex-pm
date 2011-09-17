@@ -101,17 +101,13 @@ sub match {
 }
 
 sub match_next {
-    my ($self, $next, $rule_name, $pass, $skip) = @_;
+    my ($self, $next) = @_;
 
     my $qty = $next->{'+qty'} || '1';
     my $asr = $next->{'+asr'} || 0;
-
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
         grep {$next->{".$_"}} qw(ref rgx all any err)
             or XXX $next;
-
-    my $trace = ($rule_name and not $asr and $self->debug);
-    $self->trace("try_$rule_name") if $trace;
 
     my ($match, $position, $count, $method) =
         ([], $self->position, 0, "match_$kind");
@@ -128,27 +124,8 @@ sub match_next {
     my $result = (($count or $qty =~ /^[?*]$/) ? 1 : 0) ^ ($asr == -1);
     $self->position($position) unless $result;
 
-    my $adj = $result ? "got" : "not";
-    $self->trace($adj."_$rule_name") if $trace;
-
-    # Call receiver callbacks
-    if ($rule_name and not($asr or $skip)) {
-        my $callback = $adj."_$rule_name";
-        my $got;
-        if ($got = $self->receiver->can("got")) {
-            $match = $self->receiver->got($rule_name, $match);
-        }
-        if ($self->receiver->can($callback)) {
-            $match = $self->receiver->$callback($match);
-        }
-        elsif (not $got) {
-            $match = $pass ? $match : { $rule_name => $match };
-        }
-    }
-
     $match = $Pegex::Ignore
-        if $next->{'-skip'} or $skip or not $match;
-
+        if $next->{'-skip'} or not $match;
     return ($result ? $match : 0);
 }
 
@@ -156,12 +133,31 @@ sub match_ref {
     my ($self, $ref, $parent) = @_;
     my $rule = $self->grammar->tree->{$ref}
         or die "\n\n*** No grammar support for '$ref'\n\n";
-    my $match = $self->match_next(
-        $rule,
-        $ref,
-        $parent->{'-pass'},
-        $parent->{'-skip'},
-    );
+
+    my $trace = (not $rule->{'+asr'} and $self->debug);
+    $self->trace("try_$ref") if $trace;
+
+    my $match = $self->match_next($rule);
+
+    # Call receiver callbacks
+    if ($match and not($rule->{'+asr'} or $parent->{'-skip'})) {
+        my $got;
+        if ($got = $self->receiver->can("got")) {
+            $match = $self->receiver->got($ref, $match);
+        }
+        my $callback = "got_$ref";
+        if ($self->receiver->can($callback)) {
+            $match = $self->receiver->$callback($match);
+        }
+        elsif (not $got) {
+            $match = $parent->{'-pass'}
+                ? $match
+                : { $ref => $match };
+        }
+    }
+
+    $self->trace(($match ? "got" : "not") . "_$ref") if $trace;
+    return $match;
 }
 
 sub match_rgx {
