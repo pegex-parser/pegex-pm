@@ -103,17 +103,15 @@ sub match {
 sub match_next {
     my ($self, $next, $rule_name, $pass, $skip) = @_;
 
-    my ($qty, $pos, $neg) =
-        @{$next}{qw(+qty +pos +neg)};
-    $qty ||= '1';
-    $pos ||= 0;
-    $neg ||= 0;
-    my $trace = ($rule_name and not($pos or $neg) and $self->debug);
+    my $qty = $next->{'+qty'} || '1';
+    my $pos = $next->{'+pos'} || 0;
+    my $neg = $next->{'+neg'} || 0;
 
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
         grep {$next->{".$_"}} qw(ref rgx all any err)
             or XXX $next;
 
+    my $trace = ($rule_name and not($pos or $neg) and $self->debug);
     $self->trace("try_$rule_name") if $trace;
 
     my ($match, $position, $count, $method) =
