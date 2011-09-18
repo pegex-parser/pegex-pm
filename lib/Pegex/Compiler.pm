@@ -79,6 +79,9 @@ sub combinate_rule {
 sub combinate_object {
     my $self = shift;
     my $object = shift;
+    if (my $sub = $object->{'.sep'}) {
+        $self->combinate_object($sub);
+    }
     if (exists $object->{'.rgx'}) {
         $self->combinate_re($object);
     }

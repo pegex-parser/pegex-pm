@@ -105,6 +105,9 @@ sub match {
 sub match_next {
     my ($self, $next) = @_;
 
+    return $self->match_next_with_sep($next)
+        if $next->{'.sep'};
+
     my $qty = $next->{'+qty'} || '1';
     my $asr = $next->{'+asr'} || 0;
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
@@ -129,6 +132,37 @@ sub match_next {
     $match = $Pegex::Ignore
         if $next->{'-skip'} or not $match;
     return ($result ? $match : 0);
+}
+
+sub match_next_with_sep {
+    my ($self, $next) = @_;
+
+    my ($rule, $kind) = map {($next->{".$_"}, $_)}
+        grep {$next->{".$_"}} qw(ref rgx all any err)
+            or XXX $next;
+
+    my $sep = $next->{'.sep'};
+    my ($sep_rule, $sep_kind) = map {($sep->{".$_"}, $_)}
+        grep {$sep->{".$_"}} qw(ref rgx all any err)
+            or XXX $sep;
+
+    my ($match, $position, $count, $sep_count, $method, $sep_method) =
+        ([], $self->position, 0, 0, "match_$kind", "match_$sep_kind");
+    while (my $return = $self->$method($rule, $next)) {
+        $position = $self->position;
+        $count++;
+        push @$match, $return unless $return eq $Pegex::Ignore;
+        $return = $self->$sep_method($sep_rule, $sep) or last;
+        push @$match, $return unless $return eq $Pegex::Ignore;
+        $sep_count++;
+    }
+    return 0 unless $count;
+    $self->position($position)
+        if $count == $sep_count;
+
+    $match = $Pegex::Ignore
+        if $next->{'-skip'};
+    return $match;
 }
 
 sub match_ref {
