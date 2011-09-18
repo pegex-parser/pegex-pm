@@ -113,6 +113,7 @@ sub combinate_re {
     my $self = shift;
     my $regexp = shift;
     my $atoms = Pegex::Grammar::Atoms->atoms;
+    $regexp->{'.rgx'} =~ s!~!<ws>!g;
     while (1) {
         my $re = $regexp->{'.rgx'};
         $re =~ s[<(\w+)>][
