@@ -137,6 +137,7 @@ sub match_next {
 sub match_next_with_sep {
     my ($self, $next) = @_;
 
+    my $qty = $next->{'+qty'} || '1';
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
         grep {$next->{".$_"}} qw(ref rgx all any err)
             or XXX $next;
@@ -156,7 +157,7 @@ sub match_next_with_sep {
         push @$match, $return unless $return eq $Pegex::Ignore;
         $sep_count++;
     }
-    return 0 unless $count;
+    return ($qty eq '?') ? $match : 0 unless $count;
     $self->position($position)
         if $count == $sep_count;
 

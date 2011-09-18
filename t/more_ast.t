@@ -24,7 +24,7 @@ sub yaml {
 
 __DATA__
 
-plan: 7
+plan: 8
 
 blocks:
 - title: Pass and Skip
@@ -121,7 +121,6 @@ blocks:
   points:
     grammar: |
         a: <c> ** <d>
-        b: /(b)/
         c: /(c+)/
         d: /d+/
     input: cccdccddc
@@ -133,3 +132,19 @@ blocks:
           1: cc
       - c:
           1: c
+
+- title: List without Separators
+  points:
+    grammar: |
+        a: <b> <c>? ** <d> <b>
+        b: /(b)/
+        c: /(c+)/
+        d: /d+/
+    input: bb
+    ast: |
+      a:
+      - b:
+          1: b
+      - []
+      - b:
+          1: b
