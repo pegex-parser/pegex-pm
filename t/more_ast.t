@@ -1,5 +1,5 @@
 # BEGIN { $Pegex::Parser::Debug = 1 }
-use bt::Test;
+use t::TestPegex;
 
 use Pegex;
 use XXX;

@@ -1,4 +1,4 @@
-package bt::Test;
+package t::TestPegex;
 use strict;
 use warnings;
 
