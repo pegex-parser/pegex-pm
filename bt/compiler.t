@@ -38,7 +38,7 @@ sub yaml {
 
 __DATA__
 
-plan: 18
+plan: 20
 
 blocks:
 - title: Single Regex
@@ -110,7 +110,6 @@ blocks:
             .ref: c
 
 - title: List Separator
-  SKIP: 1
   points:
     grammar: |
         a: <b> | <c> ** /d/

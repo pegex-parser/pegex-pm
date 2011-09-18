@@ -101,7 +101,7 @@ sub got_rule_part {
     my ($self, $part) = @_;
     my $sep = pop @$part;
     if (@$sep) {
-        $part->[0]{rule_item}{'.sep'} = $sep->[1]{rule_item};
+        $part->[0]{rule_item}{'.sep'} = $sep->[0]{rule_item};
     }
     return $part;
 }
