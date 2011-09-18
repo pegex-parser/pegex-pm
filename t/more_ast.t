@@ -2,7 +2,6 @@
 use t::TestPegex;
 
 use Pegex;
-use XXX;
 
 sub run {
     my $block = shift;

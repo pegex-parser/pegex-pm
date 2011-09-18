@@ -3,7 +3,6 @@ use t::TestPegex;
 
 use Pegex::Compiler;
 use Pegex::Compiler::Bootstrap;
-use XXX;
 
 sub run {
     my $block = shift;
