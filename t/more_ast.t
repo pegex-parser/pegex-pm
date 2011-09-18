@@ -24,7 +24,7 @@ sub yaml {
 
 __DATA__
 
-plan: 8
+plan: 9
 
 blocks:
 - title: Pass and Skip
@@ -148,3 +148,18 @@ blocks:
       - []
       - b:
           1: b
+
+- title: Automatically Pass TOP
+  points:
+    grammar: |
+        b: /(b)/
+        TOP: <b> <c>*
+        c: /(c)/
+    input: bcc
+    ast: |
+      - b:
+          1: b
+      - - c:
+            1: c
+        - c:
+            1: c

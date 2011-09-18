@@ -59,12 +59,10 @@ sub parse {
         $self->grammar($grammar->new);
     }
 
-    my $start_rule = shift || undef;
-    $start_rule ||= 
-        $self->grammar->tree->{TOP}
-            ? 'TOP'
-            : $self->grammar->tree->{'+top'}
-        or die "No starting rule for Pegex::Parser::parse";
+    my $start_rule = shift ||
+        $self->grammar->tree->{'+top'} ||
+        ($self->grammar->tree->{'TOP'} ? 'TOP' : undef)
+            or die "No starting rule for Pegex::Parser::parse";
 
     my $receiver = $self->receiver or die "No 'receiver'. Can't parse";
     if (not ref $receiver) {
@@ -98,6 +96,8 @@ sub match {
         if $self->receiver->can("final");
 
     $match = {$rule => []} if $match eq $Pegex::Ignore;
+
+    $match = $match->{TOP} || $match if $rule eq 'TOP';
 
     return $match;
 }

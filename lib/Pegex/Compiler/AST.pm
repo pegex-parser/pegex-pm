@@ -46,6 +46,7 @@ sub got_grammar {
 sub got_rule_definition {
     my ($self, $match) = @_;
     my $name = $match->[0]{rule_name}{1};
+    $self->{top} = $name if $name eq 'TOP';
     $self->{top} ||= $name;
     my $value = $match->[1]{rule_group};
     return +{ $name => $value };
