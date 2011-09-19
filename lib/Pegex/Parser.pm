@@ -14,19 +14,22 @@ use Pegex::Input;
 
 use Scalar::Util;
 
-# Parser and receiver objects/classes to use.
+# Grammar object or class
 has 'grammar';
+# Receiver object or class
 has 'receiver' => default => sub {
     require Pegex::Receiver;
     Pegex::Receiver->new();
 };
 
+# Parser options
+has 'throw_on_error' => default => sub {1};
+
 # Internal properties.
 has 'input';
 has 'buffer';
 has 'position' => default => sub {0};
-has 'match_groups' => default => sub {[]};
-has 'error' => default => sub {'die'};
+has 'partial' => default => sub {0};
 
 # Debug the parsing of input.
 has 'debug' => builder => 'debug_';
@@ -73,6 +76,7 @@ sub parse {
     $self->receiver->parser($self);
     Scalar::Util::weaken($self->receiver->{parser});
 
+    # Do the parse
     my $match = $self->match($start_rule) or return;
 
     # Parse was successful!
@@ -89,7 +93,7 @@ sub match {
     my $match = $self->match_ref($rule);
     if ($self->position < length($self->buffer)) {
         $self->throw_error("Parse document failed for some reason");
-        return;  # If $self->error eq 'live'
+        return;  # In case $self->throw_on_error is off
     }
 
     $match = $self->receiver->final($match, $rule)
@@ -266,6 +270,7 @@ sub throw_error {
     my $self = shift;
     my $msg = shift;
     my $line = @{[substr($self->buffer, 0, $self->position) =~ /(\n)/g]} + 1;
+    my $column = $self->position - rindex($self->buffer, "\n", $self->position);
     my $context = substr($self->buffer, $self->position, 50);
     $context =~ s/\n/\\n/g;
     my $position = $self->position;
@@ -273,20 +278,16 @@ sub throw_error {
 Error parsing Pegex document:
   msg: $msg
   line: $line
+  column: $column
   context: "$context"
   position: $position
 ...
-    if ($self->error eq 'die') {
+    if ($self->throw_on_error) {
         require Carp;
         Carp::croak($error);
     }
-    elsif ($self->error eq 'live') {
-        $@ = $error;
-        return;
-    }
-    else {
-        die "Invalid value for Pegex::Parser::error";
-    }
+    $@ = $error;
+    return;
 }
 
 1;

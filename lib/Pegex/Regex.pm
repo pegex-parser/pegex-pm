@@ -22,7 +22,7 @@ sub generate_regex {
     push @parsers, Pegex::Parser->new(
         grammar => Pegex::Grammar->new( text => shift ),
         receiver => 'Pegex::Receiver',
-        error => 'live',
+        throw_on_error => 0,
     );
     my $index = $#parsers;
     my $regex = "(??{Pegex::Regex::parse($index, \$_)})";

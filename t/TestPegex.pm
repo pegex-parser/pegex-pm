@@ -37,4 +37,12 @@ sub run {
     }
 }
 
+package t::TestPegex::AST;
+use Pegex::Mo;
+extends 'Pegex::Receiver';
+
+sub got_zero { return 0 };
+sub got_empty { return '' };
+sub got_undef { return undef }
+
 1;
