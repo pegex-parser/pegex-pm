@@ -21,7 +21,10 @@ sub tree_ {
 
 # Parser and receiver classes to use.
 has 'parser' => default => sub {'Pegex::Parser'};
-has 'receiver' => default => sub {'Pegex::Receiver'};
+has 'receiver' => default => sub {
+    require Pegex::Receiver;
+    Pegex::Receiver->new(wrap => 1);
+};
 
 sub parse {
     my $self = shift;

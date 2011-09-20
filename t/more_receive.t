@@ -2,14 +2,17 @@
 use t::TestPegex;
 
 use Pegex::Grammar;
+# use XXX;
 
 sub run {
     my $block = shift;
     my ($grammar, $input, $ast) = @{$block->{points}}{qw(grammar input ast)};
+    my $receiver = t::TestPegex::AST->new;
     my $g = Pegex::Grammar->new(
-        receiver => 't::TestPegex::AST',
+        receiver => $receiver,
         text => $grammar,
     );
+    $receiver->wrap(1) if $block->{wrap};
     my $out = fixup(yaml($g->parse($input)));
     is $out, $ast, $block->{title};
 }
@@ -27,7 +30,7 @@ sub yaml {
 
 __DATA__
 
-plan: 1
+plan: 2
 
 blocks:
 - title: False Values
@@ -39,8 +42,21 @@ blocks:
         undef: /(d+)/
     input: bbccdd
     ast: |
-      a:
       - 0
       - ''
       - ~
 
+- title: Wrap
+  wrap: 1
+  points:
+    grammar: |
+        a: <b> <c> <d>
+        b: /(b+)/
+        c: /(c+)/
+        d: /(d+)/
+    input: bbccdd
+    ast: |
+        a:
+        - b: bb
+        - c: cc
+        - d: dd

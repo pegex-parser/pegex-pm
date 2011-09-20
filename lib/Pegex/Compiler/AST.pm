@@ -13,6 +13,7 @@ use Pegex::Grammar::Atoms;
 
 has 'top';
 has 'extra_rules' => default => sub {+{}};
+use constant wrap => 1;
 
 my %prefixes = (
     '!' => ['+asr', -1],

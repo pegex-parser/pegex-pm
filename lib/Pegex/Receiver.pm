@@ -10,6 +10,6 @@ use Pegex::Mo;
 
 has 'parser';
 has 'data';
-has wrap => default => sub { 1 };
+has wrap => default => sub { 0 };
 
 1;
