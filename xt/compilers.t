@@ -1,6 +1,6 @@
 # BEGIN { $TestML::Test::Differences = 1 }
-BEGIN { $Pegex::Parser::Debug = 1 }
-BEGIN { $Pegex::Compiler::Bootstrap = 1 }
+# BEGIN { $Pegex::Parser::Debug = 1 }
+# BEGIN { $Pegex::Compiler::Bootstrap = 1 }
 
 use TestML -run,
     -require_or_skip => 'YAML::XS';
