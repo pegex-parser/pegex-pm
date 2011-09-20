@@ -19,6 +19,7 @@ my %prefixes = (
     '=' => ['+asr', 1],
     '.' => '-skip',
     '-' => '-pass',
+    '+' => '-wrap',
 );
 
 # Uncomment this to debug. See entire raw AST.

@@ -26,6 +26,8 @@ has 'receiver' => default => sub {
 has 'throw_on_error' => default => sub {1};
 # Allow a partial parse
 has 'partial' => default => sub {0};
+# Wrap results in hash with rule name for key
+has 'wrap' => default => sub { $_[0]->receiver->wrap };
 
 # Internal properties.
 has 'input';
@@ -187,7 +189,7 @@ sub match_ref {
         if (my $sub = $self->receiver->can($callback)) {
             $match = [ $sub->($self->receiver, $match->[0]) ];
         }
-        elsif (not $parent->{'-pass'}) {
+        elsif ($self->wrap ? not($parent->{'-pass'}) : $parent->{'-wrap'}) {
             $match = [ @$match ? { $ref => $match->[0] } : () ];
         }
     }

@@ -36,7 +36,7 @@ sub parse {
         my @tokens = ($text =~ m{(
             /[^/]*/ |
             \*\* |
-            [\!\=\-\.]?<\w+>[\?\*\+]? |
+            [\!\=\-\+\.]?<\w+>[\?\*\+]? |
             `[^`]*` |
             \| |
             [\!\=?\.]?\[ |
@@ -112,6 +112,7 @@ my %prefixes = (
     '=' => ['+asr', 1],
     '.' => '-skip',
     '-' => '-pass',
+    '+' => '-wrap',
 );
 
 sub compile_sep {
@@ -128,7 +129,7 @@ sub compile_group {
     my $type = shift;
     die unless @$node > 2;
     my $object = {};
-    if ($node->[0] =~ /^([\=\!\.])/) {
+    if ($node->[0] =~ /^([\=\!\.\-\+])/) {
         my ($key, $val) = ($prefixes{$1}, 1);
         ($key, $val) = @$key if ref $key;
         $object->{$key} = $val;
@@ -164,7 +165,7 @@ sub compile_rule {
     my $self = shift;
     my $node = shift;
     my $object = {};
-    if ($node =~ s/^([\=\!\-\.])//) {
+    if ($node =~ s/^([\=\!\-\+\.])//) {
         my ($key, $val) = ($prefixes{$1}, 1);
         ($key, $val) = @$key if ref $key;
         $object->{$key} = $val;

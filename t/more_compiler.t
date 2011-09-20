@@ -96,18 +96,21 @@ blocks:
         - +asr: 1
           .ref: c
 
-- title: Skip and Pass Marker
+- title: Skip and Wrap Marker
   points:
     grammar: |
-        a: .<b> -<c>+
+        a: .<b> +<c>+ -<d>?
     compile: |
         a:
           .all:
           - -skip: 1
             .ref: b
           - +qty: +
-            -pass: 1
+            -wrap: 1
             .ref: c
+          - +qty: '?'
+            -pass: 1
+            .ref: d
 
 - title: List Separator
   points:
