@@ -26,9 +26,20 @@ sub import {
 }
 
 sub pegex {
-    die 'Pegex::pegex takes one argument ($grammar_text)'
-        unless @_ == 1;
-    return Pegex::Grammar->new(text => $_[0]);
+    die "pegex() requires at least 1 argument, a pegex grammar"
+        unless @_;
+    my $options = $_[1] || {};
+    my $wrap = defined $options->{wrap}
+        ? $options->{wrap}
+        : 1;
+    my $receiver = $options->{receiver} || do {
+        require Pegex::Receiver;
+        Pegex::Receiver->new(wrap => $wrap);
+    };
+    return Pegex::Grammar->new(
+        text => $_[0],
+        receiver => $receiver,
+    );
 }
 
 1;
