@@ -86,8 +86,8 @@ sub parse {
 sub match {
     my ($self, $rule) = @_;
 
-    $self->receiver->begin()
-        if $self->receiver->can("begin");
+    $self->receiver->initialize($rule)
+        if $self->receiver->can("initialize");
 
     my $match = $self->match_next({'.ref' => $rule});
     if (not $match or $self->position < length($self->buffer)) {
@@ -96,9 +96,8 @@ sub match {
     }
     $match = $match->[0];
 
-    if (my $sub = $self->receiver->can("finalize")) {
-        $match = $sub->($self->receiver, $match, $rule);
-    }
+    $match = $self->receiver->finalize($match, $rule)
+        if $self->receiver->can("finalize");
 
     $match = {$rule => []} unless $match;
 
@@ -107,13 +106,6 @@ sub match {
     return $match;
 }
 
-# match_next returns () or anything.
-# match_next is called in list context.
-# match_next calls match_(ref|rgx|all|any)
-#   those things return an array_ref or 0
-#       0 on fail
-#       [] on ignore
-#       [$x] on pass
 sub match_next {
     my ($self, $next) = @_;
 
@@ -291,7 +283,7 @@ Error parsing Pegex document:
         Carp::croak($error);
     }
     $@ = $error;
-    return;
+    return 0;
 }
 
 1;
