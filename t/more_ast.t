@@ -182,7 +182,7 @@ blocks:
     grammar: |
         a: [ <b>* <c> ]+ <b>*
         b: /(b)/
-        c: /(c*)/
+        c: /(c+)/
     input: cc
     ast: |
       a:

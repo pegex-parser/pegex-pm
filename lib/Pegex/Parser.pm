@@ -203,14 +203,13 @@ sub match_ref {
     return $match;
 }
 
+my $terminater = 0;
 sub match_rgx {
     my ($self, $regexp, $parent) = @_;
 
     my $start = pos($self->{buffer}) = $self->position;
-    if ($start >= length $self->{buffer}) {
-        # XXX This is flimsy
-        return 0 unless index($regexp, '\\z') >= 0;
-    }
+    die "Your grammar seems to not terminate at end of stream"
+        if $start >= length $self->{buffer} and $terminater++ > 1000;
     $self->{buffer} =~ /$regexp/g or return 0;
     my $finish = pos($self->{buffer});
     no strict 'refs';
