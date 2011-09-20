@@ -22,7 +22,7 @@ my %prefixes = (
 );
 
 # Uncomment this to debug. See entire raw AST.
-# sub final {
+# sub finalize {
 #     my ($self, $match) = @_;
 #     XXX $match;
 # }
@@ -45,7 +45,7 @@ sub got_grammar {
 
 sub got_rule_definition {
     my ($self, $match) = @_;
-    my $name = $match->[0]{rule_name}{1};
+    my $name = $match->[0]{rule_name};
     $self->{top} = $name if $name eq 'TOP';
     $self->{top} ||= $name;
     my $value = $match->[1]{rule_group};
@@ -55,10 +55,10 @@ sub got_rule_definition {
 sub got_bracketed_group {
     my ($self, $match) = @_;
     my $group = $match->[1]{rule_group};
-    if (my $prefix = $match->[0]{1}) {
+    if (my $prefix = $match->[0]) {
         $group->{$prefixes{$prefix}} = 1;
     }
-    if (my $qty = $match->[2]{1}) {
+    if (my $qty = $match->[-1]) {
         $group->{'+qty'} = $qty;
     }
     return $group;
@@ -109,8 +109,7 @@ sub got_rule_part {
 
 sub got_rule_reference {
     my ($self, $match) = @_;
-    my ($prefix, $ref, $suffix) =
-        @{$match}{qw(1 2 3)};
+    my ($prefix, $ref, $suffix) = @$match;
     my $node = +{ '.ref' => $ref };
     if (my $regex = Pegex::Grammar::Atoms->atoms->{$ref}) {
         $self->extra_rules->{$ref} = +{ '.rgx' => $regex };
@@ -126,12 +125,12 @@ sub got_rule_reference {
 
 sub got_regular_expression {
     my ($self, $match) = @_;
-    return +{ '.rgx' => $match->{1} };
+    return +{ '.rgx' => $match };
 }
 
 sub got_error_message {
     my ($self, $match) = @_;
-    return +{ '.err' => $match->{1} };
+    return +{ '.err' => $match };
 }
 
 1;

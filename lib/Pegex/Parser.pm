@@ -96,7 +96,7 @@ sub match {
     }
     $match = $match->[0];
 
-    if (my $sub = $self->receiver->can("final")) {
+    if (my $sub = $self->receiver->can("finalize")) {
         $match = $sub->($self->receiver, $match, $rule);
     }
 
@@ -213,7 +213,8 @@ sub match_rgx {
     $self->{buffer} =~ /$regexp/g or return 0;
     my $finish = pos($self->{buffer});
     no strict 'refs';
-    my $match = $#+ ? [ +{ map {($_, $$_)} 1..$#+ } ] : [];
+    my $match = [ map $$_, 1..$#+ ];
+    $match = [ $match ] if $#+ > 1;
 
     $self->position($finish);
 

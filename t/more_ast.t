@@ -25,7 +25,7 @@ sub yaml {
 
 __DATA__
 
-plan: 11
+plan: 12
 
 blocks:
 - title: Pass and Skip
@@ -38,9 +38,8 @@ blocks:
     input: bbccdd
     ast: |
       a:
-      - b:
-          1: bb
-      - 1: cc
+      - b: bb
+      - cc
 
 - title: Pass and Skip Multi
   points:
@@ -52,10 +51,9 @@ blocks:
     input: bccdd
     ast: |
       a:
-      - - b:
-            1: b
-      - - 1: c
-        - 1: c
+      - - b: b
+      - - c
+        - c
 
 - title: Non capture Regex
   points:
@@ -79,8 +77,7 @@ blocks:
     input: ccc
     ast: |
       a:
-        c:
-          1: ccc
+        c: ccc
 
 - title: Skip Bracketed
   points:
@@ -92,8 +89,7 @@ blocks:
     input: bcccd
     ast: |
       a:
-        b:
-          1: b
+        b: b
 
 - title: List and Separators
   points:
@@ -105,18 +101,12 @@ blocks:
     input: bcccdccddc
     ast: |
       a:
-      - b:
-          1: b
-      - - c:
-            1: ccc
-        - d:
-            1: d
-        - c:
-            1: cc
-        - d:
-            1: dd
-        - c:
-            1: c
+      - b: b
+      - - c: ccc
+        - d: d
+        - c: cc
+        - d: dd
+        - c: c
 
 - title: List without Separators
   points:
@@ -127,12 +117,9 @@ blocks:
     input: cccdccddc
     ast: |
       a:
-      - c:
-          1: ccc
-      - c:
-          1: cc
-      - c:
-          1: c
+      - c: ccc
+      - c: cc
+      - c: c
 
 - title: List without Separators
   points:
@@ -144,11 +131,9 @@ blocks:
     input: bb
     ast: |
       a:
-      - b:
-          1: b
+      - b: b
       - []
-      - b:
-          1: b
+      - b: b
 
 - title: Automatically Pass TOP
   points:
@@ -158,12 +143,20 @@ blocks:
         c: /(c)/
     input: bcc
     ast: |
-      - b:
-          1: b
-      - - c:
-            1: c
-        - c:
-            1: c
+      - b: b
+      - - c: c
+        - c: c
+
+- title: Multi Group Regex
+  points:
+    grammar: |
+        t: /.*(x).*(y).*(z).*/
+    input: aaaxbbbyccczddd
+    ast: |
+      t:
+      - x
+      - y
+      - z
 
 - title: Whitespace Matchers
   points:
@@ -174,8 +167,8 @@ blocks:
            ..    
 
     ast: |
-      1: .
-      2: ..
+      - .
+      - ..
 
 - title: Empty Stars
   points:
@@ -187,6 +180,6 @@ blocks:
     ast: |
       a:
       - - - []
-          - c:
-              1: cc
+          - c: cc
       - []
+  LAST: 1
