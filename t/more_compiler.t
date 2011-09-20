@@ -3,6 +3,7 @@ use t::TestPegex;
 
 use Pegex::Compiler;
 use Pegex::Compiler::Bootstrap;
+use XXX;
 
 sub run {
     my $block = shift;
@@ -37,7 +38,7 @@ sub yaml {
 
 __DATA__
 
-plan: 20
+plan: 22
 
 blocks:
 - title: Single Regex
@@ -117,6 +118,19 @@ blocks:
           .any:
           - .ref: b
           - .ref: c
+            .sep:
+              .rgx: d
+
+- title: List Separator
+  points:
+    grammar: |
+        a: <b> | <c>? ** /d/
+    compile: |
+        a:
+          .any:
+          - .ref: b
+          - +qty: '?'
+            .ref: c
             .sep:
               .rgx: d
 

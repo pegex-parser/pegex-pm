@@ -1,12 +1,13 @@
 # BEGIN { $Pegex::Parser::Debug = 1 }
+# BEGIN { $Pegex::Compiler::Bootstrap = 1 }
 use t::TestPegex;
 
 use Pegex;
+# use XXX;
 
 sub run {
     my $block = shift;
     my ($grammar, $input, $ast) = @{$block->{points}}{qw(grammar input ast)};
-#     XXX pegex($grammar)->tree;
     my $out = fixup(yaml(pegex($grammar)->parse($input)));
     is $out, $ast, $block->{title};
 }
@@ -24,7 +25,7 @@ sub yaml {
 
 __DATA__
 
-plan: 10
+plan: 11
 
 blocks:
 - title: Pass and Skip
@@ -69,10 +70,10 @@ blocks:
       - []
       - []
 
-- title: Negative Assertion
+- title: Assertions
   points:
     grammar: |
-        a: !<b> <c>
+        a: !<b> =<c> <c>
         b: /b/
         c: /(c+)/
     input: ccc
@@ -175,3 +176,17 @@ blocks:
     ast: |
       1: .
       2: ..
+
+- title: Empty Stars
+  points:
+    grammar: |
+        a: [ <b>* <c> ]+ <b>*
+        b: /(b)/
+        c: /(c*)/
+    input: cc
+    ast: |
+      a:
+      - - - []
+          - c:
+              1: cc
+      - []

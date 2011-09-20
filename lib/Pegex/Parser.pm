@@ -1,4 +1,4 @@
-##
+#u
 # name:      Pegex::Parser
 # abstract:  Pegex Parser Runtime
 # author:    Ingy döt Net <ingy@cpan.org>
@@ -24,12 +24,13 @@ has 'receiver' => default => sub {
 
 # Parser options
 has 'throw_on_error' => default => sub {1};
+# Allow a partial parse
+has 'partial' => default => sub {0};
 
 # Internal properties.
 has 'input';
 has 'buffer';
 has 'position' => default => sub {0};
-has 'partial' => default => sub {0};
 
 # Debug the parsing of input.
 has 'debug' => builder => 'debug_';
@@ -39,8 +40,6 @@ sub debug_ {
     defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
     0;
 }
-
-$Pegex::Ignore = bless {}, 'Pegex-Ignore';
 
 sub parse {
     my $self = shift;
@@ -90,84 +89,89 @@ sub match {
     $self->receiver->begin()
         if $self->receiver->can("begin");
 
-    my $match = $self->match_ref($rule);
-    if ($self->position < length($self->buffer)) {
+    my $match = $self->match_next({'.ref' => $rule});
+    if (not $match or $self->position < length($self->buffer)) {
         $self->throw_error("Parse document failed for some reason");
         return;  # In case $self->throw_on_error is off
     }
+    $match = $match->[0];
 
-    $match = $self->receiver->final($match, $rule)
-        if $self->receiver->can("final");
+    if (my $sub = $self->receiver->can("final")) {
+        $match = $sub->($self->receiver, $match, $rule);
+    }
 
-    $match = {$rule => []} if $match eq $Pegex::Ignore;
+    $match = {$rule => []} unless $match;
 
     $match = $match->{TOP} || $match if $rule eq 'TOP';
 
     return $match;
 }
 
+# match_next returns () or anything.
+# match_next is called in list context.
+# match_next calls match_(ref|rgx|all|any)
+#   those things return an array_ref or 0
+#       0 on fail
+#       [] on ignore
+#       [$x] on pass
 sub match_next {
     my ($self, $next) = @_;
 
     return $self->match_next_with_sep($next)
         if $next->{'.sep'};
 
-    my $qty = $next->{'+qty'} || '1';
-    my $asr = $next->{'+asr'} || 0;
+    my $quantity = $next->{'+qty'} || '1';
+    my $assertion = $next->{'+asr'} || 0;
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
-        grep {$next->{".$_"}} qw(ref rgx all any err)
-            or XXX $next;
+        grep {$next->{".$_"}} qw(ref rgx all any err) or XXX $next;
 
     my ($match, $position, $count, $method) =
         ([], $self->position, 0, "match_$kind");
     while (my $return = $self->$method($rule, $next)) {
-        $position = $self->position unless $asr;
+        $position = $self->position unless $assertion;
         $count++;
-        if ($qty =~ /^[1?]$/) {
-            $match = $return;
-            last;
-        }
-        push @$match, $return unless $return eq $Pegex::Ignore;
+        push @$match, @$return;
+        last if $quantity =~ /^[1?]$/;
     }
-    $self->position($position) if $count and $qty =~ /^[+*]$/;
-    my $result = (($count or $qty =~ /^[?*]$/) ? 1 : 0) ^ ($asr == -1);
-    $self->position($position) unless $result;
+    if ($quantity =~ /^[+*]$/) {
+        $match = [$match]; # if $count;
+        $self->position($position);
+    }
+    my $result = (($count or $quantity =~ /^[?*]$/) ? 1 : 0)
+        ^ ($assertion == -1);
+    $self->position($position)
+        if not($result) or $assertion;
 
-    $match = $Pegex::Ignore
-        if $next->{'-skip'} or not $match;
+    $match = [] if $next->{'-skip'};
     return ($result ? $match : 0);
 }
 
 sub match_next_with_sep {
     my ($self, $next) = @_;
 
-    my $qty = $next->{'+qty'} || '1';
+    my $quantity = $next->{'+qty'} || '1';
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
-        grep {$next->{".$_"}} qw(ref rgx all any err)
-            or XXX $next;
+        grep {$next->{".$_"}} qw(ref rgx all any err) or XXX $next;
 
-    my $sep = $next->{'.sep'};
-    my ($sep_rule, $sep_kind) = map {($sep->{".$_"}, $_)}
-        grep {$sep->{".$_"}} qw(ref rgx all any err)
-            or XXX $sep;
+    my $separator = $next->{'.sep'};
+    my ($sep_rule, $sep_kind) = map {($separator->{".$_"}, $_)}
+        grep {$separator->{".$_"}} qw(ref rgx all any err) or XXX $separator;
 
     my ($match, $position, $count, $sep_count, $method, $sep_method) =
         ([], $self->position, 0, 0, "match_$kind", "match_$sep_kind");
     while (my $return = $self->$method($rule, $next)) {
         $position = $self->position;
         $count++;
-        push @$match, $return unless $return eq $Pegex::Ignore;
-        $return = $self->$sep_method($sep_rule, $sep) or last;
-        push @$match, $return unless $return eq $Pegex::Ignore;
+        push @$match, @$return;
+        $return = $self->$sep_method($sep_rule, $separator) or last;
+        push @$match, @$return;
         $sep_count++;
     }
-    return ($qty eq '?') ? $match : 0 unless $count;
-    $self->position($position)
-        if $count == $sep_count;
+    return ($quantity eq '?') ? [$match] : 0 unless $count;
+    $self->position($position) if $count == $sep_count;
 
-    $match = $Pegex::Ignore
-        if $next->{'-skip'};
-    return $match;
+    return [] if $next->{'-skip'};
+    return [$match];
 }
 
 sub match_ref {
@@ -179,27 +183,23 @@ sub match_ref {
     $self->trace("try_$ref") if $trace;
 
     my $match = $self->match_next($rule);
+    if (not $match) {
+        $self->trace("not_$ref") if $trace;
+        return 0;
+    }
 
     # Call receiver callbacks
-    if ($match and $match ne $Pegex::Ignore and
-        not($rule->{'+asr'} or $parent->{'-skip'})
-    ) {
-        my $got;
-        if ($got = $self->receiver->can("got")) {
-            $match = $self->receiver->got($ref, $match);
-        }
+    $self->trace("got_$ref") if $trace;
+    if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
         my $callback = "got_$ref";
-        if ($self->receiver->can($callback)) {
-            $match = $self->receiver->$callback($match);
+        if (my $sub = $self->receiver->can($callback)) {
+            $match = [ $sub->($self->receiver, $match->[0]) ];
         }
-        elsif (not $got) {
-            $match = $parent->{'-pass'}
-                ? $match
-                : { $ref => $match };
+        elsif (not $parent->{'-pass'}) {
+            $match = [ @$match ? { $ref => $match->[0] } : () ];
         }
     }
 
-    $self->trace(($match ? "got" : "not") . "_$ref") if $trace;
     return $match;
 }
 
@@ -207,10 +207,14 @@ sub match_rgx {
     my ($self, $regexp, $parent) = @_;
 
     my $start = pos($self->{buffer}) = $self->position;
+    if ($start >= length $self->{buffer}) {
+        # XXX This is flimsy
+        return 0 unless index($regexp, '\\z') >= 0;
+    }
     $self->{buffer} =~ /$regexp/g or return 0;
     my $finish = pos($self->{buffer});
     no strict 'refs';
-    my $match = $#+ ? +{ map {($_, $$_)} 1..$#+ } : $Pegex::Ignore;
+    my $match = $#+ ? [ +{ map {($_, $$_)} 1..$#+ } ] : [];
 
     $self->position($finish);
 
@@ -225,7 +229,7 @@ sub match_all {
     for my $elem (@$list) {
         if (my $match = $self->match_next($elem)) {
             next if $elem->{'+asr'} or $elem->{'-skip'};
-            push @$set, $match unless $match eq $Pegex::Ignore;
+            push @$set, @$match;
             $len++;
         }
         else {
@@ -233,7 +237,7 @@ sub match_all {
             return 0;
         }
     }
-    return $set->[0] if $len == 1;
+    $set = [ $set ] if $len > 1;
     return $set;
 }
 

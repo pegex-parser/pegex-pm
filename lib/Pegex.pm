@@ -11,27 +11,24 @@
 # - irc.freenode.net#pegex
 
 use 5.010;
+use Mo 0.22 ();
+
 package Pegex;
-use Pegex::Mo;
+use strict;
 
 use Pegex::Grammar;
 
 our $VERSION = '0.16';
 
-our @EXPORT = qw(pegex);
-
-has 'grammar';
-
 sub import {
     no strict 'refs';
-    *{caller(1).'::pegex'} = \&pegex;
-    goto &Pegex::Mo::import;
+    *{(caller).'::pegex'} = \&pegex;
 }
 
 sub pegex {
     die 'Pegex::pegex takes one argument ($grammar_text)'
         unless @_ == 1;
-    return Pegex::Grammar->new( text => $_[0] );
+    return Pegex::Grammar->new(text => $_[0]);
 }
 
 1;

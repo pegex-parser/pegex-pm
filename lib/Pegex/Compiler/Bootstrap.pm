@@ -27,6 +27,7 @@ sub parse {
         $value =~ s/^\s*(.*?)\s*$/$1/;
         $self->tree->{$key} = $value;
         $self->tree->{'+top'} ||= $key;
+        $self->tree->{'+top'} = $key if $key eq 'TOP';
     }
 
     for my $rule (sort keys %{$self->tree}) {

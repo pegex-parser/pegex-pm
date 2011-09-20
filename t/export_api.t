@@ -1,3 +1,4 @@
+# BEGIN { $Pegex::Parser::Debug = 1 }
 use Test::More tests => 8;
 
 use Pegex;

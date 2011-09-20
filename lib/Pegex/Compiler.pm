@@ -37,6 +37,13 @@ sub compile_raw {
 }
 
 sub parse {
+    if ($Pegex::Compiler::Bootstrap) {
+        require Pegex::Compiler::Bootstrap;
+        $_[0] = Pegex::Compiler::Bootstrap->new;
+        my $self = shift;
+        return $self->parse(@_)
+    }
+
     my $self = shift;
     $self = $self->new unless ref $self;
 

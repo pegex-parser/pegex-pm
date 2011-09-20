@@ -100,11 +100,11 @@ sub get_group {
 
 sub got_rule_part {
     my ($self, $part) = @_;
-    my $sep = pop @$part;
-    if (@$sep) {
-        $part->[0]{rule_item}{'.sep'} = $sep->[0]{rule_item};
+    my ($rule, $sep) = @$part;
+    if ($sep) {
+        $rule->{rule_item}{'.sep'} = $sep->[0]{rule_item};
     }
-    return $part;
+    return $rule;
 }
 
 sub got_rule_reference {
