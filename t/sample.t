@@ -1,5 +1,9 @@
-use Test::More tests => 1;
-use YAML::XS;
+use Test::More;
+
+eval "use YAML::XS; 1" or
+    plan skip_all => 'YAML::XS required';
+
+plan tests => 1;
 
 my $grammar1 = <<'...';
 contact:
