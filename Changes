@@ -1,4 +1,10 @@
 ---
+version: 0.17
+date:    Wed Sep 21 23:42:00 CEST 2011
+changes:
+- Complete refactoring of everything.
+- This hard fought gem was released from Liz++ and Wendy++'s TV room.
+---
 version: 0.16
 date:    Fri Sep  9 14:51:38 CEST 2011
 changes:

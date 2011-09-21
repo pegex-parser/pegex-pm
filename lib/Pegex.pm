@@ -11,14 +11,15 @@
 # - irc.freenode.net#pegex
 
 use 5.010;
-use Mo 0.22 ();
+use strict;
+use warnings;
+use Mo 0.23 ();
 
 package Pegex;
-use strict;
 
 use Pegex::Grammar;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 sub import {
     no strict 'refs';
@@ -170,6 +171,28 @@ Conway's Perl 5 module, L<Regexp::Grammars>. Pegex tries to take the best
 ideas from these great works, and make them work in as many languages as
 possible. That's Acmeism.
 
+=head1 SELF COMPILATION TRICKS
+
+You can have some fun using Pegex to compile itself. First get the Pegex grammar repo:
+
+    git clone git://github.com/ingydotnet/pegex-pgx.git
+    cd pegex-pgx
+
+Then parse and dump the Pegex grammar with Pegex:
+
+    perl -MXXX -MPegex -e 'XXX pegex("pegex.pgx")->parse("pegex.pgx")'
+
+For a different view of the data tree, try:
+
+    perl -MXXX -MPegex -e 'XXX pegex("pegex.pgx", {wrap => 0})->parse("pegex.pgx")'
+
+Finally to emulate the Pegex compiler do this:
+
+    perl -MXXX -MPegex -e 'XXX pegex("pegex.pgx", {receiver => "Pegex::Compiler::AST"})->parse("pegex.pgx")'
+
+This specifies a "receiving" class that can shape the results into something
+useful. Indeed, this is the exact guts of L<Pegex::Grammar::Pegex>.
+
 =head1 A REAL WORLD EXAMPLE
 
 L<TestML> is a new Acmeist unit test language. It is perfect for software that
@@ -180,27 +203,26 @@ TestML has a language specification grammar:
 http://www.testml.org/specification/language/
 
 The Perl6 implementation of TestML uses this grammar in:
-http://github.com/ingydotnet/testml-pm6/lib/TestML/Parser/Grammar.pm
+https://github.com/ingydotnet/testml-pm6/blob/master/lib/TestML/Parser/Grammar.pm
 
 All other implementations of TestML use this Pegex grammar:
-http://github.com/ingydotnet/testml-pgx/testml.pgx
+https://github.com/ingydotnet/testml-pgx/blob/master/testml.pgx
 
 In Perl 5, Pegex::Compiler is used to compile the grammar into this simple
 data structure (shown in YAML):
-http://github.com/ingydotnet/testml-pgx/testml.yaml
+https://github.com/ingydotnet/testml-pgx/blob/master/testml.pgx.yaml
 
 The grammar can also be precompiled to JSON:
-http://github.com/ingydotnet/testml-pgx/testml.json
+https://github.com/ingydotnet/testml-pgx/blob/master/testml.pgx.json
 
 Pegex::Compiler further compiles this into a Perl 5 only grammar tree, which
 becomes this module:
-http://github.com/ingydotnet/testml-pm/lib/TestML/Parser/Grammar.pm
+https://github.com/ingydotnet/testml-pm/blob/master/lib/TestML/Grammar.pm
 
 TestML::Parser::Grammar is a subclass of Pegex::Grammar. It can be used to
 parse TestML files. TestML::Parser calls the C<parse()> method of the grammar
-with a TestML::Receiver object that receives callbacks when various rules
-match, and uses the information to build a TestML::Document object.
-http://github.com/ingydotnet/testml-pm/lib/TestML/Parser.pm
+with a TestML::AST object that receives callbacks when various rules match,
+and uses the information to build a TestML::Document object.
 
 Thus TestML is an Acmeist language written in Pegex. It can be easily ported
 to every language where Pegex exists. In fact, it must be ported to those

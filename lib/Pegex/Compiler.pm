@@ -196,6 +196,10 @@ sub to_perl {
     my $pegex_compiler = Pegex::Compiler->new();
     my $grammar_tree = $pegex_compiler->compile($grammar_text)->tree;
 
+or:
+
+    perl -Ilib -MYourGrammarModule=compile
+
 =head1 DESCRIPTION
 
 The Pegex::Compiler transforms a Pegex grammar string (or file) into a
@@ -264,3 +268,28 @@ Serialize the current grammar tree to JSON.
 Serialize the current grammar tree to Perl.
 
 =back
+
+=head1 IN PLACE COMPILATION
+
+When you write a Pegex based module you will want to precompile your grammar
+into Perl so that it has no load penalty. Pegex::Grammar provides a special
+mechanism for this. Say you have a class like this:
+
+    package MyThing::Grammar;
+    use Pegex::Mo;
+    extends 'Pegex::Grammar';
+
+    use constant text => '../mything-grammar-repo/mything.pgx';
+    sub tree {
+    }
+
+Simply use this command:
+
+    perl -Ilib -MMyThing::Grammar=compile
+
+and Pegex::Grammar will call Pegex::Compile to put your compiled grammar
+inside your C<tree> subroutine. It will actually write the text into your
+module. This makes it trivial to update your grammar module after making
+changes to the grammar file.
+
+See L<Pegex::JSON> for an example.
