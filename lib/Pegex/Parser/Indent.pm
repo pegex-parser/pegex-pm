@@ -12,3 +12,5 @@ package Pegex::Parser::Indent;
 # off, and for each number popped off a DEDENT token is generated. At the end
 # of the file, a DEDENT token is generated for each number remaining on the
 # stack that is larger than zero. ''
+
+1;

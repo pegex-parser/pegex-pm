@@ -9,7 +9,7 @@ package Pegex::Compiler;
 use Pegex::Mo;
  
 use Pegex::Parser;
-use Pegex::Grammar::Pegex;
+use Pegex::Pegex::Grammar;
 use Pegex::Compiler::AST;
 use Pegex::Grammar::Atoms;
 
