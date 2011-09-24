@@ -1,4 +1,4 @@
-#u
+##
 # name:      Pegex::Parser
 # abstract:  Pegex Parser Runtime
 # author:    Ingy döt Net <ingy@cpan.org>
@@ -24,8 +24,8 @@ has 'receiver' => default => sub {
 
 # Parser options
 has 'throw_on_error' => default => sub {1};
-# Allow a partial parse
-has 'partial' => default => sub {0};
+# # Allow a partial parse
+# has 'partial' => default => sub {0};
 # Wrap results in hash with rule name for key
 has 'wrap' => default => sub { $_[0]->receiver->wrap };
 
@@ -236,7 +236,7 @@ sub match_all {
 }
 
 sub match_any {
-    my ($self, $list) = @_;
+    my ($self, $list, $parent) = @_;
     for my $elem (@$list) {
         if (my $match = $self->match_next($elem)) {
             return $match;
