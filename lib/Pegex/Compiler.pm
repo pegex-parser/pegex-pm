@@ -48,7 +48,7 @@ sub parse {
     $self = $self->new unless ref $self;
 
     my $parser = Pegex::Parser->new(
-        grammar => Pegex::Grammar::Pegex->new,
+        grammar => Pegex::Pegex::Grammar->new,
         receiver => Pegex::Compiler::AST->new,
     );
 

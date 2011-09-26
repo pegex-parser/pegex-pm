@@ -5,7 +5,7 @@
 # license:   perl
 # copyright: 2010, 2011
 
-package Pegex::Grammar::Pegex;
+package Pegex::Pegex::Grammar;
 use Pegex::Mo;
 extends 'Pegex::Grammar';
 
