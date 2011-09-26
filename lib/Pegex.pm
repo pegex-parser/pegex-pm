@@ -13,13 +13,13 @@
 use 5.010;
 use strict;
 use warnings;
-use Mo 0.23 ();
+use Mo 0.25 ();
 
 package Pegex;
 
 use Pegex::Grammar;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 sub import {
     no strict 'refs';

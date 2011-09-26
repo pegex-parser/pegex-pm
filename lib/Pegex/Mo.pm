@@ -6,7 +6,7 @@
 # copyright: 2010, 2011
 
 package Pegex::Mo;
-use Mo;
+use Mo qw[builder default];
 
 sub import {
     my $p = caller;
@@ -17,6 +17,7 @@ sub import {
         *{$p.'::YYY'} = \&YYY;
         *{$p.'::ZZZ'} = \&ZZZ;
     }
+    push @_, qw(builder default);
     goto &Mo::import;
 }
 

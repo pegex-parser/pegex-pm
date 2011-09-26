@@ -1,4 +1,9 @@
 ---
+version: 0.18
+date:    
+changes:
+- Use Mo 0.25
+---
 version: 0.17
 date:    Wed Sep 21 23:42:00 CEST 2011
 changes:
