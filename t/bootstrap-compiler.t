@@ -1,3 +1,4 @@
+# BEGIN { $Pegex::Compiler::Bootstrap = 1 }
 # BEGIN { $Pegex::Parser::Debug = 1 }
 use t::TestPegex;
 
@@ -115,7 +116,7 @@ blocks:
 - title: List Separator
   points:
     grammar: |
-        a: <b> | <c> ** /d/
+        a: <b> | <c> % /d/
     compile: |
         a:
           .any:
@@ -127,7 +128,7 @@ blocks:
 - title: List Separator
   points:
     grammar: |
-        a: <b> | <c>? ** /d/
+        a: <b> | <c>? %% /d/
     compile: |
         a:
           .any:
@@ -135,6 +136,7 @@ blocks:
           - +qty: '?'
             .ref: c
             .sep:
+              +eok: 1
               .rgx: d
 
 - title: Bracketed

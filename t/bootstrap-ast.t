@@ -94,7 +94,7 @@ blocks:
 - title: List and Separators
   points:
     grammar: |
-        a: <b> <c> ** <d>
+        a: <b> <c> % <d>
         b: /(b)/
         c: /(c+)/
         d: /(d+)/
@@ -111,7 +111,7 @@ blocks:
 - title: List without Separators
   points:
     grammar: |
-        a: <c> ** <d>
+        a: <c> % <d>
         c: /(c+)/
         d: /d+/
     input: cccdccddc
@@ -124,7 +124,7 @@ blocks:
 - title: List without Separators
   points:
     grammar: |
-        a: <b> <c>? ** <d> <b>
+        a: <b> <c>* % <d> <b>
         b: /(b)/
         c: /(c+)/
         d: /d+/

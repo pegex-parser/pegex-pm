@@ -161,7 +161,7 @@ sub match_next_with_sep {
         push @$match, @$return;
         $sep_count++;
     }
-    return ($quantity eq '?') ? [$match] : 0 unless $count;
+    return ($quantity eq '*') ? [$match] : 0 unless $count;
     $self->position($position) if $count == $sep_count;
 
     return [] if $next->{'-skip'};

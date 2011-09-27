@@ -140,7 +140,7 @@ sub tree_ {
           '+qty' => '?',
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G\s*\s\*\*\s\s*)/
+              '.rgx' => qr/(?-xism:\G\s*\s(%%?)\s\s*)/
             },
             {
               '.ref' => 'rule_item'

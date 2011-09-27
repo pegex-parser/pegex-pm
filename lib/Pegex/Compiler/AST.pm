@@ -104,7 +104,9 @@ sub got_rule_part {
     my ($self, $part) = @_;
     my ($rule, $sep) = @$part;
     if ($sep) {
-        $rule->{rule_item}{'.sep'} = $sep->[0]{rule_item};
+        $rule->{rule_item}{'.sep'} = $sep->[1]{rule_item};
+        $rule->{rule_item}{'.sep'}{'+eok'} = 1
+            if $sep->[0] eq '%%';
     }
     return $rule;
 }
