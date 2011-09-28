@@ -13,6 +13,7 @@ sub tree_ {
   {
     '+top' => 'grammar',
     'all_group' => {
+      '+min' => 1,
       '.ref' => 'rule_part',
       '.sep' => {
         '.rgx' => qr/(?-xism:\G\s*)/
@@ -24,7 +25,7 @@ sub tree_ {
           '.ref' => 'rule_part'
         },
         {
-          '+qty' => '+',
+          '+min' => 1,
           '.all' => [
             {
               '.rgx' => qr/(?-xism:\G\s*\|\s*)/
@@ -39,13 +40,13 @@ sub tree_ {
     'bracketed_group' => {
       '.all' => [
         {
-          '.rgx' => qr/(?-xism:\G(\.?)\[\s*)/
+          '.rgx' => qr/(?-xism:\G([\.]?)\[\s*)/
         },
         {
           '.ref' => 'rule_group'
         },
         {
-          '.rgx' => qr/(?-xism:\G\s*\]([\*\+\?]?))/
+          '.rgx' => qr/(?-xism:\G\s*\]((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
         }
       ]
     },
@@ -58,10 +59,10 @@ sub tree_ {
     'grammar' => {
       '.all' => [
         {
-          '+qty' => '+',
+          '+min' => 1,
           '.all' => [
             {
-              '+qty' => '*',
+              '+min' => 0,
               '-skip' => 1,
               '.ref' => 'comment'
             },
@@ -71,7 +72,7 @@ sub tree_ {
           ]
         },
         {
-          '+qty' => '*',
+          '+min' => 0,
           '-skip' => 1,
           '.ref' => 'comment'
         }
@@ -137,7 +138,7 @@ sub tree_ {
           '.ref' => 'rule_item'
         },
         {
-          '+qty' => '?',
+          '+max' => 1,
           '.all' => [
             {
               '.rgx' => qr/(?-xism:\G\s*\s(%%?)\s\s*)/
@@ -150,7 +151,7 @@ sub tree_ {
       ]
     },
     'rule_reference' => {
-      '.rgx' => qr/(?-xism:\G([!=\+\-\.]?)<([a-zA-Z]\w*)>([\*\+\?]?))/
+      '.rgx' => qr/(?-xism:\G([!=\+\-\.]?)<([a-zA-Z]\w*)>((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
     }
   }
 }

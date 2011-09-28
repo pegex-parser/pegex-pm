@@ -60,8 +60,8 @@ sub got_bracketed_group {
     if (my $prefix = $match->[0]) {
         $group->{$prefixes{$prefix}} = 1;
     }
-    if (my $qty = $match->[-1]) {
-        $group->{'+qty'} = $qty;
+    if (my $suffix = $match->[-1]) {
+        $self->set_quantity($group, $suffix);
     }
     return $group;
 }
@@ -118,7 +118,9 @@ sub got_rule_reference {
     if (my $regex = Pegex::Grammar::Atoms->atoms->{$ref}) {
         $self->extra_rules->{$ref} = +{ '.rgx' => $regex };
     }
-    $node->{'+qty'} = $suffix if $suffix;
+    if ($suffix) {
+        $self->set_quantity($node, $suffix);
+    }
     if ($prefix) {
         my ($key, $val) = ($prefixes{$prefix}, 1);
         ($key, $val) = @$key if ref $key;
@@ -135,6 +137,31 @@ sub got_regular_expression {
 sub got_error_message {
     my ($self, $match) = @_;
     return +{ '.err' => $match };
+}
+
+sub set_quantity {
+    my ($self, $object, $quantifier) = @_;
+    if ($quantifier eq '*') {
+        $object->{'+min'} = 0;
+    }
+    elsif ($quantifier eq '+') {
+        $object->{'+min'} = 1;
+    }
+    elsif ($quantifier eq '?') {
+        $object->{'+max'} = 1;
+    }
+    elsif ($quantifier =~ /^(\d+)\+$/) {
+        $object->{'+min'} = $1;
+    }
+    elsif ($quantifier =~ /^(\d+)\-(\d+)+$/) {
+        $object->{'+min'} = $1;
+        $object->{'+max'} = $2;
+    }
+    elsif ($quantifier =~ /^(\d+)$/) {
+        $object->{'+min'} = $1;
+        $object->{'+max'} = $1;
+    }
+    else { die "Invalid quantifier: '$quantifier'" }
 }
 
 1;

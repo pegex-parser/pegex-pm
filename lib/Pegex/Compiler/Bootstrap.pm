@@ -11,6 +11,8 @@ extends 'Pegex::Compiler';
 
 use Pegex::Grammar::Atoms;
 
+my $quantifier = qr{(?:[\?\*\+]|\d+(?:\+|\-\d+)?)};
+
 sub parse {
     my $self = shift;
     $self = $self->new unless ref $self;
@@ -39,16 +41,15 @@ sub parse {
     for my $rule (sort keys %{$self->tree}) {
         next if $rule =~ /^\+/;
         my $text = $self->tree->{$rule};
-        my @tokens = ($text =~ m{(
-            /[^/]*/ |
+        my @tokens = grep $_,
+        ($text =~ m{(
+            /[^/\n]*/ |
             %%? |
-            [\!\=\-\+\.]?<\w+>[\?\*\+]? |
-            `[^`]*` |
+            [\!\=\-\+\.]?<\w+>$quantifier? |
+            `[^`\n]*` |
             \| |
             [\!\=?\.]?\[ |
-            \][\?\*\+]? |
-            \([\!\=?]? |
-            \)[\?\*\+]?
+            \]$quantifier? |
         )}gx);
         die "No tokens found for rule <$rule> => '$text'"
             unless @tokens;
@@ -105,7 +106,7 @@ sub compile_next {
         $node =~ m!/! ? $self->compile_re($node) :
         $node =~ m!<! ? $self->compile_rule($node) :
         $node =~ m!`! ? $self->compile_error($node) :
-            die $node;
+            XXX $node;
 
     while (defined $unit->{'.all'} and @{$unit->{'.all'}} == 1) {
         $unit = $unit->{'.all'}->[0];
@@ -141,8 +142,8 @@ sub compile_group {
         ($key, $val) = @$key if ref $key;
         $object->{$key} = $val;
     }
-    if ($node->[-1] =~ /([\?\*\+])$/ and not $object->{'+qty'}) {
-        $object->{'+qty'} = $1;
+    if ($node->[-1] =~ /([\?\*\+])$/) {
+        $self->set_quantity($object, $1);
     }
     shift @$node;
     pop @$node;
@@ -157,6 +158,31 @@ sub compile_group {
         ];
     }
     return $object;
+}
+
+sub set_quantity {
+    my ($self, $object, $quantifier) = @_;
+    if ($quantifier eq '*') {
+        $object->{'+min'} = 0;
+    }
+    elsif ($quantifier eq '+') {
+        $object->{'+min'} = 1;
+    }
+    elsif ($quantifier eq '?') {
+        $object->{'+max'} = 1;
+    }
+    elsif ($quantifier =~ /^(\d+)\+$/) {
+        $object->{'+min'} = $1;
+    }
+    elsif ($quantifier =~ /^(\d+)\-(\d+)+$/) {
+        $object->{'+min'} = $1;
+        $object->{'+max'} = $2;
+    }
+    elsif ($quantifier =~ /^(\d+)$/) {
+        $object->{'+min'} = $1;
+        $object->{'+max'} = $1;
+    }
+    else { die "Invalid quantifier: '$quantifier'" }
 }
 
 sub compile_re {
@@ -177,15 +203,14 @@ sub compile_rule {
         ($key, $val) = @$key if ref $key;
         $object->{$key} = $val;
     }
-    if ($node =~ s/([\?\*\+])$// and not $object->{'+qty'}) {
-        $object->{'+qty'} = $1;
+    if ($node =~ s/($quantifier)$//) {
+        $self->set_quantity($object, $1);
     }
-    $node =~ s!^<(.*)>$!$1! or die;
+    $node =~ s!^<(.*)>$!$1! or XXX $node;
     $object->{'.ref'} = $node;
     if (defined(my $re = Pegex::Grammar::Atoms->atoms->{$node})) {
         $self->tree->{$node} ||= {'.rgx' => $re};
     }
-
     return $object;
 }
 

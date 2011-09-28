@@ -25,7 +25,7 @@ sub yaml {
 
 __DATA__
 
-plan: 12
+plan: 15
 
 blocks:
 - title: Pass and Skip
@@ -94,7 +94,7 @@ blocks:
 - title: List and Separators
   points:
     grammar: |
-        a: <b> <c> % <d>
+        a: <b> <c>+ % <d>
         b: /(b)/
         c: /(c+)/
         d: /(d+)/
@@ -111,7 +111,7 @@ blocks:
 - title: List without Separators
   points:
     grammar: |
-        a: <c> % <d>
+        a: <c>* % <d>
         c: /(c+)/
         d: /d+/
     input: cccdccddc
@@ -182,4 +182,40 @@ blocks:
       - - - []
           - c: cc
       - []
-  LAST: 1
+
+- title: Exact Quantifier
+  points:
+    grammar: |
+        a: <b>3
+        b: /(b)/
+    input: bbb
+    ast: |
+      a:
+      - b: b
+      - b: b
+      - b: b
+
+- title: Quantifier with Separator
+  points:
+    grammar: |
+        a: <b>2-4 %% /,/
+        b: /(b)/
+    input: b,b,b,
+    ast: |
+      a:
+      - b: b
+      - b: b
+      - b: b
+
+- title: Quantifier with Separator, Trailing OK
+  points:
+    grammar: |
+        a: <b>2-4 %% /,/
+        b: /(b)/
+    input: b,b,b,
+    ast: |
+      a:
+      - b: b
+      - b: b
+      - b: b
+
