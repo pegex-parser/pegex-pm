@@ -167,9 +167,11 @@ sub match_next_with_sep {
         $count++;
         push @$match, @$return;
         $return = $self->match_next($separator) or last;
-        my @return = @{$return};
-        @return = @{$return[0]} if $smax != 1;
-        push @$match, @return;
+        my @return = @$return;
+        if (@return) {
+            @return = @{$return[0]} if $smax != 1;
+            push @$match, @return;
+        }
         $scount++;
     }
     if ($max != 1) {

@@ -48,22 +48,19 @@ sub tree_ {
     'grammar' => {
       '.all' => [
         {
-          '+min' => 1,
-          '.all' => [
-            {
-              '+min' => 0,
-              '-skip' => 1,
-              '.ref' => 'comment'
-            },
-            {
-              '.ref' => 'rule_definition'
-            }
-          ]
-        },
-        {
           '+min' => 0,
           '-skip' => 1,
           '.ref' => 'comment'
+        },
+        {
+          '+min' => 1,
+          '.ref' => 'rule_definition',
+          '.sep' => {
+            '+eok' => 1,
+            '+min' => 0,
+            '-skip' => 1,
+            '.ref' => 'comment'
+          }
         }
       ]
     },
