@@ -102,11 +102,12 @@ sub get_group {
 
 sub got_rule_part {
     my ($self, $part) = @_;
-    my ($rule, $sep) = @$part;
-    if ($sep) {
-        $rule->{rule_item}{'.sep'} = $sep->[1]{rule_item};
-        $rule->{rule_item}{'.sep'}{'+eok'} = 1
-            if $sep->[0] eq '%%';
+    my ($rule, $sep_op, $sep_rule) = @$part;
+    if ($sep_rule) {
+        $sep_rule = $sep_rule->{rule_item};
+        $sep_rule->{'+eok'} = 1
+            if $sep_op eq '%%';
+        $rule->{rule_item}{'.sep'} = $sep_rule;
     }
     return $rule;
 }

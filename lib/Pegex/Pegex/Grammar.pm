@@ -133,22 +133,12 @@ sub tree_ {
       '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*))/
     },
     'rule_part' => {
-      '.all' => [
-        {
-          '.ref' => 'rule_item'
-        },
-        {
-          '+max' => 1,
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G\s*\s(%%?)\s\s*)/
-            },
-            {
-              '.ref' => 'rule_item'
-            }
-          ]
-        }
-      ]
+      '+max' => '2',
+      '+min' => '1',
+      '.ref' => 'rule_item',
+      '.sep' => {
+        '.rgx' => qr/(?-xism:\G\s*\s(%%?)\s\s*)/
+      }
     },
     'rule_reference' => {
       '.rgx' => qr/(?-xism:\G([!=\+\-\.]?)<([a-zA-Z]\w*)>((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
