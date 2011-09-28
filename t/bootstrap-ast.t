@@ -25,7 +25,7 @@ sub yaml {
 
 __DATA__
 
-plan: 15
+plan: 16
 
 blocks:
 - title: Pass and Skip
@@ -215,6 +215,20 @@ blocks:
     input: b,b,b,
     ast: |
       a:
+      - b: b
+      - b: b
+      - b: b
+
+- title: Quantifier on the Separator
+  points:
+    grammar: |
+        a: <b>2-4 %% <c>*
+        b: /(b)/
+        c: /<COMMA>/
+    input: b,b,,,,bb,
+    ast: |
+      a:
+      - b: b
       - b: b
       - b: b
       - b: b

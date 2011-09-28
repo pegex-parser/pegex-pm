@@ -192,14 +192,14 @@ blocks:
 - title: Separators with Quantifiers
   points:
     grammar: |
-        a: <b>2+ % <c>? <d>* %% <e>2-3
+        a: <b>2+ % <c>* <d>* %% <e>2-3
     compile: |
         a:
           .all:
           - +min: 2
             .ref: b
             .sep:
-              +max: 1
+              +min: 0
               .ref: c
           - +min: 0
             .ref: d

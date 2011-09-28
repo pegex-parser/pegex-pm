@@ -108,7 +108,7 @@ sub match {
     return $match;
 }
 
-sub set_min_max {
+sub get_min_max {
     my ($self, $next) = @_;
     defined($next->{'+min'})
     ? defined($next->{'+max'})
@@ -125,7 +125,7 @@ sub match_next {
     return $self->match_next_with_sep($next)
         if $next->{'.sep'};
 
-    my ($min, $max) = $self->set_min_max($next);
+    my ($min, $max) = $self->get_min_max($next);
     my $assertion = $next->{'+asr'} || 0;
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
         grep {$next->{".$_"}} qw(ref rgx all any err) or XXX $next;
@@ -154,30 +154,30 @@ sub match_next {
 sub match_next_with_sep {
     my ($self, $next) = @_;
 
-    my ($min, $max) = $self->set_min_max($next);
+    my ($min, $max) = $self->get_min_max($next);
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
         grep {$next->{".$_"}} qw(ref rgx all any err) or XXX $next;
-
     my $separator = $next->{'.sep'};
-    my ($sep_rule, $sep_kind) = map {($separator->{".$_"}, $_)}
-        grep {$separator->{".$_"}} qw(ref rgx all any err) or XXX $separator;
 
-    my ($match, $position, $count, $sep_count, $method, $sep_method) =
-        ([], $self->position, 0, 0, "match_$kind", "match_$sep_kind");
+    my ($match, $position, $count, $method, $scount, $smin, $smax) =
+        ([], $self->position, 0, "match_$kind", 0,
+            $self->get_min_max($separator));
     while (my $return = $self->$method($rule, $next)) {
         $position = $self->position;
         $count++;
         push @$match, @$return;
-        $return = $self->$sep_method($sep_rule, $separator) or last;
-        push @$match, @$return;
-        $sep_count++;
+        $return = $self->match_next($separator) or last;
+        my @return = @{$return};
+        @return = @{$return[0]} if $smax != 1;
+        push @$match, @return;
+        $scount++;
     }
     if ($max != 1) {
         $match = [$match];
     }
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0);
     $self->position($position)
-        if $count == $sep_count and not $separator->{'+eok'};
+        if $count == $scount and not $separator->{'+eok'};
 
     $match = [] if $next->{'-skip'};
     return ($result ? $match : 0);
