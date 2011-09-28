@@ -13,7 +13,6 @@ use Pegex::Grammar::Atoms;
 
 has 'top';
 has 'extra_rules' => default => sub {+{}};
-use constant wrap => 1;
 
 my %prefixes = (
     '!' => ['+asr', -1],
@@ -47,16 +46,16 @@ sub got_grammar {
 
 sub got_rule_definition {
     my ($self, $match) = @_;
-    my $name = $match->[0]{rule_name};
+    my $name = $match->[0];
     $self->{top} = $name if $name eq 'TOP';
     $self->{top} ||= $name;
-    my $value = $match->[1]{rule_group};
+    my $value = $match->[1];
     return +{ $name => $value };
 }
 
 sub got_bracketed_group {
     my ($self, $match) = @_;
-    my $group = $match->[1]{rule_group};
+    my $group = $match->[1];
     if (my $prefix = $match->[0]) {
         $group->{$prefixes{$prefix}} = 1;
     }
@@ -88,7 +87,7 @@ sub get_group {
         my $it = shift;
         my $ref = ref($it) or return;
         if ($ref eq 'HASH') {
-            return($it->{rule_item} || ());
+            return($it || ());
         }
         elsif ($ref eq 'ARRAY') {
             return map get($_), @$it;
@@ -104,10 +103,9 @@ sub got_rule_part {
     my ($self, $part) = @_;
     my ($rule, $sep_op, $sep_rule) = @$part;
     if ($sep_rule) {
-        $sep_rule = $sep_rule->{rule_item};
         $sep_rule->{'+eok'} = 1
             if $sep_op eq '%%';
-        $rule->{rule_item}{'.sep'} = $sep_rule;
+        $rule->{'.sep'} = $sep_rule;
     }
     return $rule;
 }
