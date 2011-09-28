@@ -1,11 +1,11 @@
 ##
-# name:      Pegex::Compiler::Bootstrap
+# name:      Pegex::Bootstrap
 # abstract:  Bootstrapping Compiler for a Pegex Grammar
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2010, 2011
 
-package Pegex::Compiler::Bootstrap;
+package Pegex::Bootstrap;
 use Pegex::Mo;
 extends 'Pegex::Compiler';
 

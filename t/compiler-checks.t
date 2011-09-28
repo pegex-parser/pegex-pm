@@ -4,12 +4,12 @@
 use TestML -run,
     -require_or_skip => 'YAML::XS';
 
-use Pegex::Compiler::Bootstrap;
+use Pegex::Bootstrap;
 use YAML::XS;
 
 sub bootstrap_compile {
     my $grammar_text = (shift)->value;
-    my $compiler = Pegex::Compiler::Bootstrap->new;
+    my $compiler = Pegex::Bootstrap->new;
     my $tree = $compiler->compile_raw($grammar_text)->tree;
     delete $tree->{'+top'};
     return $tree;

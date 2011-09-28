@@ -5,7 +5,7 @@ use TestML -run,
     -require_or_skip => 'YAML::XS';
 
 use Pegex::Compiler;
-use Pegex::Compiler::Bootstrap;
+use Pegex::Bootstrap;
 use YAML::XS;
 
 # BEGIN { XXX \%INC}
@@ -17,7 +17,7 @@ sub pegex_compile {
 
 sub bootstrap_compile {
     my $grammar_text = (shift)->value;
-    Pegex::Compiler::Bootstrap->new->parse($grammar_text)->tree;
+    Pegex::Bootstrap->new->parse($grammar_text)->tree;
 }
 
 sub compress {

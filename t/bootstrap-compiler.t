@@ -1,9 +1,9 @@
-# BEGIN { $Pegex::Compiler::Bootstrap = 1 }
+# BEGIN { $Pegex::Bootstrap = 1 }
 # BEGIN { $Pegex::Parser::Debug = 1 }
 use t::TestPegex;
 
 use Pegex::Compiler;
-use Pegex::Compiler::Bootstrap;
+use Pegex::Bootstrap;
 # use XXX;
 
 sub run {
@@ -24,7 +24,7 @@ sub pegex_compile {
 
 sub bootstrap_compile {
     my $grammar_text = shift;
-    Pegex::Compiler::Bootstrap->new->parse($grammar_text)->tree;
+    Pegex::Bootstrap->new->parse($grammar_text)->tree;
 }
 
 sub fixup {

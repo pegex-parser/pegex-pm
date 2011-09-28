@@ -1,11 +1,11 @@
 ##
-# name:      Pegex::Compiler::AST
-# abstract:  Pegex Compiler AST
+# name:      Pegex::Pegex::AST
+# abstract:  Pegex Pegex AST
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2011
 
-package Pegex::Compiler::AST;
+package Pegex::Pegex::AST;
 use Pegex::Mo;
 extends 'Pegex::Receiver';
 

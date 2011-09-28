@@ -188,7 +188,7 @@ For a different view of the data tree, try:
 
 Finally to emulate the Pegex compiler do this:
 
-    perl -MXXX -MPegex -e 'XXX pegex("pegex.pgx", {receiver => "Pegex::Compiler::AST"})->parse("pegex.pgx")'
+    perl -MXXX -MPegex -e 'XXX pegex("pegex.pgx", {receiver => "Pegex::Pegex::AST"})->parse("pegex.pgx")'
 
 This specifies a "receiving" class that can shape the results into something
 useful. Indeed, this is the exact guts of L<Pegex::Grammar::Pegex>.

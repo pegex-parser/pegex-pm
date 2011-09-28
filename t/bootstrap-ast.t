@@ -1,5 +1,5 @@
 # BEGIN { $Pegex::Parser::Debug = 1 }
-# BEGIN { $Pegex::Compiler::Bootstrap = 1 }
+# BEGIN { $Pegex::Bootstrap = 1 }
 use t::TestPegex;
 
 use Pegex;

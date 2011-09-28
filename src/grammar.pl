@@ -1,4 +1,4 @@
-BEGIN { $Pegex::Compiler::Bootstrap = 1 }
+# BEGIN { $Pegex::Bootstrap = 1 }
 use lib "$ENV{HOME}/src/pegex-pm/lib";
 use Pegex::Compiler;
 
