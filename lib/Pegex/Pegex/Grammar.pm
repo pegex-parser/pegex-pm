@@ -20,22 +20,11 @@ sub tree_ {
       }
     },
     'any_group' => {
-      '.all' => [
-        {
-          '.ref' => 'rule_part'
-        },
-        {
-          '+min' => 1,
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G\s*\|\s*)/
-            },
-            {
-              '.ref' => 'rule_part'
-            }
-          ]
-        }
-      ]
+      '+min' => '2',
+      '.ref' => 'rule_part',
+      '.sep' => {
+        '.rgx' => qr/(?-xism:\G\s*\|\s*)/
+      }
     },
     'bracketed_group' => {
       '.all' => [
