@@ -184,9 +184,11 @@ A REAL WORLD EXAMPLE
     to those languages in order to test the new Pegex implementation!
 
 SEE ALSO
-    *   Pegex::Regex
+    *   Pegex::Manual
 
     *   Pegex::Grammar
+
+    *   Pegex::Regex
 
     *   <http://github.com/ingydotnet/pegex-pm>
 

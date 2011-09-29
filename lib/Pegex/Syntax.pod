@@ -1,0 +1,41 @@
+=head1 Pegex Syntax
+
+Pegex has a fairly simple set of syntax constructs. This document details them
+all.
+
+=head Rules
+
+A Pegex grammar is just a set of named rules. They look like this
+
+    rule_name_1: <rule>* <body> /1/
+    rule_name_2: /rule body 2/
+
+A rule is a name followed by a ':' followed by a rule body. It can optionally end with a semicolon, if you want to put more than one on a line.
+
+=head2 Basic Tokens
+
+Pegex only has 3 kinds of basic tokens:
+
+=over
+
+=item Rule Reference
+
+A rule reference is the name of a rule inside angle brackets.
+
+    <sub_rule_name>
+
+=item Regular Expression
+
+A regular expression is a string inside forward slashes.
+
+    /regular expression/
+
+=item Error Message
+
+An error message is a string inside backticks.
+
+    `error message`
+
+=back
+
+More to come...

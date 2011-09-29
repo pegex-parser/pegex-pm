@@ -5,15 +5,15 @@
 # license:   perl
 # copyright: 2010, 2011
 # see:
-# - Pegex::Regex
+# - Pegex::Manual
 # - Pegex::Grammar
+# - Pegex::Regex
 # - http://github.com/ingydotnet/pegex-pm
 # - irc.freenode.net#pegex
 
 use 5.010;
 use strict;
 use warnings;
-use Mo 0.25 ();
 
 package Pegex;
 

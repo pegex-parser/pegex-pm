@@ -1,0 +1,17 @@
+=head1 The Pegex Manual
+
+Welcome to Pegex, the Acmeist Parser technology.
+
+This manual is basically an index to other useful Pegex documents.
+
+=over
+
+=item L<Pegex::Syntax>
+
+This document describes all the components of the Pegex syntax.
+
+=item L<Pegex::API>
+
+This document describes the various Pegex classes and interfaces.
+
+=back
