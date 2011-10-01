@@ -1,8 +1,11 @@
 #------------------------------------------
+- Implement %%%
+
+#------------------------------------------
 + Switch to Mo
-- Support <.rule>
-  - Compare to Rx:G
-- Skip empty regex matches
++ Support .<rule>
+  + Compare to Rx:G
++ Skip empty regex matches
 
 #------------------------------------------
 
@@ -39,15 +42,15 @@
 
 #------------------------------------------
 
-- Support <.rule>
-  - Match but don't save in AST
-- Support <rule> ** <rule>
-  - And <rule> ++ <rule>
++ Support .<rule>
+  + Match but don't save in AST
++ Support <rule> % <rule>
+  + And <rule> %% <rule>
 - Support <+DEBUG> and <-DEBUG>
-- Smart whitespace
-  - name: normal rule
-  - name:: smart <ws> rule
-  - name:ws1: special user-defined ws rule
++ Smart whitespace
+  + name: normal rule
+  + name:: smart <ws> rule
+  + name:ws1: special user-defined ws rule
 - Pegex ->optimize (after combinate)
   - Combine consecutive .rgx
   - .all or .any of 1 elem => .rul
