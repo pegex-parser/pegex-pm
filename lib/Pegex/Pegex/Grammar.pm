@@ -46,23 +46,15 @@ sub tree_ {
       '.rgx' => qr/(?-xism:\G`([^`\r\n]*)`)/
     },
     'grammar' => {
-      '.all' => [
-        {
-          '+min' => 0,
-          '-skip' => 1,
-          '.ref' => 'comment'
-        },
-        {
-          '+min' => 1,
-          '.ref' => 'rule_definition',
-          '.sep' => {
-            '+eok' => 1,
-            '+min' => 0,
-            '-skip' => 1,
-            '.ref' => 'comment'
-          }
-        }
-      ]
+      '+min' => 1,
+      '.ref' => 'rule_definition',
+      '.sep' => {
+        '+bok' => 1,
+        '+eok' => 1,
+        '+min' => 0,
+        '-skip' => 1,
+        '.ref' => 'comment'
+      }
     },
     'regular_expression' => {
       '.rgx' => qr/(?-xism:\G\/([^\/\r\n]*)\/)/
