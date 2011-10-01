@@ -162,6 +162,17 @@ sub match_next_with_sep {
     my ($match, $position, $count, $method, $scount, $smin, $smax) =
         ([], $self->position, 0, "match_$kind", 0,
             $self->get_min_max($separator));
+    if ($separator->{'+bok'}) {
+        # TODO refactor with matching code below
+        if (my $return = $self->match_next($separator)) {
+            $position = $self->position;
+            my @return = @$return;
+            if (@return) {
+                @return = @{$return[0]} if $smax != 1;
+                push @$match, @return;
+            }
+        }
+    }
     while (my $return = $self->$method($rule, $next)) {
         $position = $self->position;
         $count++;

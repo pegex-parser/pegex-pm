@@ -44,7 +44,7 @@ sub parse {
         my @tokens = grep $_,
         ($text =~ m{(
             /[^/\n]*/ |
-            %%? |
+            %?%%? |
             [\!\=\-\+\.]?<\w+>$quantifier? |
             `[^`\n]*` |
             \| |
@@ -86,7 +86,7 @@ sub wilt {
     return $branch unless ref($branch) eq 'ARRAY';
     my $wilted = [];
     for (my $i = 0; $i < @$branch; $i++) {
-        push @$wilted, ($branch->[$i] =~ /^%%?$/)
+        push @$wilted, ($branch->[$i] =~ /^%?%%?$/)
             ? [$branch->[$i], pop(@$wilted), $branch->[++$i]]
             : $branch->[$i];
     }
@@ -97,7 +97,7 @@ sub compile_next {
     my $self = shift;
     my $node = shift;
     my $unit = ref($node) ?
-        $node->[0] =~ /^%%?$/
+        $node->[0] =~ /^%?%%?$/
             ? $self->compile_sep($node) :
         $node->[2] eq '|'
             ? $self->compile_group($node, 'any')
@@ -127,7 +127,8 @@ sub compile_sep {
     my $node = shift;
     my $object = $self->compile_next($node->[1]);
     $object->{'.sep'} = $self->compile_next($node->[2]);
-    $object->{'.sep'}{'+eok'} = 1 if $node->[0] eq '%%';
+    $object->{'.sep'}{'+eok'} = 1 if $node->[0] =~ /^%?%%$/;
+    $object->{'.sep'}{'+bok'} = 1 if $node->[0] eq '%%%';
     return $object;
 }
 
