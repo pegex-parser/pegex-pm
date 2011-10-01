@@ -33,15 +33,26 @@ my %prefixes = (
 
 sub got_grammar {
     my ($self, $rules) = @_;
+    my ($meta_section, $rule_section) = @$rules;
     my $grammar = {
         '+top' => $self->top,
         %{$self->extra_rules},
+        %$meta_section,
     };
-    for (@$rules) {
+    for (@$rule_section) {
         my ($key, $value) = %$_;
         $grammar->{$key} = $value;
     }
     return $grammar;
+}
+
+sub got_meta_section {
+    my ($self, $directives) = @_;
+    my $meta = {};
+    for my $next (@$directives) {
+        $meta->{"+$next->[0]"} = $next->[1];
+    }
+    return $meta;
 }
 
 sub got_rule_definition {

@@ -28,6 +28,13 @@ sub parse {
     $grammar_text =~ s/^\s*\n//;
     $grammar_text .= "\n" unless $grammar_text =~ /\n\z/;
     $grammar_text =~ s/;/\n/g;
+    if ($grammar_text =~ s/\A((%\w+ +.*\n)+)//) {
+        my $section = $1;
+        my (%directives) = ($section =~ /%(\w+) +(.*?) *\n/g);
+        for my $key (keys %directives) {
+            $self->tree->{"+$key"} = $directives{$key};
+        }
+    }
     for my $rule (split /(?=^\w+:\s*)/m, $grammar_text) {
         (my $value = $rule) =~ s/^(\w+):// or die "$rule";
         my $key = $1;

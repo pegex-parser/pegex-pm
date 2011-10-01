@@ -123,6 +123,7 @@ sub combinate_re {
     $regexp->{'.rgx'} =~ s!~!<ws>!g;
     while (1) {
         my $re = $regexp->{'.rgx'};
+        $re =~ s!~!<ws>!g;
         $re =~ s[<(\w+)>][
             $self->tree->{$1} and
             $self->tree->{$1}{'.rgx'}

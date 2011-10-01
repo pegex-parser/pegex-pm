@@ -29,7 +29,8 @@ sub bootstrap_compile {
 
 sub fixup {
     my $yaml = shift;
-    $yaml =~ s/\A---\s\+top.*\n//;
+    $yaml =~ s/\A---\s//;
+    $yaml =~ s/\A\+top.*\n//;
     $yaml =~ s/'(\d+)'/$1/g;
     return $yaml;
 }
@@ -40,7 +41,7 @@ sub yaml {
 
 __DATA__
 
-plan: 28
+plan: 30
 
 blocks:
 - title: Single Regex
@@ -222,3 +223,20 @@ blocks:
             +eok: 1
             +min: 0
             .ref: c
+
+- title: Meta Lines
+  points:
+    grammar: |
+        %grammar        foo
+        %version    1.1.1
+        %extends bar bar  
+        %include   bazzy 
+        a: /b/
+    compile: |
+        +extends: bar bar
+        +grammar: foo
+        +include: bazzy
+        +top: a
+        +version: 1.1.1
+        a:
+          .rgx: b
