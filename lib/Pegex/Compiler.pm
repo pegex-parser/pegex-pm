@@ -26,16 +26,6 @@ sub compile {
     return $self;
 }
 
-sub compile_raw {
-    my $self = shift;
-    $self = $self->new unless ref $self;
-
-    $self->parse(shift);
-    $self->combinate;
-
-    return $self;
-}
-
 sub parse {
     if ($Pegex::Bootstrap) {
         require Pegex::Bootstrap;
