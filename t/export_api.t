@@ -5,7 +5,7 @@ use Pegex;
 
 ok defined(&pegex), 'pegex is exported';
 
-my $p1 = pegex('foo: <bar>');
+my $p1 = pegex("foo: <bar>\n");
 
 is ref($p1), 'Pegex::Grammar', 'pegex returns a Pegex object';
 

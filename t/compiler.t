@@ -25,7 +25,7 @@ sub compress {
     chomp($grammar_text);
     $grammar_text =~ s/(?<!;)\n(\w+\s*:)/;$1/g;
     $grammar_text =~ s/\s//g;
-    return $grammar_text;
+    return "$grammar_text\n";
 }
 
 sub yaml {

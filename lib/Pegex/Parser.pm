@@ -128,11 +128,13 @@ sub match_next {
     my ($min, $max) = $self->get_min_max($next);
     my $assertion = $next->{'+asr'} || 0;
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
-        grep {$next->{".$_"}} qw(ref rgx all any err) or XXX $next;
+        grep {$next->{".$_"}} qw(ref rgx all any err code) or XXX $next;
 
     my ($match, $position, $count, $method) =
         ([], $self->position, 0, "match_$kind");
-    while (my $return = $self->$method($rule, $next)) {
+    my $return;
+    while ($position < length($self->{buffer}) and
+        $return = $self->$method($rule, $next)) {
         $position = $self->position unless $assertion;
         $count++;
         push @$match, @$return;
@@ -189,22 +191,31 @@ sub match_next_with_sep {
         $match = [$match];
     }
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0);
-    $self->position($position)
+    $self->revert_back($position)
         if $count == $scount and not $separator->{'+eok'};
 
     $match = [] if $next->{'-skip'};
     return ($result ? $match : 0);
 }
 
+sub revert_back {
+    my ($self, $position) = @_;
+    $self->position($position);
+}
+
 sub match_ref {
     my ($self, $ref, $parent) = @_;
-    my $rule = $self->grammar->tree->{$ref}
-        or die "\n\n*** No grammar support for '$ref'\n\n";
+    my $rule = $self->grammar->tree->{$ref};
+    $rule ||= $self->can("match_rule_$ref")
+            ? { '.code' => $ref } 
+            : die "\n\n*** No grammar support for '$ref'\n\n";
 
     my $trace = (not $rule->{'+asr'} and $self->debug);
     $self->trace("try_$ref") if $trace;
 
-    my $match = $self->match_next($rule);
+    my $match = (ref($rule) eq 'CODE')
+        ? $self->$rule()
+        : $self->match_next($rule);
     if (not $match) {
         $self->trace("not_$ref") if $trace;
         return 0;
@@ -255,7 +266,7 @@ sub match_all {
             $len++;
         }
         else {
-            $self->position($pos);
+            $self->revert_back($pos);
             return 0;
         }
     }
@@ -276,6 +287,12 @@ sub match_any {
 sub match_err {
     my ($self, $error) = @_;
     $self->throw_error($error);
+}
+
+sub match_code {
+    my ($self, $code) = @_;
+    my $method = "match_rule_$code";
+    return $self->$method();
 }
 
 sub trace {
