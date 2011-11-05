@@ -1,4 +1,12 @@
 #------------------------------------------
+== Fix xt failure:
++ bootstrap compile barfs on yaml.pgx
+  - can fix this by commenting out %foo lines for now...
+  - need to refo pegex to grok %foo later
+- testml does not show the barf
+- pegex fails to compile testml without a final blank line
+
+#------------------------------------------
 - Implement %%%
 
 #------------------------------------------

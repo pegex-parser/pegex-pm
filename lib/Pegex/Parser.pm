@@ -132,9 +132,14 @@ sub match_next {
 
     my ($match, $position, $count, $method) =
         ([], $self->position, 0, "match_$kind");
-    my $return;
-    while ($position < length($self->{buffer}) and
-        $return = $self->$method($rule, $next)) {
+
+# XXX Need to rethink this. match_all must be able to complete possible zero
+# width matches at end of stream...
+#     my $return;
+#     while ($position < length($self->{buffer}) and
+#         $return = $self->$method($rule, $next)) {
+
+    while (my $return = $self->$method($rule, $next)) {
         $position = $self->position unless $assertion;
         $count++;
         push @$match, @$return;

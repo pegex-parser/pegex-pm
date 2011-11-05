@@ -1,4 +1,9 @@
 ---
+version: 0.19
+date:    
+changes:
+- Fixed Test::Differences missing.
+---
 version: 0.18
 date:    Fri Sep 30 00:44:35 CEST 2011
 changes:
