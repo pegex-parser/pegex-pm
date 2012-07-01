@@ -28,7 +28,7 @@ sub clean {
 __DATA__
 %TestML 1.0
 
-Plan = 12;
+Plan = 13;
 
 *grammar.bootstrap_compile.yaml.clean == *yaml;
 
@@ -150,3 +150,11 @@ a:
     - .ref: z
     - .rgx: '...'
 
+=== Whitespace in Regex
+--- grammar
+a: /<DOT>* (<DASH>{3})
+    <BANG>   <BANG>
+   /
+--- yaml
+a:
+  .rgx: \.*(\-{3})!!

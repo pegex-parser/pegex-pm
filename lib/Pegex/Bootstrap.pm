@@ -198,6 +198,7 @@ sub compile_re {
     my $node = shift;
     my $object = {};
     $node =~ s!^/(.*)/$!$1! or die $node;
+    $node =~ s!\s+!!g;
     $object->{'.rgx'} = $node;
     return $object;
 }

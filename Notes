@@ -1,3 +1,17 @@
+== Pegex To Do
+
+- ~ instead of /~/
+- warn or error on duplicat rule names
+- report accurate position of failure (deepest)
+- Bind a b | c => a [ b | c ]
+- Make all regexes ignore whitespace (x)
+- ~ not expanded in subrule inclusion
+- Fix github issues and pul req
+- Detect endless looping grammars
+- Error on /<x>/ when x is not a regex rule
+
+----
+
 == lib/Pegex.pm
 
 Sugar wrapper for Pegex tools.
