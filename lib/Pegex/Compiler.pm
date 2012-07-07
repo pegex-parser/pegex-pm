@@ -54,7 +54,8 @@ has '_tree';
 
 sub combinate {
     my $self = shift;
-    my $rule = shift || $self->tree->{'+top'};
+    my $rule = shift || $self->tree->{'+top'}
+        or return $self;
     $self->_tree({
         map {($_, $self->tree->{$_})} grep { /^\+/ } keys %{$self->tree}
     });

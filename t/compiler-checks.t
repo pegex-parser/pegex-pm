@@ -21,16 +21,21 @@ sub yaml {
 
 sub clean {
     my $yaml = (shift)->value;
-    $yaml =~ s/^---\n//;
+    $yaml =~ s/^---\s//;
     return $yaml;
 }
 
 __DATA__
 %TestML 1.0
 
-Plan = 13;
+Plan = 14;
 
 *grammar.bootstrap_compile.yaml.clean == *yaml;
+
+=== Empty Grammar
+--- grammar
+--- yaml
+{}
 
 === Simple Grammar
 --- grammar
