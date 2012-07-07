@@ -50,7 +50,20 @@ sub got_meta_section {
     my ($self, $directives) = @_;
     my $meta = {};
     for my $next (@$directives) {
-        $meta->{"+$next->[0]"} = $next->[1];
+        my ($key, $val) = @$next;
+        $key = "+$key";
+        my $old = $meta->{$key};
+        if (defined $old) {
+            if (ref $old) {
+                push @$old, $val;
+            }
+            else {
+                $meta->{$key} = [ $old, $val ];
+            }
+        }
+        else {
+            $meta->{$key} = $val;
+        }
     }
     return $meta;
 }

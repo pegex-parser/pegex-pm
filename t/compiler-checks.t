@@ -28,7 +28,7 @@ sub clean {
 __DATA__
 %TestML 1.0
 
-Plan = 14;
+Plan = 16;
 
 *grammar.bootstrap_compile.yaml.clean == *yaml;
 
@@ -162,3 +162,24 @@ a: /<DOT>* (<DASH>{3})
 --- yaml
 a:
   .rgx: \.*(\-{3})!!
+
+=== Directives
+--- grammar
+\%grammar foo
+\%version 1.2.3
+
+--- yaml
++grammar: foo
++version: 1.2.3
+
+=== Multiple Duplicate Directives
+--- grammar
+\%grammar foo
+\%include bar
+\%include baz
+
+--- yaml
++grammar: foo
++include:
+- bar
+- baz

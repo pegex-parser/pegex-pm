@@ -17,24 +17,40 @@ sub parse {
     my $self = shift;
     $self = $self->new unless ref $self;
     my $grammar_text = shift;
-#     if ($grammar_text !~ /[\n\:]/) {
-#         open IN, $grammar_text
-#             or die "Can't open file '$grammar_text' for input";
-#         $grammar_text = do {local $/; <IN>};
-#         close IN;
-#     }
+    if (length($grammar_text) and $grammar_text !~ /(\s|\:|\#|\%)/) {
+        open IN, $grammar_text
+            or die "Can't open file '$grammar_text' for input";
+        $grammar_text = do {local $/; <IN>};
+        close IN;
+    }
     $self->tree({});
     $grammar_text =~ s/^#.*\n+//gm;
-    $grammar_text =~ s/^\s*\n//;
+    $grammar_text =~ s/^\s*\n//gm;
     $grammar_text =~ s/;/\n/g;
     $grammar_text .= "\n" unless
         $grammar_text eq '' or
         $grammar_text =~ /\n\z/;
     if ($grammar_text =~ s/\A((%\w+ +.*\n)+)//) {
         my $section = $1;
-        my (%directives) = ($section =~ /%(\w+) +(.*?) *\n/g);
-        for my $key (keys %directives) {
-            $self->tree->{"+$key"} = $directives{$key};
+        my (@directives) = ($section =~ /%(\w+) +(.*?) *\n/g);
+        my $tree = $self->tree;
+        while (@directives) {
+            my ($key, $val) = splice(@directives, 0, 2);
+            die "'$key' is an invalid Pegex directive"
+                unless $key =~ /^(grammar|version|extends|include)$/;
+            $key = "+$key";
+            my $old = $tree->{$key};
+            if (defined $old) {
+                if (ref $old) {
+                    push @$old, $val;
+                }
+                else {
+                    $tree->{$key} = [ $old, $val ];
+                }
+            }
+            else {
+                $tree->{$key} = $val;
+            }
         }
     }
     for my $rule (split /(?=^\w+:\s*)/m, $grammar_text) {
