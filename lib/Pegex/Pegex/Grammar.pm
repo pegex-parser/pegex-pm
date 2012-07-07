@@ -11,7 +11,9 @@ extends 'Pegex::Grammar';
 
 sub tree_ {
   {
+    '+grammar' => 'pegex',
     '+top' => 'grammar',
+    '+version' => '0.0.1',
     'all_group' => {
       '+min' => 1,
       '.ref' => 'rule_part',
@@ -79,14 +81,15 @@ sub tree_ {
     },
     'meta_section' => {
       '+min' => 0,
-      '.ref' => 'meta_definition',
-      '.sep' => {
-        '+bok' => 1,
-        '+eok' => 1,
-        '+min' => 0,
-        '-skip' => 1,
-        '.ref' => 'comment'
-      }
+      '.any' => [
+        {
+          '.ref' => 'meta_definition'
+        },
+        {
+          '-skip' => 1,
+          '.ref' => 'comment'
+        }
+      ]
     },
     'meta_value' => {
       '.rgx' => qr/(?-xism:\G[\ \t]*([^;\n]*?)[\ \t]*\s*?(?:\n\s*|;\s*|\z))/
@@ -154,15 +157,16 @@ sub tree_ {
       '.rgx' => qr/(?-xism:\G([!=\+\-\.]?)<([a-zA-Z]\w*)>((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
     },
     'rule_section' => {
-      '+min' => 1,
-      '.ref' => 'rule_definition',
-      '.sep' => {
-        '+bok' => 1,
-        '+eok' => 1,
-        '+min' => 0,
-        '-skip' => 1,
-        '.ref' => 'comment'
-      }
+      '+min' => 0,
+      '.any' => [
+        {
+          '.ref' => 'rule_definition'
+        },
+        {
+          '-skip' => 1,
+          '.ref' => 'comment'
+        }
+      ]
     }
   }
 }
