@@ -152,8 +152,7 @@ sub compile_sep {
     my $node = shift;
     my $object = $self->compile_next($node->[1]);
     $object->{'.sep'} = $self->compile_next($node->[2]);
-    $object->{'.sep'}{'+eok'} = 1 if $node->[0] =~ /^%?%%$/;
-    $object->{'.sep'}{'+bok'} = 1 if $node->[0] eq '%%%';
+    $object->{'.sep'}{'+eok'} = 1 if $node->[0] eq '%%';
     return $object;
 }
 

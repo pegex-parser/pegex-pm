@@ -150,7 +150,7 @@ sub tree_ {
       '+min' => '1',
       '.ref' => 'rule_item',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G\s*\s(%{1,3})\s\s*)/
+        '.rgx' => qr/(?-xism:\G\s*\s(%{1,2})\s\s*)/
       }
     },
     'rule_reference' => {

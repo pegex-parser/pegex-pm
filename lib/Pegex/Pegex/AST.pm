@@ -128,9 +128,7 @@ sub got_rule_part {
     my ($rule, $sep_op, $sep_rule) = @$part;
     if ($sep_rule) {
         $sep_rule->{'+eok'} = 1
-            if $sep_op =~ /^%%%?$/;
-        $sep_rule->{'+bok'} = 1
-            if $sep_op eq '%%%';
+            if $sep_op eq '%%';
         $rule->{'.sep'} = $sep_rule;
     }
     return $rule;

@@ -41,7 +41,7 @@ sub yaml {
 
 __DATA__
 
-plan: 30
+plan: 28
 
 blocks:
 - title: Single Regex
@@ -209,20 +209,6 @@ blocks:
               +max: 3
               +min: 2
               .ref: e
-
-- title: Before OK Separator
-  points:
-    grammar: |
-        a: <b>+ %%% <c>*
-    compile: |
-        a:
-          +min: 1
-          .ref: b
-          .sep:
-            +bok: 1
-            +eok: 1
-            +min: 0
-            .ref: c
 
 - title: Meta Lines
   points:
