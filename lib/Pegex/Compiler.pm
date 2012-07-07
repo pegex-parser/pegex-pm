@@ -176,7 +176,11 @@ sub to_perl {
     $Data::Dumper::Terse = 1;
     $Data::Dumper::Indent = 1;
     $Data::Dumper::Sortkeys = 1;
-    return Data::Dumper::Dumper($self->tree);
+    my $perl = Data::Dumper::Dumper($self->tree);
+    $perl =~ s/\?\^:/?-xism:/g;
+    die "to_perl failed with non compatible regex in:\n$perl"
+        if $perl =~ /\?\^/;
+    return $perl;
 }
 
 1;
