@@ -32,7 +32,6 @@ Plan = 13;
 
 *grammar.bootstrap_compile.yaml.clean == *yaml;
 
-
 === Simple Grammar
 --- grammar
 a: [ <b> <c>* ]+
