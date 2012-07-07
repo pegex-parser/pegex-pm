@@ -1,12 +1,7 @@
 #------------------------------------------
-- Support %key value
-  - extends
-  - include
-  - grammar
-  - version
++ Find modules that dep on Pegex
+- Support %key:value directives
 - Die at furthest point parsed
-- Support <foo> refs but deprecate
-- Find modules that dep on Pegex
 - Remove %%% support
   a* %%% b* == b* a* %% b* == ( a | b )*
 - Swap [] for ()
@@ -20,7 +15,7 @@
 - pegex fails to compile testml without a final blank line
 
 #------------------------------------------
-- Implement %%%
++ Implement %%%
 
 #------------------------------------------
 + Switch to Mo
@@ -84,3 +79,4 @@
 - Parse Name: First Middle? Last
 - Look at Perl6::Rules on CPAN
 - Look at Regex::Grammars
+- Look at Parse::RecDescent tests
