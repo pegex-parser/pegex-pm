@@ -1,4 +1,4 @@
-.PHONY: all force
+.PHONY: all
 
 all: grammar
 
