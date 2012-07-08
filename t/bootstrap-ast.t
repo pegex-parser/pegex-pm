@@ -25,7 +25,7 @@ sub yaml {
 
 __DATA__
 
-plan: 16
+plan: 17
 
 blocks:
 - title: Pass and Skip
@@ -161,7 +161,7 @@ blocks:
 - title: Whitespace Matchers
   points:
     grammar: |
-        TOP: /<ws>(<DOT>)~(<DOT>*)~/
+        TOP: /<ws>*(<DOT>)~(<DOT>*)~/
     input: |2+
         .  
            ..    
@@ -232,3 +232,16 @@ blocks:
       - b: b
       - b: b
       - b: b
+
+- title: Tilde matching
+  points:
+    grammar: |
+        a: ~ <b> ~~ <b>+
+        b: /(b)/
+        c: /<COMMA>/
+    input: b  bb
+    ast: |
+      a:
+      - b: b
+      - - b: b
+        - b: b

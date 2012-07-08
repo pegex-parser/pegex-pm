@@ -56,7 +56,7 @@ my $atoms = {
     AMP     => '&',
     STAR    => '\*',
 
-    TILDE   => '~',
+    TILDE   => '\~',
     GRAVE   => '`',
     UNDER   => '_',
     DASH    => '\-',

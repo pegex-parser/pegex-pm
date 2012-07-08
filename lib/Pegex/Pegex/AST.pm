@@ -157,6 +157,14 @@ sub got_regular_expression {
     return +{ '.rgx' => $match };
 }
 
+sub got_whitespace_token {
+    my ($self, $match) = @_;
+    return 
+        $match eq '~' ? +{ '.rgx' => '<ws>*' } :
+        $match eq '~~' ? +{ '.rgx' => '<ws>+' } :
+        die;
+}
+
 sub got_error_message {
     my ($self, $match) = @_;
     return +{ '.err' => $match };

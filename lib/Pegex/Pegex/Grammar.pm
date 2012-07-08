@@ -138,6 +138,9 @@ sub tree_ {
           '.ref' => 'bracketed_group'
         },
         {
+          '.ref' => 'whitespace_token'
+        },
+        {
           '.ref' => 'error_message'
         }
       ]
@@ -150,7 +153,7 @@ sub tree_ {
       '+min' => '1',
       '.ref' => 'rule_item',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G\s*\s(%{1,2})\s\s*)/
+        '.rgx' => qr/(?-xism:\G\s+(%{1,2})\s+)/
       }
     },
     'rule_reference' => {
@@ -167,6 +170,9 @@ sub tree_ {
           '.ref' => 'comment'
         }
       ]
+    },
+    'whitespace_token' => {
+      '.rgx' => qr/(?-xism:\G(\~\~?))/
     }
   }
 }
