@@ -11,6 +11,8 @@ extends 'Pegex::Compiler';
 
 use Pegex::Grammar::Atoms;
 
+my $modifier = qr{[\!\=\-\+\.]};
+my $group_modifier = qr{[\!\=\.]};
 my $quantifier = qr{(?:[\?\*\+]|\d+(?:\+|\-\d+)?)};
 
 sub parse {
@@ -71,10 +73,11 @@ sub parse {
             /[^/\n]*/ |
             ~~? |
             %%? |
-            [\!\=\-\+\.]?<\w+>$quantifier? |
+            $modifier?<\w+>$quantifier? |
+            $modifier?\w+$quantifier? |
             `[^`\n]*` |
             \| |
-            [\!\=?\.]?\[ |
+            $group_modifier?\[ |
             \]$quantifier? |
         )}gx);
         die "No tokens found for rule <$rule> => '$text'"
@@ -94,7 +97,7 @@ sub make_tree {
     my $tree = [];
     push @$stack, $tree;
     for my $token (@$tokens) {
-        if ($token =~ /^[\!\=\?\.]?[\[]/) {
+        if ($token =~ /^$group_modifier?\[/) {
             push @$stack, [];
         }
         push @{$stack->[-1]}, $token;
@@ -133,6 +136,8 @@ sub compile_next {
             ? $self->compile_ws($node) :
         $node =~ m!/! ? $self->compile_re($node) :
         $node =~ m!<! ? $self->compile_rule($node) :
+        $node =~ m!^$modifier?\w+$quantifier?$!
+            ? $self->compile_rule($node) :
         $node =~ m!`! ? $self->compile_error($node) :
             XXX $node;
 
@@ -174,12 +179,12 @@ sub compile_group {
     my $type = shift;
     die unless @$node > 2;
     my $object = {};
-    if ($node->[0] =~ /^([\=\!\.\-\+])/) {
+    if ($node->[0] =~ /^($modifier)/) {
         my ($key, $val) = ($prefixes{$1}, 1);
         ($key, $val) = @$key if ref $key;
         $object->{$key} = $val;
     }
-    if ($node->[-1] =~ /([\?\*\+])$/) {
+    if ($node->[-1] =~ /($quantifier)$/) {
         $self->set_quantity($object, $1);
     }
     shift @$node;
@@ -236,7 +241,7 @@ sub compile_rule {
     my $self = shift;
     my $node = shift;
     my $object = {};
-    if ($node =~ s/^([\=\!\-\+\.])//) {
+    if ($node =~ s/^($modifier)//) {
         my ($key, $val) = ($prefixes{$1}, 1);
         ($key, $val) = @$key if ref $key;
         $object->{$key} = $val;
@@ -244,7 +249,7 @@ sub compile_rule {
     if ($node =~ s/($quantifier)$//) {
         $self->set_quantity($object, $1);
     }
-    $node =~ s!^<(.*)>$!$1! or XXX $node;
+    $node =~ s!^<(.*)>$!$1!;
     $object->{'.ref'} = $node;
     if (defined(my $re = Pegex::Grammar::Atoms->atoms->{$node})) {
         $self->tree->{$node} ||= {'.rgx' => $re};

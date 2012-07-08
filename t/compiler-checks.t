@@ -28,7 +28,7 @@ sub clean {
 __DATA__
 %TestML 1.0
 
-Plan = 16;
+Plan = 17;
 
 *grammar.bootstrap_compile.yaml.clean == *yaml;
 
@@ -58,6 +58,13 @@ c:
 === Single Rule
 --- grammar
 a: <x>
+--- yaml
+a:
+  .ref: x
+
+=== Single Rule with no brackets
+--- grammar
+a: x
 --- yaml
 a:
   .ref: x
