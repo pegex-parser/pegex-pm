@@ -69,7 +69,8 @@ sub parse {
         my @tokens = grep $_,
         ($text =~ m{(
             /[^/\n]*/ |
-            %?%%? |
+            ~~? |
+            %%? |
             [\!\=\-\+\.]?<\w+>$quantifier? |
             `[^`\n]*` |
             \| |
@@ -93,7 +94,7 @@ sub make_tree {
     my $tree = [];
     push @$stack, $tree;
     for my $token (@$tokens) {
-        if ($token =~ /^[\!\=?\.]?[\[]/) {
+        if ($token =~ /^[\!\=\?\.]?[\[]/) {
             push @$stack, [];
         }
         push @{$stack->[-1]}, $token;
@@ -111,7 +112,7 @@ sub wilt {
     return $branch unless ref($branch) eq 'ARRAY';
     my $wilted = [];
     for (my $i = 0; $i < @$branch; $i++) {
-        push @$wilted, ($branch->[$i] =~ /^%?%%?$/)
+        push @$wilted, ($branch->[$i] =~ /^%%?$/)
             ? [$branch->[$i], pop(@$wilted), $branch->[++$i]]
             : $branch->[$i];
     }
@@ -122,12 +123,14 @@ sub compile_next {
     my $self = shift;
     my $node = shift;
     my $unit = ref($node) ?
-        $node->[0] =~ /^%?%%?$/
+        $node->[0] =~ /^%%?$/
             ? $self->compile_sep($node) :
         $node->[2] eq '|'
             ? $self->compile_group($node, 'any')
             : $self->compile_group($node, 'all')
     :
+        $node =~ /^~~?$/
+            ? $self->compile_ws($node) :
         $node =~ m!/! ? $self->compile_re($node) :
         $node =~ m!<! ? $self->compile_rule($node) :
         $node =~ m!`! ? $self->compile_error($node) :
@@ -146,6 +149,15 @@ my %prefixes = (
     '-' => '-pass',
     '+' => '-wrap',
 );
+
+sub compile_ws {
+    my $self = shift;
+    my $node = shift;
+    return
+        $node eq '~~' ? { '.rgx' => '<ws>+' } :
+        $node eq '~' ? { '.rgx' => '<ws>*' } :
+            die;
+}
 
 sub compile_sep {
     my $self = shift;

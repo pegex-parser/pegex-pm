@@ -1,10 +1,15 @@
 #------------------------------------------
 + Find modules that dep on Pegex
-- Support %key:value directives
-- Die at furthest point parsed
-- Remove %%% support
++ Remove %%% support
   a* %%% b* == b* a* %% b* == ( a | b )*
++ Make ~ mean /~/
+- Make <> brackets optional outside a regex
+- Combine sibling regexes
+- Die at furthest point parsed
 - Swap [] for ()
+- Remove whitespace from inside regexps (emulate 'x' flag)
+- [ // // // ] should collapse to .rgx, not .all{.rgx}
+  ie .all{.rgx} => .rgx
 
 #------------------------------------------
 == Fix xt failure:

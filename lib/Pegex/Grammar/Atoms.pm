@@ -12,7 +12,7 @@ use Pegex::Mo;
 # Pegex regex atoms for grammars
 #------------------------------------------------------------------------------#
 my $atoms = {
-    ws      => '<WS>*',
+    ws      => '<WS>',
     ALWAYS  => '',
     NEVER   => '(?!)',
     ALL     => '[\s\S]',
