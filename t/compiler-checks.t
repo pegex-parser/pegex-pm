@@ -28,7 +28,7 @@ sub clean {
 __DATA__
 %TestML 1.0
 
-Plan = 17;
+Plan = 18;
 
 *grammar.bootstrap_compile.yaml.clean == *yaml;
 
@@ -72,6 +72,14 @@ a:
 === Single Rule With Trailing Quantifier
 --- grammar
 a: <x>*
+--- yaml
+a:
+  +min: 0
+  .ref: x
+
+=== Single Rule With Trailing Quantifier (no angles)
+--- grammar
+a: x*
 --- yaml
 a:
   +min: 0
