@@ -144,7 +144,7 @@ blocks:
 - title: Bracketed
   points:
     grammar: |
-        a: <b> [ <c> <d> ]?
+        a: <b> ( <c> <d> )?
     compile: |
         a:
           .all:
@@ -157,7 +157,7 @@ blocks:
 - title: Skip Bracketed
   points:
     grammar: |
-        a: <b> .[ <c> <d> ]
+        a: <b> .( <c> <d> )
     compile: |
         a:
           .all:

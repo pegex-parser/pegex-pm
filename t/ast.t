@@ -82,7 +82,7 @@ a:
 
 === Any rule group
 --- grammar
-a: [ <b> | <c> ]
+a: ( <b> | <c> )
 b: /(bleh)/
 c: /(x*)y*(z*)<EOL>?/
 --- input
@@ -95,7 +95,7 @@ a:
 
 === + Modifier
 --- grammar
-a: [ <b> <c> ]+ <EOL>
+a: ( <b> <c> )+ <EOL>
 b: /(x*)/
 c: /(y+)/
 --- input
@@ -123,7 +123,7 @@ a:
 === Part of Pegex Grammar
 --- grammar
 \# This is the Pegex grammar for Pegex grammars!
-grammar: [ <comment>* <rule_definition> ]+ <comment>*
+grammar: ( <comment>* <rule_definition> )+ <comment>*
 rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
 rule_name: /(<ALPHA><WORD>*)/
 comment: /<HASH><line><EOL>/
@@ -132,14 +132,14 @@ rule_line: /(<line>)<EOL>/
 
 --- input
 \# This is the Pegex grammar for Pegex grammars!
-grammar: [ <comment>* <rule_definition> ]+ <comment>*
+grammar: ( <comment>* <rule_definition> )+ <comment>*
 rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
 --- ast
 grammar:
 - - - []
     - rule_definition:
       - rule_name: grammar
-      - rule_line: '[ <comment>* <rule_definition> ]+ <comment>*'
+      - rule_line: ( <comment>* <rule_definition> )+ <comment>*
   - - []
     - rule_definition:
       - rule_name: rule_definition

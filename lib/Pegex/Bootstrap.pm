@@ -77,13 +77,13 @@ sub parse {
             $modifier?\w+$quantifier? |
             `[^`\n]*` |
             \| |
-            $group_modifier?\[ |
-            \]$quantifier? |
+            $group_modifier?\( |
+            \)$quantifier? |
         )}gx);
         die "No tokens found for rule <$rule> => '$text'"
             unless @tokens;
-        unshift @tokens, '[';
-        push @tokens, ']';
+        unshift @tokens, '(';
+        push @tokens, ')';
         my $tree = $self->make_tree(\@tokens);
         $self->tree->{$rule} = $self->compile_next($tree);  
     }
@@ -97,11 +97,11 @@ sub make_tree {
     my $tree = [];
     push @$stack, $tree;
     for my $token (@$tokens) {
-        if ($token =~ /^$group_modifier?\[/) {
+        if ($token =~ /^$group_modifier?\(/) {
             push @$stack, [];
         }
         push @{$stack->[-1]}, $token;
-        if ($token =~ /^[\]]/) {
+        if ($token =~ /^\)/) {
             my $branch = pop @$stack;
             push @{$stack->[-1]}, $self->wilt($branch);
         }

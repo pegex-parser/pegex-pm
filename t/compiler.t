@@ -77,15 +77,15 @@ a: <b> | <c>
 
 === Bracketed All Group
 --- grammar
-a: [ <b> /c/ ]
+a: ( <b> /c/ )
 
 === Bracketed Any Group
 --- grammar
-a: [ <b> | /c/ | `d` ]
+a: ( <b> | /c/ | `d` )
 
 === Bracketed Group in Unbracketed Group
 --- grammar
-a: <b> [ <c> | <d> ]
+a: <b> ( <c> | <d> )
 
 === Multiple Rules
 --- grammar
@@ -94,7 +94,7 @@ b: <c>
 
 === Simple Grammar
 --- grammar
-a: [ <b> <c>* ]
+a: ( <b> <c>* )
 b: /x/
 c: /y+/
 
@@ -122,26 +122,26 @@ b:
     <e>;
 c:
     <d> |
-    [ /e/ <f> ]
+    ( /e/ <f> )
     | `g`
 
 === Various Groups
 --- grammar
-a: <b> [ <c> | <d> ]
-b: [ <c> | <d> ] <e>
-c: <d> | [ <e> <f> ] | <g>
-d: <e> | [ <f> <g> ] | <h> | [ `i` ]
-e: [ <f> ]
+a: <b> ( <c> | <d> )
+b: ( <c> | <d> ) <e>
+c: <d> | ( <e> <f>) | <g>
+d: <e> | (<f> <g>) | <h> | ( `i` )
+e: ( <f> )
 
 === Modifiers
 --- grammar
 a: !<a> =<b>
-b: [ /c/ <d> ]+
-c: [ /c/ <d> ]+
+b: ( /c/ <d> )+
+c: ( /c/ <d> )+
 
 === Any Group Plus Rule
 --- grammar
-a: /w/ [ <x>+ | <y>* ] <z>?
+a: /w/ ( <x>+ | <y>* ) <z>?
 
 === Equivalent
 --- grammar
@@ -154,10 +154,10 @@ a_b: /c/ <d>
 
 === Failures to test later
 --- grammar
-a: <b> [ <c>* | <d>+ ]+
-e: [ <f> !<g> ]?
+a: <b> ( <c>* | <d>+ )+
+e: ( <f> !<g> )?
 
 === Failures to test later
 --- SKIP
 --- grammar
-b: [ /x/ ]+
+b: ( /x/ )+

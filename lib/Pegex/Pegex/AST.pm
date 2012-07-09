@@ -154,6 +154,7 @@ sub got_rule_reference {
 
 sub got_regular_expression {
     my ($self, $match) = @_;
+    $match =~ s/\s+//g;
     return +{ '.rgx' => $match };
 }
 

@@ -27,7 +27,7 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 3;
+Plan = 4;
 
 test = (grammar) { 
     Label = '$BlockLabel - Does the compiler output match the bootstrap?';
@@ -45,3 +45,6 @@ test(*grammar);
 
 === YAML Grammar
 --- grammar: ../yaml-pgx/yaml.pgx
+
+=== JSON Grammar
+--- grammar: ../json-pgx/json.pgx

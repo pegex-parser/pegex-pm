@@ -82,7 +82,7 @@ blocks:
 - title: Skip Bracketed
   points:
     grammar: |
-        a: <b> .[ <c> <d> ]
+        a: <b> .( <c> <d> )
         b: /(b)/
         c: /(c+)/
         d: /(d+)/
@@ -173,7 +173,7 @@ blocks:
 - title: Empty Stars
   points:
     grammar: |
-        a: [ <b>* <c> ]+ <b>*
+        a: ( <b>* <c> )+ <b>*
         b: /(b)/
         c: /(c+)/
     input: cc

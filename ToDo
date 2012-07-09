@@ -4,13 +4,16 @@
   a* %%% b* == b* a* %% b* == ( a | b )*
 + Make ~ mean /~/
 + Make <> brackets optional outside a regex
-- Combine sibling regexes
++ Swap [] for ()
++ Remove whitespace from inside regexps (emulate 'x' flag)
 - Die at furthest point parsed
-- Swap [] for ()
-- Remove whitespace from inside regexps (emulate 'x' flag)
+- Combine sibling regexes
 - [ // // // ] should collapse to .rgx, not .all{.rgx}
   ie .all{.rgx} => .rgx
 - Support Regex modifiers: !/foo/
+- Refactor compression testing
+  - compression equivalence is not a goal
+  - s/\n/;/g *is* a goal
 
 #------------------------------------------
 == Fix xt failure:

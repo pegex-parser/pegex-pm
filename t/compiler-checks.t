@@ -39,7 +39,7 @@ Plan = 18;
 
 === Simple Grammar
 --- grammar
-a: [ <b> <c>* ]+
+a: ( <b> <c>* )+
 b: /x/
 c: <x>
 
@@ -128,7 +128,7 @@ a:
 
 === Bracketed All Group
 --- grammar
-a: [ <x> <y> ]
+a: ( <x> <y> )
 --- yaml
 a:
   .all:
@@ -137,7 +137,7 @@ a:
 
 === Bracketed Group With Trailing Modifier
 --- grammar
-a: [ <x> <y> ]?
+a: ( <x> <y> )?
 --- yaml
 a:
   +max: 1
@@ -147,7 +147,7 @@ a:
 
 === Bracketed Group With Leading Modifier
 --- grammar
-a: ![ =<x> <y> ]
+a: !( =<x> <y> )
 --- yaml
 a:
   +asr: -1
@@ -158,7 +158,7 @@ a:
 
 === Multiple Groups
 --- grammar
-a: [ <x> <y> ] [ <z> | /.../ ]
+a: ( <x> <y> ) ( <z> | /.../ )
 --- yaml
 a:
   .all:

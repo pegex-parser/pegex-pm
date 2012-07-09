@@ -4,4 +4,4 @@ one: /1/
 
 number: /<DIGIT>/
 
-things: /blind mice/
+things: /blind<SPACE>mice/

@@ -13,7 +13,7 @@ sub tree_ {
   {
     '+grammar' => 'pegex',
     '+top' => 'grammar',
-    '+version' => '0.0.1',
+    '+version' => '0.1.0',
     'all_group' => {
       '+min' => 1,
       '.ref' => 'rule_part',
@@ -31,13 +31,13 @@ sub tree_ {
     'bracketed_group' => {
       '.all' => [
         {
-          '.rgx' => qr/(?-xism:\G([\.]?)\[\s*)/
+          '.rgx' => qr/(?-xism:\G([\.]?)\(\s*)/
         },
         {
           '.ref' => 'rule_group'
         },
         {
-          '.rgx' => qr/(?-xism:\G\s*\]((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
+          '.rgx' => qr/(?-xism:\G\s*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
         }
       ]
     },
@@ -95,7 +95,7 @@ sub tree_ {
       '.rgx' => qr/(?-xism:\G[\ \t]*([^;\n]*?)[\ \t]*\s*?(?:\n\s*|;\s*|\z))/
     },
     'regular_expression' => {
-      '.rgx' => qr/(?-xism:\G\/([^\/\r\n]*)\/)/
+      '.rgx' => qr/(?-xism:\G\/([^\/]*)\/)/
     },
     'rule_definition' => {
       '.all' => [
