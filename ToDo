@@ -6,6 +6,10 @@
 + Make <> brackets optional outside a regex
 + Swap [] for ()
 + Remove whitespace from inside regexps (emulate 'x' flag)
+- Allow comments in regexes
+- / (: xxx ) / means / (?: xxx ) /
+- / (= xxx ) / means / (?= xxx ) /
+- Test comments after rules...
 - Die at furthest point parsed
 - Combine sibling regexes
 - [ // // // ] should collapse to .rgx, not .all{.rgx}
