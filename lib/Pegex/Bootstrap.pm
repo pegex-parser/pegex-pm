@@ -233,6 +233,7 @@ sub compile_re {
     my $object = {};
     $node =~ s!^/(.*)/$!$1! or die $node;
     $node =~ s!\s+!!g;
+    $node =~ s!\((\:|\=|\!)!(?$1!g;
     $object->{'.rgx'} = $node;
     return $object;
 }

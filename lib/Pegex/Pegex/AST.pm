@@ -155,6 +155,7 @@ sub got_rule_reference {
 sub got_regular_expression {
     my ($self, $match) = @_;
     $match =~ s/\s+//g;
+    $match =~ s!\((\:|\=|\!)!(?$1!g;
     return +{ '.rgx' => $match };
 }
 
