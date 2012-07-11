@@ -18,34 +18,31 @@ sub tree_ {
       '+min' => 1,
       '.ref' => 'rule_part',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G\s*)/
+        '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)*)/
       }
     },
     'any_group' => {
       '+min' => '2',
       '.ref' => 'rule_part',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G\s*\|\s*)/
+        '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)*\|(?:\s|\#.*\n)*)/
       }
     },
     'bracketed_group' => {
       '.all' => [
         {
-          '.rgx' => qr/(?-xism:\G(\.?)\(\s*)/
+          '.rgx' => qr/(?-xism:\G(\.?)\((?:\s|\#.*\n)*)/
         },
         {
           '.ref' => 'rule_group'
         },
         {
-          '.rgx' => qr/(?-xism:\G\s*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
+          '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
         }
       ]
     },
-    'comment' => {
-      '.rgx' => qr/(?-xism:\G(?:[\ \t]*\r?\n|\#.*\r?\n))/
-    },
     'ending' => {
-      '.rgx' => qr/(?-xism:\G\s*?(?:\n\s*|;\s*|\z))/
+      '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)*?(?:\n(?:\s|\#.*\n)*|;(?:\s|\#.*\n)*|\z))/
     },
     'error_message' => {
       '.rgx' => qr/(?-xism:\G`([^`\r\n]*)`)/
@@ -86,13 +83,12 @@ sub tree_ {
           '.ref' => 'meta_definition'
         },
         {
-          '-skip' => 1,
-          '.ref' => 'comment'
+          '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)+)/
         }
       ]
     },
     'meta_value' => {
-      '.rgx' => qr/(?-xism:\G[\ \t]*([^;\n]*?)[\ \t]*\s*?(?:\n\s*|;\s*|\z))/
+      '.rgx' => qr/(?-xism:\G[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*\n)*?(?:\n(?:\s|\#.*\n)*|;(?:\s|\#.*\n)*|\z))/
     },
     'regular_expression' => {
       '.rgx' => qr/(?-xism:\G\/([^\/]*)\/)/
@@ -144,7 +140,7 @@ sub tree_ {
       '+min' => '1',
       '.ref' => 'rule_item',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G\s+(%{1,2})\s+)/
+        '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)+(%{1,2})(?:\s|\#.*\n)+)/
       }
     },
     'rule_reference' => {
@@ -157,13 +153,12 @@ sub tree_ {
           '.ref' => 'rule_definition'
         },
         {
-          '-skip' => 1,
-          '.ref' => 'comment'
+          '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)+)/
         }
       ]
     },
     'rule_start' => {
-      '.rgx' => qr/(?-xism:\G\s*([a-zA-Z]\w*\b)[\ \t]*:\s*)/
+      '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*\b)[\ \t]*:(?:\s|\#.*\n)*)/
     },
     'whitespace_token' => {
       '.rgx' => qr/(?-xism:\G(\~+))/
