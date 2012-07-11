@@ -136,7 +136,8 @@ sub got_rule_part {
 
 sub got_rule_reference {
     my ($self, $match) = @_;
-    my ($prefix, $ref, $suffix) = @$match;
+    my ($prefix, $ref1, $ref2, $suffix) = @$match;
+    my $ref = $ref1 || $ref2;
     my $node = +{ '.ref' => $ref };
     if (my $regex = Pegex::Grammar::Atoms->atoms->{$ref}) {
         $self->extra_rules->{$ref} = +{ '.rgx' => $regex };

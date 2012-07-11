@@ -16,9 +16,11 @@ my $group_modifier = qr{[\!\=\.]};
 my $quantifier = qr{(?:[\?\*\+]|\d+(?:\+|\-\d+)?)};
 
 sub parse {
-    my $self = shift;
+    my ($self, $grammar_text) = @_;
     $self = $self->new unless ref $self;
-    my $grammar_text = shift;
+
+    # If the grammar looks like a filename, try to read that file for the
+    # grammar content.
     if (length($grammar_text) and $grammar_text !~ /(\s|\:|\#|\%)/) {
         open IN, $grammar_text
             or die "Can't open file '$grammar_text' for input";
@@ -26,12 +28,25 @@ sub parse {
         close IN;
     }
     $self->tree({});
+
+    # Remove comment lines 
     $grammar_text =~ s/^#.*\n+//gm;
+
+    # Remove trailing comments
+    $grammar_text =~ s/\ *#.*//g;
+
+    # Remove blank lines
     $grammar_text =~ s/^\s*\n//gm;
+
+    # Turn semis into line breaks
     $grammar_text =~ s/;/\n/g;
+
+    # Ensure trailing newline
     $grammar_text .= "\n" unless
         $grammar_text eq '' or
         $grammar_text =~ /\n\z/;
+
+    # Process directives
     if ($grammar_text =~ s/\A((%\w+ +.*\n)+)//) {
         my $section = $1;
         my (@directives) = ($section =~ /%(\w+) +(.*?) *\n/g);
@@ -55,6 +70,7 @@ sub parse {
             }
         }
     }
+
     for my $rule (split /(?=^\w+:\s*)/m, $grammar_text) {
         (my $value = $rule) =~ s/^(\w+):// or die "$rule";
         my $key = $1;
