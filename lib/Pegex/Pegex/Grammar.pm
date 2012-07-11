@@ -100,13 +100,7 @@ sub tree_ {
     'rule_definition' => {
       '.all' => [
         {
-          '.rgx' => qr/(?-xism:\G\s*)/
-        },
-        {
-          '.ref' => 'rule_name'
-        },
-        {
-          '.rgx' => qr/(?-xism:\G[\ \t]*:\s*)/
+          '.ref' => 'rule_start'
         },
         {
           '.ref' => 'rule_group'
@@ -145,9 +139,6 @@ sub tree_ {
         }
       ]
     },
-    'rule_name' => {
-      '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*)\b)/
-    },
     'rule_part' => {
       '+max' => '2',
       '+min' => '1',
@@ -157,7 +148,7 @@ sub tree_ {
       }
     },
     'rule_reference' => {
-      '.rgx' => qr/(?-xism:\G([!=\+\-\.]?)(?:([a-zA-Z]\w*)\b|(?:<([a-zA-Z]\w*)\b>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?!:))/
+      '.rgx' => qr/(?-xism:\G([!=\+\-\.]?)(?:([a-zA-Z]\w*\b)|(?:<([a-zA-Z]\w*\b)>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?![\ \t]*:))/
     },
     'rule_section' => {
       '+min' => 0,
@@ -171,8 +162,11 @@ sub tree_ {
         }
       ]
     },
+    'rule_start' => {
+      '.rgx' => qr/(?-xism:\G\s*([a-zA-Z]\w*\b)[\ \t]*:\s*)/
+    },
     'whitespace_token' => {
-      '.rgx' => qr/(?-xism:\G(\~{1,2}))/
+      '.rgx' => qr/(?-xism:\G(\~+))/
     }
   }
 }
