@@ -1,5 +1,7 @@
 #------------------------------------------
-- Die at furthest point parsed
++ Die at furthest point parsed
+- Add match stack to the error message
+- Add common errors to the Pegex grammar
 
 - Refactor compression testing
   - compression equivalence is not a goal
