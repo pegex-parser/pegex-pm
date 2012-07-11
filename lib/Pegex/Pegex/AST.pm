@@ -162,10 +162,8 @@ sub got_regular_expression {
 
 sub got_whitespace_token {
     my ($self, $match) = @_;
-    return 
-        $match eq '~' ? +{ '.rgx' => '<ws>*' } :
-        $match eq '~~' ? +{ '.rgx' => '<ws>+' } :
-        die;
+    my $regex = '<ws' . length($match) . '>';
+    return +{ '.rgx' => $regex };
 }
 
 sub got_error_message {

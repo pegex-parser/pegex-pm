@@ -113,8 +113,7 @@ sub combinate_re {
     my $atoms = Pegex::Grammar::Atoms->atoms;
     my $re = $regexp->{'.rgx'};
     while (1) {
-        $re =~ s[(?<!\\)~~][<ws>+]g;
-        $re =~ s[(?<!\\)~][<ws>*]g;
+        $re =~ s[(?<!\\)(~+)]['<ws' . length($1) . '>']ge;
         $re =~ s[<(\w+)>][
             $self->tree->{$1} and
             $self->tree->{$1}{'.rgx'}

@@ -87,7 +87,7 @@ sub parse {
         my @tokens = grep $_,
         ($text =~ m{(
             /[^/\n]*/ |
-            ~~? |
+            ~+ |
             %%? |
             $modifier?<\w+>$quantifier? |
             $modifier?\w+$quantifier? |
@@ -148,8 +148,7 @@ sub compile_next {
             ? $self->compile_group($node, 'any')
             : $self->compile_group($node, 'all')
     :
-        $node =~ /^~~?$/
-            ? $self->compile_ws($node) :
+        $node =~ /^~+$/ ? $self->compile_ws($node) :
         $node =~ m!/! ? $self->compile_re($node) :
         $node =~ m!<! ? $self->compile_rule($node) :
         $node =~ m!^$modifier?\w+$quantifier?$!
@@ -174,10 +173,8 @@ my %prefixes = (
 sub compile_ws {
     my $self = shift;
     my $node = shift;
-    return
-        $node eq '~~' ? { '.rgx' => '<ws>+' } :
-        $node eq '~' ? { '.rgx' => '<ws>*' } :
-            die;
+    my $regex = '<ws' . length($node) . '>';
+    return { '.rgx' => $regex };
 }
 
 sub compile_sep {
