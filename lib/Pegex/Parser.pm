@@ -10,29 +10,42 @@
 package Pegex::Parser;
 use Pegex::Mo;
 
-use Pegex::Input;
-
 use Scalar::Util;
+use Pegex::Input;
 
 # Grammar object or class
 has 'grammar';
 # Receiver object or class
-has 'receiver' => default => sub {
-    require Pegex::Receiver;
-    Pegex::Receiver->new();
-};
+has 'receiver' => (
+    default => sub {
+        require Pegex::Receiver;
+        Pegex::Receiver->new();
+    },
+);
 
+#
 # Parser options
-has 'throw_on_error' => default => sub {1};
+#
+
+# Allow errors to not be thrown
+has 'throw_on_error' => ( default => sub {1} );
+
+# Wrap results in hash with rule name for key
+has 'wrap' => ( default => sub { $_[0]->receiver->wrap } );
+
 # # Allow a partial parse
 # has 'partial' => default => sub {0};
-# Wrap results in hash with rule name for key
-has 'wrap' => default => sub { $_[0]->receiver->wrap };
 
 # Internal properties.
-has 'input';
-has 'buffer';
-has 'position' => default => sub {0};
+has 'input';                # Input object to read from
+has 'buffer';               # Input buffer to parse
+has 'error';                # Error message goes here
+has 'position' => (         # Current position in buffer
+    default => sub {0},
+);
+has 'farthest' => (         # Farthest point matched in buffer
+    default => sub {0},
+);
 
 # Debug the parsing of input.
 has 'debug' => builder => 'debug_';
@@ -133,12 +146,6 @@ sub match_next {
     my ($match, $position, $count, $method) =
         ([], $self->position, 0, "match_$kind");
 
-# XXX Need to rethink this. match_all must be able to complete possible zero
-# width matches at end of stream...
-#     my $return;
-#     while ($position < length($self->{buffer}) and
-#         $return = $self->$method($rule, $next)) {
-
     while (my $return = $self->$method($rule, $next)) {
         $position = $self->position unless $assertion;
         $count++;
@@ -147,11 +154,11 @@ sub match_next {
     }
     if ($max != 1) {
         $match = [$match];
-        $self->position($position);
+        $self->set_position($position);
     }
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0)
         ^ ($assertion == -1);
-    $self->position($position)
+    $self->set_position($position)
         if not($result) or $assertion;
 
     $match = [] if $next->{'-skip'};
@@ -185,16 +192,11 @@ sub match_next_with_sep {
         $match = [$match];
     }
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0);
-    $self->revert_back($position)
+    $self->set_position($position)
         if $count == $scount and not $separator->{'+eok'};
 
     $match = [] if $next->{'-skip'};
     return ($result ? $match : 0);
-}
-
-sub revert_back {
-    my ($self, $position) = @_;
-    $self->position($position);
 }
 
 sub match_ref {
@@ -210,21 +212,21 @@ sub match_ref {
     my $match = (ref($rule) eq 'CODE')
         ? $self->$rule()
         : $self->match_next($rule);
-    if (not $match) {
-        $self->trace("not_$ref") if $trace;
-        return 0;
+    if ($match) {
+        $self->trace("got_$ref") if $trace;
+        if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
+            my $callback = "got_$ref";
+            if (my $sub = $self->receiver->can($callback)) {
+                $match = [ $sub->($self->receiver, $match->[0]) ];
+            }
+            elsif ($self->wrap ? not($parent->{'-pass'}) : $parent->{'-wrap'}) {
+                $match = [ @$match ? { $ref => $match->[0] } : () ];
+            }
+        }
     }
-
-    # Call receiver callbacks
-    $self->trace("got_$ref") if $trace;
-    if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
-        my $callback = "got_$ref";
-        if (my $sub = $self->receiver->can($callback)) {
-            $match = [ $sub->($self->receiver, $match->[0]) ];
-        }
-        elsif ($self->wrap ? not($parent->{'-pass'}) : $parent->{'-wrap'}) {
-            $match = [ @$match ? { $ref => $match->[0] } : () ];
-        }
+    else {
+        $self->trace("not_$ref") if $trace;
+        $match = 0;
     }
 
     return $match;
@@ -243,7 +245,7 @@ sub match_rgx {
     my $match = [ map $$_, 1..$#+ ];
     $match = [ $match ] if $#+ > 1;
 
-    $self->position($finish);
+    $self->set_position($finish);
 
     return $match;
 }
@@ -260,7 +262,7 @@ sub match_all {
             $len++;
         }
         else {
-            $self->revert_back($pos);
+            $self->set_position($pos);
             return 0;
         }
     }
@@ -289,9 +291,14 @@ sub match_code {
     return $self->$method();
 }
 
+sub set_position {
+    my ($self, $position) = @_;
+    $self->position($position);
+    $self->farthest($position) if $position > $self->farthest;
+}
+
 sub trace {
-    my $self = shift;
-    my $action = shift;
+    my ($self, $action) = @_;
     my $indent = ($action =~ /^try_/) ? 1 : 0;
     $self->{indent} ||= 0;
     $self->{indent}-- unless $indent;
@@ -304,14 +311,21 @@ sub trace {
 }
 
 sub throw_error {
-    my $self = shift;
-    my $msg = shift;
-    my $line = @{[substr($self->buffer, 0, $self->position) =~ /(\n)/g]} + 1;
-    my $column = $self->position - rindex($self->buffer, "\n", $self->position);
-    my $context = substr($self->buffer, $self->position, 50);
+    my ($self, $msg) = @_;
+    $self->format_error($msg);
+    return 0 unless $self->throw_on_error;
+    require Carp;
+    Carp::croak($self->error);
+}
+
+sub format_error {
+    my ($self, $msg) = @_;
+    my $position = $self->farthest;
+    my $line = @{[substr($self->buffer, 0, $position) =~ /(\n)/g]} + 1;
+    my $column = $position - rindex($self->buffer, "\n", $position);
+    my $context = substr($self->buffer, $position, 50);
     $context =~ s/\n/\\n/g;
-    my $position = $self->position;
-    my $error = <<"...";
+    $self->error(<<"...");
 Error parsing Pegex document:
   msg: $msg
   line: $line
@@ -319,12 +333,7 @@ Error parsing Pegex document:
   context: "$context"
   position: $position
 ...
-    if ($self->throw_on_error) {
-        require Carp;
-        Carp::croak($error);
-    }
-    $@ = $error;
-    return 0;
+    $@ = $self->error;
 }
 
 1;

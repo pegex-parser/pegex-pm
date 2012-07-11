@@ -58,23 +58,7 @@ sub tree_ {
       ]
     },
     'meta_definition' => {
-      '.all' => [
-        {
-          '.rgx' => qr/(?-xism:\G%)/
-        },
-        {
-          '.ref' => 'meta_name'
-        },
-        {
-          '.rgx' => qr/(?-xism:\G[\ \t]+)/
-        },
-        {
-          '.ref' => 'meta_value'
-        }
-      ]
-    },
-    'meta_name' => {
-      '.rgx' => qr/(?-xism:\G(grammar|extends|include|version))/
+      '.rgx' => qr/(?-xism:\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*\n)*?(?:\n(?:\s|\#.*\n)*|;(?:\s|\#.*\n)*|\z))/
     },
     'meta_section' => {
       '+min' => 0,
@@ -86,9 +70,6 @@ sub tree_ {
           '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)+)/
         }
       ]
-    },
-    'meta_value' => {
-      '.rgx' => qr/(?-xism:\G[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*\n)*?(?:\n(?:\s|\#.*\n)*|;(?:\s|\#.*\n)*|\z))/
     },
     'regular_expression' => {
       '.rgx' => qr/(?-xism:\G\/([^\/]*)\/)/

@@ -1,4 +1,11 @@
 #------------------------------------------
+- Die at furthest point parsed
+
+- Refactor compression testing
+  - compression equivalence is not a goal
+  - s/\n/;/g *is* a goal
+
+#------------------------------------------
 + Find modules that dep on Pegex
 + Remove %%% support
   a* %%% b* == b* a* %% b* == ( a | b )*
@@ -9,27 +16,12 @@
 + / (: xxx ) / means / (?: xxx ) /
 + / (= xxx ) / means / (?= xxx ) /
 
-- Allow comments in regexes
-- Test comments after rules...
-
-- Die at furthest point parsed
-
-- Combine sibling regexes
-- [ // // // ] should collapse to .rgx, not .all{.rgx}
-  ie .all{.rgx} => .rgx
-
-- Support Regex modifiers: !/foo/
-- Refactor compression testing
-  - compression equivalence is not a goal
-  - s/\n/;/g *is* a goal
++ Allow comments in regexes
++ Test comments after rules...
 
 #------------------------------------------
 == Fix xt failure:
 + bootstrap compile barfs on yaml.pgx
-  - can fix this by commenting out %foo lines for now...
-  - need to refo pegex to grok %foo later
-- testml does not show the barf
-- pegex fails to compile testml without a final blank line
 
 #------------------------------------------
 + Implement %%%
