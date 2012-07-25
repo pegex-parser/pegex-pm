@@ -3,25 +3,25 @@
 # abstract:  Pegex Grammar Base Class
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2010, 2011
+# copyright: 2010, 2011, 2012
 
 package Pegex::Grammar;
 use Pegex::Mo;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
-has 'text' => default => sub {
-    my $self = shift;
-    die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'.";
-};
-has 'tree' => builder => 'tree_';
+has text => ();
+has tree => builder => 'tree_';
 sub tree_ {
+    my $self = shift;
+    my $text = $self->text
+        or die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'.";
     require Pegex::Compiler;
-    Pegex::Compiler->compile($_[0]->text)->tree;
+    return Pegex::Compiler->compile($text)->tree;
 }
 
 # Parser and receiver classes to use.
-has 'parser' => default => sub {'Pegex::Parser'};
-has 'receiver' => default => sub {
+has parser => default => sub {'Pegex::Parser'};
+has receiver => default => sub {
     require Pegex::Receiver;
     Pegex::Receiver->new(wrap => 1);
 };
@@ -76,7 +76,6 @@ sub compile_into_module {
     print OUT $module_text;
     close OUT;
 }
-
 
 1;
 
