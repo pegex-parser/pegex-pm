@@ -37,6 +37,7 @@ my $atoms = {
     XDIGIT  => '[0-9a-fA-F]',
     ALNUM   => '[a-zA-Z0-9]',
     WORD    => '\w',
+    HICHARS => '[\x7f-\uffff]',
 
     SINGLE  => "'",
     DOUBLE  => '"',
