@@ -10,8 +10,8 @@ use Pegex::Mo;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
 has text => ();
-has tree => builder => 'tree_';
-sub tree_ {
+has tree => builder => 'make_tree';
+sub make_tree {
     my $self = shift;
     my $text = $self->text
         or die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'.";
@@ -71,7 +71,7 @@ sub compile_into_module {
     my $module_text = do {local $/; <IN>};
     close IN;
     $perl =~ s/^/  /gm;
-    $module_text =~ s/^(sub\s+tree_?\s*\{).*?(^\})/$1\n$perl$2/ms;
+    $module_text =~ s/^(sub\s+tree\s*\{).*?(^\})/$1\n$perl$2/ms;
     open OUT, '>', $file or die $!;
     print OUT $module_text;
     close OUT;
@@ -126,11 +126,11 @@ C<receiver>.
 
 This is the data structure containing the compiled grammar for your syntax. It
 is usually produced by C<Pegex::Compiler>. You can inline it in the C<tree>
-method, or else the C<tree_> method will be called to produce it.
+method, or else the C<make_tree> method will be called to produce it.
 
-The C<tree_> method will call on Pegex::Compiler to compile the C<text>
-property by default. You can define your own C<tree_> method to do override
-this behavior.
+The C<make_tree> method will call on Pegex::Compiler to compile the C<text>
+property by default. You can define your own C<make_tree> method to do
+override this behavior.
 
 Often times you will want to generate your own Pegex::Grammar subclasses in an
 automated fashion. The Pegex and TestML modules do this to be performant. This

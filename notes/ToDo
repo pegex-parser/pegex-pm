@@ -1,7 +1,7 @@
 #------------------------------------------
 + Generate Pegex::Pegex::Grammar with -M trick
++ Change tree_ to make_tree
 - Change +top to +toprule
-- Change tree_ to make_tree
 
 #------------------------------------------
 + Die at furthest point parsed
