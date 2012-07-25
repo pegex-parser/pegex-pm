@@ -3,13 +3,15 @@
 # abstract:  Pegex Grammar for the Pegex Grammar Language
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2010, 2011
+# copyright: 2010, 2011, 2012
 
 package Pegex::Pegex::Grammar;
 use Pegex::Mo;
 extends 'Pegex::Grammar';
 
-sub tree_ {
+use constant text => '../pegex-pgx/pegex.pgx';
+
+sub tree {
   {
     '+grammar' => 'pegex',
     '+top' => 'grammar',
