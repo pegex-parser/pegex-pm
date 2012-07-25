@@ -1,6 +1,6 @@
 #------------------------------------------
++ Generate Pegex::Pegex::Grammar with -M trick
 - Change +top to +toprule
-- Generate Pegex::Pegex::Grammar with -M trick
 - Change tree_ to make_tree
 
 #------------------------------------------
