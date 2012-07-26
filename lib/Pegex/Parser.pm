@@ -77,7 +77,7 @@ sub parse {
     }
 
     my $start_rule = shift ||
-        $self->grammar->tree->{'+top'} ||
+        $self->grammar->tree->{'+toprule'} ||
         ($self->grammar->tree->{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
 
@@ -203,7 +203,7 @@ sub match_ref {
     my ($self, $ref, $parent) = @_;
     my $rule = $self->grammar->tree->{$ref};
     $rule ||= $self->can("match_rule_$ref")
-            ? { '.code' => $ref } 
+            ? { '.code' => $ref }
             : die "\n\n*** No grammar support for '$ref'\n\n";
 
     my $trace = (not $rule->{'+asr'} and $self->debug);
@@ -219,7 +219,9 @@ sub match_ref {
             if (my $sub = $self->receiver->can($callback)) {
                 $match = [ $sub->($self->receiver, $match->[0]) ];
             }
-            elsif ($self->wrap ? not($parent->{'-pass'}) : $parent->{'-wrap'}) {
+            elsif (
+                $self->wrap ? not($parent->{'-pass'}) : $parent->{'-wrap'}
+            ) {
                 $match = [ @$match ? { $ref => $match->[0] } : () ];
             }
         }
@@ -307,7 +309,8 @@ sub trace {
     my $snippet = substr($self->buffer, $self->position);
     $snippet = substr($snippet, 0, 30) . "..." if length $snippet > 30;
     $snippet =~ s/\n/\\n/g;
-    print STDERR sprintf("%-30s", $action) . ($indent ? " >$snippet<\n" : "\n");
+    print STDERR sprintf("%-30s", $action) .
+        ($indent ? " >$snippet<\n" : "\n");
 }
 
 sub throw_error {

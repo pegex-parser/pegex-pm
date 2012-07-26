@@ -11,7 +11,7 @@ sub bootstrap_compile {
     my $grammar_text = (shift)->value;
     my $compiler = Pegex::Bootstrap->new;
     my $tree = $compiler->parse($grammar_text)->combinate->tree;
-    delete $tree->{'+top'};
+    delete $tree->{'+toprule'};
     return $tree;
 }
 

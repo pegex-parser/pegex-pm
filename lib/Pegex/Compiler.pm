@@ -7,7 +7,7 @@
 
 package Pegex::Compiler;
 use Pegex::Mo;
- 
+
 use Pegex::Parser;
 use Pegex::Pegex::Grammar;
 use Pegex::Pegex::AST;
@@ -54,7 +54,7 @@ has '_tree';
 
 sub combinate {
     my $self = shift;
-    my $rule = shift || $self->tree->{'+top'}
+    my $rule = shift || $self->tree->{'+toprule'}
         or return $self;
     $self->_tree({
         map {($_, $self->tree->{$_})} grep { /^\+/ } keys %{$self->tree}

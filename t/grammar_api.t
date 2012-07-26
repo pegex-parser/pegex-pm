@@ -16,5 +16,5 @@ package main;
 
 my $g1 = MyGrammar1->new;
 
-is $g1->tree->{'+top'}, 'foo',
+is $g1->tree->{'+toprule'}, 'foo',
     'MyGrammar1 compiled a tree from its text';

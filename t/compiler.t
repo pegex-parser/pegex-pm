@@ -37,7 +37,7 @@ __DATA__
 
 Plan = 60;
 
-test = (grammar) { 
+test = (grammar) {
     Label = '$BlockLabel - Does the compiler output match the bootstrap?';
     grammar.pegex_compile.yaml
       == grammar.bootstrap_compile.yaml;

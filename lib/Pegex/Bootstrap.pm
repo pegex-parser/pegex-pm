@@ -29,7 +29,7 @@ sub parse {
     }
     $self->tree({});
 
-    # Remove comment lines 
+    # Remove comment lines
     $grammar_text =~ s/^#.*\n+//gm;
 
     # Remove trailing comments
@@ -77,8 +77,8 @@ sub parse {
         $value =~ s/\s+/ /g;
         $value =~ s/^\s*(.*?)\s*$/$1/;
         $self->tree->{$key} = $value;
-        $self->tree->{'+top'} ||= $key;
-        $self->tree->{'+top'} = $key if $key eq 'TOP';
+        $self->tree->{'+toprule'} ||= $key;
+        $self->tree->{'+toprule'} = $key if $key eq 'TOP';
     }
 
     for my $rule (sort keys %{$self->tree}) {
@@ -101,7 +101,7 @@ sub parse {
         unshift @tokens, '(';
         push @tokens, ')';
         my $tree = $self->make_tree(\@tokens);
-        $self->tree->{$rule} = $self->compile_next($tree);  
+        $self->tree->{$rule} = $self->compile_next($tree);
     }
     return $self;
 }

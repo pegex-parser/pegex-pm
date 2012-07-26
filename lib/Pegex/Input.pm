@@ -34,7 +34,7 @@ sub read {
     my ($self) = @_;
     die "Attempted Pegex::Input::read before open" if not $self->_is_open;
     die "Attempted Pegex::Input::read after EOF" if $self->_is_eof;
-    
+
     my $buffer = $self->_buffer;
     $self->_buffer(undef);
     $self->_is_eof(1);

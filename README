@@ -77,7 +77,7 @@ PEGEX OVERVIEW
     parser that can parse Foo sources into data (abstract syntax trees).
 
                                 Parsing a language called "Foo"
-                                   with the Pegex toolset.    
+                                   with the Pegex toolset.
 
                                   .-----------------------.
       .--------------------.      |    Pegex::Compiler    |

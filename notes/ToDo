@@ -51,7 +51,7 @@
   + Write AST tests
   + Write Pegex::AST module
   + Migrate parser to new AST model
-  + Test/Compare to Rx:G 
+  + Test/Compare to Rx:G
 
 + Pegex::Regex - =~ sugar from Rx::G
   + $string =~ qr{pegex grammar string}

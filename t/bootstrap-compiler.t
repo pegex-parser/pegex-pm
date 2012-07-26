@@ -30,7 +30,7 @@ sub bootstrap_compile {
 sub fixup {
     my $yaml = shift;
     $yaml =~ s/\A---\s//;
-    $yaml =~ s/\A\+top.*\n//;
+    $yaml =~ s/\A\+toprule.*\n//;
     $yaml =~ s/'(\d+)'/$1/g;
     return $yaml;
 }
@@ -222,7 +222,7 @@ blocks:
         +extends: bar bar
         +grammar: foo
         +include: bazzy
-        +top: a
+        +toprule: a
         +version: 1.1.1
         a:
           .rgx: b

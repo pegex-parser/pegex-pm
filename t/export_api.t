@@ -9,7 +9,7 @@ my $p1 = pegex("foo: <bar>\n");
 
 is ref($p1), 'Pegex::Grammar', 'pegex returns a Pegex object';
 
-is $p1->tree->{'+top'}, 'foo',
+is $p1->tree->{'+toprule'}, 'foo',
     'pegex() contains a grammar with a compiled tree';
 
 my $p2 = pegex(<<'...');
@@ -28,4 +28,4 @@ is ref $p2, 'Pegex::Grammar', 'grammar property is Pegex::Grammar object';
 ok $p2->tree, 'Grammar object has tree';
 ok ref($p2->tree), 'Grammar object is compiled to a tree';
 
-is $p2->tree->{'+top'}, 'number', '_FIRST_RULE is set correctly';
+is $p2->tree->{'+toprule'}, 'number', '_FIRST_RULE is set correctly';

@@ -11,7 +11,7 @@ extends 'Pegex::Receiver';
 
 use Pegex::Grammar::Atoms;
 
-has 'top';
+has 'toprule';
 has 'extra_rules' => default => sub {+{}};
 
 my %prefixes = (
@@ -35,7 +35,7 @@ sub got_grammar {
     my ($self, $rules) = @_;
     my ($meta_section, $rule_section) = @$rules;
     my $grammar = {
-        '+top' => $self->top,
+        '+toprule' => $self->toprule,
         %{$self->extra_rules},
         %$meta_section,
     };
@@ -71,8 +71,8 @@ sub got_meta_section {
 sub got_rule_definition {
     my ($self, $match) = @_;
     my $name = $match->[0];
-    $self->{top} = $name if $name eq 'TOP';
-    $self->{top} ||= $name;
+    $self->{toprule} = $name if $name eq 'TOP';
+    $self->{toprule} ||= $name;
     my $value = $match->[1];
     return +{ $name => $value };
 }

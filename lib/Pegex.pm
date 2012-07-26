@@ -124,7 +124,7 @@ how Pegex can take a text grammar defining Foo and generate a parser that can
 parse Foo sources into data (abstract syntax trees).
 
                             Parsing a language called "Foo"
-                               with the Pegex toolset.    
+                               with the Pegex toolset.
 
                               .-----------------------.
   .--------------------.      |    Pegex::Compiler    |
