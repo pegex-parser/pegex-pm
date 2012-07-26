@@ -14,7 +14,7 @@ use constant text => '../pegex-pgx/pegex.pgx';
 sub tree {
   {
     '+grammar' => 'pegex',
-    '+top' => 'grammar',
+    '+toprule' => 'grammar',
     '+version' => '0.1.0',
     'all_group' => {
       '+min' => 1,
