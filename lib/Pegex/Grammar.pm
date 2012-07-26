@@ -11,10 +11,12 @@ use Pegex::Mo;
 # Grammar can be in text or tree form. Tree will be compiled from text.
 has text => ();
 has tree => builder => 'make_tree';
+
 sub make_tree {
     my $self = shift;
     my $text = $self->text
-        or die "Can't create a '" . ref($self) . "' grammar. No 'text' or 'tree'.";
+        or die "Can't create a '" . ref($self) .
+            "' grammar. No 'text' or 'tree'.";
     require Pegex::Compiler;
     return Pegex::Compiler->compile($text)->tree;
 }
@@ -71,7 +73,7 @@ sub compile_into_module {
     my $module_text = do {local $/; <IN>};
     close IN;
     $perl =~ s/^/  /gm;
-    $module_text =~ s/^(sub\s+tree\s*\{).*?(^\})/$1\n$perl$2/ms;
+    $module_text =~ s/^(sub\s+make_tree\s*\{).*?(^\})/$1\n$perl$2/ms;
     open OUT, '>', $file or die $!;
     print OUT $module_text;
     close OUT;
