@@ -11,7 +11,7 @@ extends 'Pegex::Grammar';
 
 use constant text => '../pegex-pgx/pegex.pgx';
 
-sub tree {
+sub make_tree {
   {
     '+grammar' => 'pegex',
     '+toprule' => 'grammar',
