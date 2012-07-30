@@ -12,6 +12,13 @@ use Pegex::Mo;
 has text => ();
 has tree => builder => 'make_tree';
 
+# Parser and receiver classes to use.
+has parser => default => sub {'Pegex::Parser'};
+has receiver => default => sub {
+    require Pegex::Receiver;
+    Pegex::Receiver->new(wrap => 1);
+};
+
 sub make_tree {
     my $self = shift;
     my $text = $self->text
@@ -20,13 +27,6 @@ sub make_tree {
     require Pegex::Compiler;
     return Pegex::Compiler->compile($text)->tree;
 }
-
-# Parser and receiver classes to use.
-has parser => default => sub {'Pegex::Parser'};
-has receiver => default => sub {
-    require Pegex::Receiver;
-    Pegex::Receiver->new(wrap => 1);
-};
 
 sub parse {
     my $self = shift;

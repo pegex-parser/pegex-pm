@@ -215,8 +215,7 @@ sub match_ref {
     if ($match) {
         $self->trace("got_$ref") if $trace;
         if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
-            my $callback = "got_$ref";
-            if (my $sub = $self->receiver->can($callback)) {
+            if (my $sub = $self->receiver->can("got_$ref")) {
                 $match = [ $sub->($self->receiver, $match->[0]) ];
             }
             elsif (
@@ -234,13 +233,18 @@ sub match_ref {
     return $match;
 }
 
-my $terminater = 0;
+my $xxx_terminator_hack = 0;
+my $xxx_terminator_max = 1000;
+
 sub match_rgx {
     my ($self, $regexp, $parent) = @_;
 
     my $start = pos($self->{buffer}) = $self->position;
+    # XXX A hack for non-terminating grammars. The grammar is bad, but without
+    # this hack, the parser will spin forever. Need to do this right.
     die "Your grammar seems to not terminate at end of stream"
-        if $start >= length $self->{buffer} and $terminater++ > 1000;
+        if $start >= length $self->{buffer}
+            and $xxx_terminator_hack++ > $xxx_terminator_max;
     $self->{buffer} =~ /$regexp/g or return 0;
     my $finish = pos($self->{buffer});
     no strict 'refs';

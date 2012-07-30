@@ -21,7 +21,7 @@ sub compile {
 
     $self->parse(shift);
     $self->combinate;
-    $self->perlify;
+    $self->native;
 
     return $self;
 }
@@ -126,9 +126,9 @@ sub combinate_re {
 }
 
 #------------------------------------------------------------------------------#
-# Perlify regexes
+# Compile to native Perl regexes
 #------------------------------------------------------------------------------#
-sub perlify {
+sub native {
     my $self = shift;
     $self->perl_regexes($self->tree);
     return $self;
