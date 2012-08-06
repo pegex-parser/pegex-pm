@@ -83,7 +83,7 @@ sub got_bracketed_group {
     if (my $prefix = $match->[0]) {
         $group->{$prefixes{$prefix}} = 1;
     }
-    if (my $suffix = $match->[-1]) {
+    if (my $suffix = $match->[2]) {
         $self->set_quantity($group, $suffix);
     }
     return $group;
