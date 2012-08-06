@@ -147,10 +147,10 @@ a:
 
 === Bracketed Group With Leading Modifier
 --- grammar
-a: !( =<x> <y> )
+a: .( =<x> <y> )
 --- yaml
 a:
-  +asr: -1
+  -skip: 1
   .all:
   - +asr: 1
     .ref: x

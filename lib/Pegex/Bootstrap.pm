@@ -12,7 +12,7 @@ extends 'Pegex::Compiler';
 use Pegex::Grammar::Atoms;
 
 my $modifier = qr{[\!\=\-\+\.]};
-my $group_modifier = qr{[\!\=\.]};
+my $group_modifier = qr{[\.]};
 my $quantifier = qr{(?:[\?\*\+]|\d+(?:\+|\-\d+)?)};
 
 sub parse {
