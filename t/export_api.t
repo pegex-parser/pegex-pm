@@ -5,27 +5,30 @@ use Pegex;
 
 ok defined(&pegex), 'pegex is exported';
 
-my $p1 = pegex("foo: <bar>\n");
+my $parser1 = pegex("foo: <bar>\n");
 
-is ref($p1), 'Pegex::Grammar', 'pegex returns a Pegex object';
+is ref($parser1), 'Pegex::Parser',
+    'pegex returns a Pegex::Parser object';
 
-is $p1->tree->{'+toprule'}, 'foo',
+is $parser1->grammar->tree->{'+toprule'}, 'foo',
     'pegex() contains a grammar with a compiled tree';
 
-my $p2 = pegex(<<'...');
+my $parser2 = pegex(<<'...');
 number: /<DIGIT>+/
 ...
 
 eval {
-    $p2->parse('123');
-    pass '$p2->parse worked';
+    $parser2->parse('123');
+    pass '$parser2->parse worked';
 };
 
 fail $@ if $@;
 
-is ref $p2, 'Pegex::Grammar', 'grammar property is Pegex::Grammar object';
+is ref $parser2, 'Pegex::Parser',
+    'grammar property is Pegex::Parser object';
 
-ok $p2->tree, 'Grammar object has tree';
-ok ref($p2->tree), 'Grammar object is compiled to a tree';
+my $tree2 = $parser2->grammar->tree;
+ok $tree2, 'Grammar object has tree';
+ok ref($tree2), 'Grammar object is compiled to a tree';
 
-is $p2->tree->{'+toprule'}, 'number', '_FIRST_RULE is set correctly';
+is $tree2->{'+toprule'}, 'number', '_FIRST_RULE is set correctly';

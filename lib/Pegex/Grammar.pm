@@ -28,30 +28,6 @@ sub make_tree {
     return Pegex::Compiler->compile($text)->tree;
 }
 
-sub parse {
-    my $self = shift;
-    $self = $self->new unless ref $self;
-
-    die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
-        unless 1 <= @_ and @_ <= 2;
-
-    my $parser = $self->parser;
-    if (not ref $parser) {
-        eval "require $parser";
-        my $receiver = $self->receiver;
-        $receiver = do {
-            eval "require $receiver";
-            $receiver->new;
-        } unless ref $receiver;
-        $parser = $parser->new(
-            grammar => $self,
-            receiver => $receiver,
-        );
-    }
-
-    return $parser->parse(@_);
-}
-
 sub import {
     goto &Pegex::Mo::import
         unless ((caller))[1] =~ /^-e?$/ and @_ == 2 and $_[1] eq 'compile';

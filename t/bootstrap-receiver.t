@@ -1,19 +1,20 @@
 # BEGIN { $Pegex::Parser::Debug = 1 }
 use t::TestPegex;
 
+use Pegex::Parser;
 use Pegex::Grammar;
-# use XXX;
 
 sub run {
     my $block = shift;
-    my ($grammar, $input, $ast) = @{$block->{points}}{qw(grammar input ast)};
+    my ($text, $input, $ast) = @{$block->{points}}{qw(grammar input ast)};
     my $receiver = t::TestPegex::AST->new;
-    my $g = Pegex::Grammar->new(
+    my $grammar = Pegex::Grammar->new(text => $text);
+    my $parser = Pegex::Parser->new(
+        grammar => $grammar,
         receiver => $receiver,
-        text => $grammar,
     );
     $receiver->wrap(1) if $block->{wrap};
-    my $out = fixup(yaml($g->parse($input)));
+    my $out = fixup(yaml($parser->parse($input)));
     is $out, $ast, $block->{title};
 }
 

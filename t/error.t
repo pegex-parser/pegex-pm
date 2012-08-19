@@ -8,9 +8,9 @@ use Pegex;
 sub parse {
     my $grammar = (shift)->value;
     my $input = (shift)->value;
-    my $pegex = pegex($grammar);
-    $pegex->tree;
-    return $pegex->parse($input);
+    my $parser = pegex($grammar);
+    $parser->grammar->tree;
+    return $parser->parse($input);
 }
 
 

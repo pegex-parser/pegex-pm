@@ -17,30 +17,37 @@ use warnings;
 
 package Pegex;
 
+use Pegex::Parser;
 use Pegex::Grammar;
 
 our $VERSION = '0.19';
 
-sub import {
-    no strict 'refs';
-    *{(caller).'::pegex'} = \&pegex;
-}
+use base 'Exporter';
+our @EXPORT = 'pegex';
 
 sub pegex {
+    my ($grammar, $options) = @_;
     die "pegex() requires at least 1 argument, a pegex grammar"
-        unless @_;
-    my $options = $_[1] || {};
-    my $wrap = defined $options->{wrap}
-        ? $options->{wrap}
-        : 1;
-    my $receiver = $options->{receiver} || do {
-        require Pegex::Receiver;
-        Pegex::Receiver->new(wrap => $wrap);
-    };
-    return Pegex::Grammar->new(
-        text => $_[0],
-        receiver => $receiver,
+        unless $grammar;
+    $options ||= {};
+    my $pegex_receiver = _get_receiver($options);
+    my $pegex_grammar = Pegex::Grammar->new(text => $grammar);
+    return Pegex::Parser->new(
+        grammar => $pegex_grammar,
+        receiver => $pegex_receiver,
     );
+}
+
+sub _get_receiver {
+    my ($options) = @_;
+    my $receiver = $options->{receiver} || 'Pegex::Receiver';
+    if (not ref $receiver) {
+        eval "require $receiver";
+        $receiver = $receiver->new;
+    }
+    my $wrap = $options->{wrap} // 1;
+    $receiver->wrap($wrap) if $receiver->can('wrap');
+    return $receiver;
 }
 
 1;
@@ -58,12 +65,16 @@ or with regular expression sugar:
 
 or more explicitly:
 
+    use Pegex::Parser;
     use Pegex::Grammar;
     use Pegex::Compiler;
     my $pegex_grammar = Pegex::Grammar->new(
         tree => Pegex::Compiler->compile($grammar)->tree,
     );
-    my $data = $pegex_grammar->parse($input);
+    my $parser = Pegex::Parser->new(
+        grammar => $pegex_grammar,
+    );
+    my $data = $parser->parse($input);
 
 or customized explicitly:
 
@@ -82,10 +93,13 @@ or customized explicitly:
     got_other_rule { ... }
 
     package main;
-    use MyGrammar;
-    my $grammar = MyGrammar->new();
-    $grammar->parse($input);
-    my $data = $receiver->data;
+    use Pegex::Parser;
+    my $parser = Pegex::Parser->new(
+        grammar => MyGrammar->new,
+        receiver => MyReceiver->new,
+    );
+    $parser->parse($input);
+    my $data = $parser->receiver->data;
 
 =head1 DESCRIPTION
 
@@ -113,7 +127,7 @@ framework. It is only intended for the simplest of uses.
 
 This module exports a single function, C<pegex>, which takes a single value, a
 Pegex grammar. The grammar value may be specified as a string, a file name, or
-a file handle. The C<pegex> function returns a L<Pegex::Grammar> object, on
+a file handle. The C<pegex> function returns a L<Pegex::Parser> object, on
 which you would typically call the C<parse()> method, which (on success) will
 return a data structure of the parsed data.
 
@@ -173,7 +187,8 @@ possible. That's Acmeism.
 
 =head1 SELF COMPILATION TRICKS
 
-You can have some fun using Pegex to compile itself. First get the Pegex grammar repo:
+You can have some fun using Pegex to compile itself. First get the Pegex
+grammar repo:
 
     git clone git://github.com/ingydotnet/pegex-pgx.git
     cd pegex-pgx
