@@ -3,7 +3,7 @@
 # abstract:  Pegex Parser Generator
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2010, 2011
+# copyright: 2010, 2011, 2012
 # see:
 # - Pegex::Manual
 # - Pegex::Grammar
@@ -20,21 +20,21 @@ package Pegex;
 use Pegex::Parser;
 use Pegex::Grammar;
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 
 use base 'Exporter';
 our @EXPORT = 'pegex';
 
+# pegex() is a sugar method that takes a Pegex grammar string and returns a
+# Pegex::Parser object.
 sub pegex {
-    my ($grammar, $options) = @_;
-    die "pegex() requires at least 1 argument, a pegex grammar"
-        unless $grammar;
+    my ($grammar_text, $options) = @_;
+    die "pegex() requires at least 1 argument, a pegex grammar string"
+        unless $grammar_text;
     $options ||= {};
-    my $pegex_receiver = _get_receiver($options);
-    my $pegex_grammar = Pegex::Grammar->new(text => $grammar);
     return Pegex::Parser->new(
-        grammar => $pegex_grammar,
-        receiver => $pegex_receiver,
+        grammar => Pegex::Grammar->new(text => $grammar_text),
+        receiver => _get_receiver($options),
     );
 }
 
@@ -62,6 +62,13 @@ or with regular expression sugar:
     use Pegex::Regex;
     $input =~ qr{$grammar}x;
     my $data = \%/;
+
+or with options:
+
+    use Pegex;
+    use ReceiverClass;
+    my $parser = pegex($grammar, {receiver => 'ReceiverClass'});
+    my $data = $parser->parse(input);
 
 or more explicitly:
 
@@ -125,11 +132,13 @@ environments.
 The C<Pegex.pm> module itself is just a trivial way to use the Pegex
 framework. It is only intended for the simplest of uses.
 
-This module exports a single function, C<pegex>, which takes a single value, a
-Pegex grammar. The grammar value may be specified as a string, a file name, or
-a file handle. The C<pegex> function returns a L<Pegex::Parser> object, on
-which you would typically call the C<parse()> method, which (on success) will
-return a data structure of the parsed data.
+This module exports a single function, C<pegex>, which takes a Pegex grammar
+string as input. You may also pass a second parameter which is a hash opject
+of options.
+
+The C<pegex> function returns a L<Pegex::Parser> object, on which you would
+typically call the C<parse()> method, which (on success) will return a data
+structure of the parsed data.
 
 =head1 PEGEX OVERVIEW
 
