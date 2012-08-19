@@ -9,25 +9,30 @@ package Pegex::Grammar;
 use Pegex::Mo;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
-has text => ();
-has tree => builder => 'make_tree';
+# Grammar can also be stored in a file.
+has file => ();
+has text => (builder => 'make_text');
+has tree => (builder => 'make_tree');
 
-# Parser and receiver classes to use.
-has parser => default => sub {'Pegex::Parser'};
-has receiver => default => sub {
-    require Pegex::Receiver;
-    Pegex::Receiver->new(wrap => 1);
-};
+sub make_text {
+    my $self = shift;
+    my $filename = $self->file
+        or return '';
+    open TEXT, $filename
+        or die "Can't open '$filename' for input\n:$!";
+    return do {local $/; <TEXT>}
+}
 
 sub make_tree {
     my $self = shift;
     my $text = $self->text
         or die "Can't create a '" . ref($self) .
-            "' grammar. No 'text' or 'tree'.";
+            "' grammar. No tree or text or file.";
     require Pegex::Compiler;
     return Pegex::Compiler->compile($text)->tree;
 }
 
+# This import is to support: perl -MPegex::Grammar::Module=compile
 sub import {
     goto &Pegex::Mo::import
         unless ((caller))[1] =~ /^-e?$/ and @_ == 2 and $_[1] eq 'compile';
@@ -36,9 +41,10 @@ sub import {
     exit;
 }
 
+
 sub compile_into_module {
     my ($package) = @_;
-    my $grammar = $package->text;
+    my $grammar = $package->file;
     my $module = $package;
     $module =~ s!::!/!g;
     $module = "$module.pm";
@@ -95,8 +101,7 @@ something different.
 
 =head1 PROPERTIES
 
-There are 4 properties of a Pegex::Grammar: C<tree>, C<text>, C<parser> and
-C<receiver>.
+There are 2 properties of a Pegex::Grammar: C<tree> and C<text>.
 
 =over
 
@@ -123,51 +128,4 @@ This is simply the text of your grammar, if you define this, you should
 (probably) not define the C<tree> property. This grammar text will be
 automatically compiled when the C<tree> is required.
 
-=item parser
-
-This will default to C<Pegex::Parser> and you should probably never need to
-change that. It's the Parser class that will handle the work for the
-C<parse()> method. If you need to subclass the parser for some reason, you
-would set the sublass here.
-
-=item receiver
-
-This will default to C<Pegex::Receiver>. It is the class or object that will
-handle all the callbacks from the parser, and do something with them. Usually
-it will create a data structure representing the parsed input, but you can
-have it do whatever you want. The default receiver creates a fairly messy data
-structure with the result of your parse, but subclassing C<TestML::Receiver>
-is easy.
-
-You can also set this to a reference of your Grammar object, if you want to
-specify all your grammar receiver callbacks inline. You can do that like this
-(assuming a Moose compliant subclass):
-
-    has receiver => (
-        is => 'ro',
-        default => sub { shift },
-    );
-
 =back
-
-=head1 METHODS
-
-There is only one public method:
-
-=over
-
-=item parse($input [ , $start_rule ])
-
-The C<parse> method applies the grammar against the text, and tells the
-receiver object what is happening as it happens. If the parse fails, an error
-is thrown. If it succeeds, then C<parse> returns the data structure created by
-the receiver object.
-
-This method is really just a handy proxy for C<Pegex::Parser::parse>. It takes
-the same input arguments and produces the same outputs.
-
-The first (required) argument is the input to be parsed. This can be a text
-string, a file path, or a L<Pegex::Input> object.
-
-The second (optional) argument is the starting rule name. By default, this is
-the first rule specified in the grammar, or the rule named 'TOP' (if present).
