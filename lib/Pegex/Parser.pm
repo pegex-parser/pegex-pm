@@ -6,6 +6,7 @@
 # copyright: 2011
 # see:
 # - Pegex::Grammar
+# - Pegex::Receiver
 
 package Pegex::Parser;
 use Pegex::Mo;
@@ -48,44 +49,38 @@ has 'farthest' => (         # Farthest point matched in buffer
 );
 
 # Debug the parsing of input.
-has 'debug' => builder => 'debug_';
-
-sub debug_ {
-    exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
-    defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
-    0;
-}
+has 'debug' => (
+    default => sub {
+        exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
+        defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
+        0;
+    },
+);
 
 sub parse {
-    my $self = shift;
-    $self = $self->new unless ref $self;
+    my ($self, $input, $start_rule) = @_;
 
     die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
-        unless 1 <= @_ and @_ <= 2;
+        unless 2 <= @_ and @_ <= 3;
 
-    my $input = (ref $_[0] and UNIVERSAL::isa($_[0], 'Pegex::Input'))
-        ? shift
-        : Pegex::Input->new(shift)->open;
+    $input = Pegex::Input->new($input)->open
+        unless ref $input and UNIVERSAL::isa($input, 'Pegex::Input');
+
     $self->input($input);
 
     $self->buffer($self->input->read);
 
-    my $grammar = $self->grammar or die "No 'grammar'. Can't parse";
-    if (not ref $grammar) {
-        eval "require $grammar";
-        $self->grammar($grammar->new);
-    }
+    my $grammar = $self->grammar
+        or die "No 'grammar'. Can't parse";
 
-    my $start_rule = shift ||
+    $start_rule ||=
         $self->grammar->tree->{'+toprule'} ||
         ($self->grammar->tree->{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
 
-    my $receiver = $self->receiver or die "No 'receiver'. Can't parse";
-    if (not ref $receiver) {
-        eval "require $receiver";
-        $self->receiver($receiver->new);
-    }
+    my $receiver = $self->receiver
+        or die "No 'receiver'. Can't parse";
+
     # Add circular ref and weaken it.
     $self->receiver->parser($self);
     Scalar::Util::weaken($self->receiver->{parser});
@@ -348,12 +343,27 @@ Error parsing Pegex document:
 =head1 SYNOPSIS
 
     use Pegex::Parser;
+    use SomeGrammarClass;
+    use SomeReceiverClass;
+
+    my $parser = Pegex::Parser->new(
+        grammar => SomeGrammarClass->new,
+        receiver => SomeReceiverClass->new,
+    );
+
+    my $result = $parser->parse($SomeInputText);
 
 =head1 DESCRIPTION
 
-This is the Pegex module that provides the parsing engine runtime. It has a
-C<parse()> method that applies a grammar to a text that supposedly matches
-that grammar. It also calls the callback methods of its Receiver object.
+Pegex::Parser is the Pegex component that provides the parsing engine runtime.
+It requires a Grammar object and a Receiver object. It's C<parse()> method
+takes an input that is expected to be matched by the grammar, and applies the
+grammar rules to the input. As the grammar is applied the receiver is notified
+of matches. The receiver is free to do whatever it wishes, but often times it
+builds the data into a structure that is commonly known as an AST (Abstract
+Syntax Tree).
 
-Generally this module is not used directly, but is called upon via a
-L<Pegex::Grammar> object.
+When the parse method is complete it returns whatever object the receiver has
+provided as the final result. If the grammar fails to match the input along
+the way, the parse method will throw an error with much information about the
+failure.
