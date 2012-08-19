@@ -3,7 +3,7 @@
 # abstract:  Pegex Regex Atoms
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2011
+# copyright: 2011, 2012
 
 package Pegex::Grammar::Atoms;
 use Pegex::Mo;

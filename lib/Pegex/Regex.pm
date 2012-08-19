@@ -3,7 +3,7 @@
 # abstract:  Use Pegex Like a Regex
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2011
+# copyright: 2011, 2012
 # see:
 # - Pegex
 # - Regexp::Grammars

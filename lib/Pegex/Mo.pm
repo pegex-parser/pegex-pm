@@ -3,7 +3,7 @@
 # abstract:  Mo Base Class for Pegex
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2010, 2011
+# copyright: 2010, 2011, 2012
 
 package Pegex::Mo;
 # use Mo qw[builder default xxx import];

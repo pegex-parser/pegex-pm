@@ -9,7 +9,7 @@ package Pegex::Pegex::Grammar;
 use Pegex::Mo;
 extends 'Pegex::Grammar';
 
-use constant text => '../pegex-pgx/pegex.pgx';
+use constant file => '../pegex-pgx/pegex.pgx';
 
 sub make_tree {
   {

@@ -3,7 +3,7 @@
 # abstract:  Base Class for Pegex Grammar Interface Modules
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2011
+# copyright: 2011, 2012
 
 package Pegex::Module;
 use Pegex::Mo;

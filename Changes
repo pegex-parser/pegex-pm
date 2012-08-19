@@ -1,4 +1,10 @@
 ---
+version: 0.20
+date:    
+changes:
+- Refactored Pegex to make API less flexible but more sensible, explainable
+  and maintainable.
+---
 version: 0.19
 date:    Sat Nov  5 01:16:15 PDT 2011
 changes:

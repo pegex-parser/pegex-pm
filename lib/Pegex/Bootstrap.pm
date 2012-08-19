@@ -3,7 +3,7 @@
 # abstract:  Bootstrapping Compiler for a Pegex Grammar
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
-# copyright: 2010, 2011
+# copyright: 2010, 2011, 2012
 
 package Pegex::Bootstrap;
 use Pegex::Mo;
