@@ -1,0 +1,8 @@
+# Refactor
+
+- Pegex.Parser needs a grammar and a receiver *object*.
+  - grammar can be text/class_name/class_ref/class_object
+  - receiver can be class_name/class_ref/class_object
+- Parser has the parse(input) method
+- Pegex module exports pegex(grammar, %options) function
+  - Returns a Parser object
