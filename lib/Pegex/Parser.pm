@@ -96,8 +96,8 @@ sub parse {
 sub match {
     my ($self, $rule) = @_;
 
-    $self->receiver->initialize($rule)
-        if $self->receiver->can("initialize");
+    $self->receiver->initial($rule)
+        if $self->receiver->can("initial");
 
     my $match = $self->match_next({'.ref' => $rule});
     if (not $match or $self->position < length($self->buffer)) {
@@ -106,8 +106,8 @@ sub match {
     }
     $match = $match->[0];
 
-    $match = $self->receiver->finalize($match, $rule)
-        if $self->receiver->can("finalize");
+    $match = $self->receiver->final($match, $rule)
+        if $self->receiver->can("final");
 
     $match = {$rule => []} unless $match;
 

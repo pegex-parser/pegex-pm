@@ -23,7 +23,7 @@ my %prefixes = (
 );
 
 # Uncomment this to debug. See entire raw AST.
-# sub finalize {
+# sub final {
 #     my ($self, $match) = @_;
 #     XXX $match;
 # }
