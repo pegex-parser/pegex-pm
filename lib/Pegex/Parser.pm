@@ -63,7 +63,7 @@ sub parse {
     die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
         unless 2 <= @_ and @_ <= 3;
 
-    $input = Pegex::Input->new($input)->open
+    $input = Pegex::Input->new(string => $input)->open
         unless ref $input and UNIVERSAL::isa($input, 'Pegex::Input');
 
     $self->input($input);

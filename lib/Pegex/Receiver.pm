@@ -8,8 +8,8 @@
 package Pegex::Receiver;
 use Pegex::Mo;
 
-has 'parser';
-has 'data';
-has wrap => default => sub { 0 };
+has parser => ();
+has data => ();
+has wrap => ( default => sub { 0 } );
 
 1;

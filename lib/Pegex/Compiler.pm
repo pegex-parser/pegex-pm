@@ -16,10 +16,15 @@ use Pegex::Grammar::Atoms;
 has 'tree';
 
 sub compile {
-    my $self = shift;
-    $self = $self->new unless ref $self;
+    my ($self, $grammar) = @_;
 
-    $self->parse(shift);
+    # Global request to use the Pegex bootstrap compiler
+    if ($Pegex::Bootstrap) {
+        require Pegex::Bootstrap;
+        $self = Pegex::Bootstrap->new;
+    }
+
+    $self->parse($grammar);
     $self->combinate;
     $self->native;
 
@@ -27,22 +32,14 @@ sub compile {
 }
 
 sub parse {
-    if ($Pegex::Bootstrap) {
-        require Pegex::Bootstrap;
-        $_[0] = Pegex::Bootstrap->new;
-        my $self = shift;
-        return $self->parse(@_)
-    }
-
-    my $self = shift;
-    $self = $self->new unless ref $self;
+    my ($self, $input) = @_;
 
     my $parser = Pegex::Parser->new(
         grammar => Pegex::Pegex::Grammar->new,
         receiver => Pegex::Pegex::AST->new,
     );
 
-    $self->tree($parser->parse(@_));
+    $self->tree($parser->parse($input));
 
     return $self;
 }
@@ -53,8 +50,8 @@ sub parse {
 has '_tree';
 
 sub combinate {
-    my $self = shift;
-    my $rule = shift || $self->tree->{'+toprule'}
+    my ($self, $rule) = @_;
+    $rule ||= $self->tree->{'+toprule'}
         or return $self;
     $self->_tree({
         map {($_, $self->tree->{$_})} grep { /^\+/ } keys %{$self->tree}
@@ -66,8 +63,7 @@ sub combinate {
 }
 
 sub combinate_rule {
-    my $self = shift;
-    my $rule = shift;
+    my ($self, $rule) = @_;
     return if exists $self->_tree->{$rule};
 
     my $object = $self->_tree->{$rule} = $self->tree->{$rule};
@@ -75,8 +71,7 @@ sub combinate_rule {
 }
 
 sub combinate_object {
-    my $self = shift;
-    my $object = shift;
+    my ($self, $object) = @_;
     if (my $sub = $object->{'.sep'}) {
         $self->combinate_object($sub);
     }
@@ -108,8 +103,7 @@ sub combinate_object {
 }
 
 sub combinate_re {
-    my $self = shift;
-    my $regexp = shift;
+    my ($self, $regexp) = @_;
     my $atoms = Pegex::Grammar::Atoms->atoms;
     my $re = $regexp->{'.rgx'};
     while (1) {
@@ -129,14 +123,13 @@ sub combinate_re {
 # Compile to native Perl regexes
 #------------------------------------------------------------------------------#
 sub native {
-    my $self = shift;
+    my ($self) = @_;
     $self->perl_regexes($self->tree);
     return $self;
 }
 
 sub perl_regexes {
-    my $self = shift;
-    my $node = shift;
+    my ($self, $node) = @_;
     if (ref($node) eq 'HASH') {
         if (exists $node->{'.rgx'}) {
             my $re = $node->{'.rgx'};

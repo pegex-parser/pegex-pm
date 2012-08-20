@@ -15,7 +15,7 @@ has text => (builder => 'make_text');
 has tree => (builder => 'make_tree');
 
 sub make_text {
-    my $self = shift;
+    my ($self) = @_;
     my $filename = $self->file
         or return '';
     open TEXT, $filename
@@ -24,12 +24,12 @@ sub make_text {
 }
 
 sub make_tree {
-    my $self = shift;
+    my ($self) = @_;
     my $text = $self->text
         or die "Can't create a '" . ref($self) .
             "' grammar. No tree or text or file.";
     require Pegex::Compiler;
-    return Pegex::Compiler->compile($text)->tree;
+    return Pegex::Compiler->new->compile($text)->tree;
 }
 
 # This import is to support: perl -MPegex::Grammar::Module=compile

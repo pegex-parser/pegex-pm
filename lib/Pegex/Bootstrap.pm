@@ -107,8 +107,7 @@ sub parse {
 }
 
 sub make_tree {
-    my $self = shift;
-    my $tokens = shift;
+    my ($self, $tokens) = @_;
     my $stack = [];
     my $tree = [];
     push @$stack, $tree;
@@ -126,8 +125,7 @@ sub make_tree {
 }
 
 sub wilt {
-    my $self = shift;
-    my $branch = shift;
+    my ($self, $branch) = @_;
     return $branch unless ref($branch) eq 'ARRAY';
     my $wilted = [];
     for (my $i = 0; $i < @$branch; $i++) {
@@ -139,8 +137,7 @@ sub wilt {
 }
 
 sub compile_next {
-    my $self = shift;
-    my $node = shift;
+    my ($self, $node) = @_;
     my $unit = ref($node) ?
         $node->[0] =~ /^%%?$/
             ? $self->compile_sep($node) :
@@ -171,15 +168,13 @@ my %prefixes = (
 );
 
 sub compile_ws {
-    my $self = shift;
-    my $node = shift;
+    my ($self, $node) = @_;
     my $regex = '<ws' . length($node) . '>';
     return { '.rgx' => $regex };
 }
 
 sub compile_sep {
-    my $self = shift;
-    my $node = shift;
+    my ($self, $node) = @_;
     my $object = $self->compile_next($node->[1]);
     $object->{'.sep'} = $self->compile_next($node->[2]);
     $object->{'.sep'}{'+eok'} = 1 if $node->[0] eq '%%';
@@ -187,9 +182,7 @@ sub compile_sep {
 }
 
 sub compile_group {
-    my $self = shift;
-    my $node = shift;
-    my $type = shift;
+    my ($self, $node, $type) = @_;
     die unless @$node > 2;
     my $object = {};
     if ($node->[0] =~ /^($modifier)/) {
@@ -241,8 +234,7 @@ sub set_quantity {
 }
 
 sub compile_re {
-    my $self = shift;
-    my $node = shift;
+    my ($self, $node) = @_;
     my $object = {};
     $node =~ s!^/(.*)/$!$1! or die $node;
     $node =~ s!\s+!!g;
@@ -252,8 +244,7 @@ sub compile_re {
 }
 
 sub compile_rule {
-    my $self = shift;
-    my $node = shift;
+    my ($self, $node) = @_;
     my $object = {};
     if ($node =~ s/^($modifier)//) {
         my ($key, $val) = ($prefixes{$1}, 1);
@@ -272,8 +263,7 @@ sub compile_rule {
 }
 
 sub compile_error {
-    my $self = shift;
-    my $node = shift;
+    my ($self, $node) = @_;
     my $object = {};
     $node =~ s!^`(.*)`$!$1! or die $node;
     $object->{'.err'} = $node;

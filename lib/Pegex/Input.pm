@@ -12,22 +12,10 @@ has 'string';
 has 'stringref';
 has 'file';
 has 'handle';
-# has 'http';
 has '_buffer' => default => sub { my $x; \$x };
 has '_is_eof' => default => sub { 0 };
 has '_is_open' => default => sub { 0 };
 has '_is_close' => default => sub { 0 };
-# has '_pos' => 0;
-# has 'maxsize' => 4096;
-# has 'minlines' => 2;
-
-sub new {
-    my $class = shift;
-    die "Pegex::Input->new() requires one or 2 arguments"
-        unless 1 <= @_ and @_ <= 2;
-    my $method = @_ == 2 ? shift : $class->_guess_input(@_);
-    return $class->SUPER::new($method => shift);
-}
 
 # NOTE: Current implementation reads entire input into _buffer on open().
 sub read {
@@ -43,8 +31,7 @@ sub read {
 }
 
 sub open {
-    my $self = shift;
-    die "Pegex::Input::open takes no arguments" if @_;
+    my ($self) = @_;
     die "Attempted to reopen Pegex::Input object"
         if $self->_is_open or $self->_is_close;
 
@@ -65,15 +52,14 @@ sub open {
     else {
         die "Pegex::open failed. No source to open";
     }
-
     $self->_is_open(1);
-
     return $self;
 }
 
 sub close {
     my ($self) = @_;
-    die "Attempted to close an unopen Pegex::Input object" if $self->_is_close;
+    die "Attempted to close an unopen Pegex::Input object"
+        if $self->_is_close;
     close $self->handle if $self->handle;
     $self->_is_open(0);
     $self->_is_close(1);
@@ -82,11 +68,12 @@ sub close {
 }
 
 sub _guess_input {
-    return ref($_[1])
-        ? (ref($_[1]) eq 'SCALAR')
+    my ($self, $input) = @_;
+    return ref($input)
+        ? (ref($input) eq 'SCALAR')
             ? 'stringref'
             : 'handle'
-        : (length($_[1]) and ($_[1] !~ /\n/) and -f $_[1])
+        : (length($input) and ($input !~ /\n/) and -f $input)
             ? 'file'
             : 'string';
 }
@@ -95,17 +82,10 @@ sub _guess_input {
 
 =head1 SYNOPSIS
 
-This:
-
     use Pegex;
     use Pegex::Input;
     my $ast = pegex(Pegex::Input->new(file => 'foo-grammar-file.pgx'))
         ->parse(Pegex::Input->new(string => $foo_input));
-
-is the long way to do this:
-
-    use Pegex;
-    my $ast = pegex('foo-grammar-file.pgx')->parse($foo_input);
 
 =head1 DESCRIPTION
 
@@ -119,29 +99,11 @@ you'll need to use a Pegex::Input object.
 
 =head1 USAGE
 
-There are 2 ways to create a Pegex::Input object. You can call new() with two
-arguments, where the first argument is the input type:
+You call new() with two arguments, where the first argument is the input type:
 
     Pegex::Input->new(file => 'file.txt')
 
-or you can call new() with no type specifier and let it guess.
-
-    Pegex::Input->new($somesuch)
-
-The second form is usually used internally when you call a Pegex facility,
-like these:
-
-    pegex($somesuch)->parse($someothersuch);
-    Pegex::Grammar::Foo->parse($somefoo);
-
-It is nice syntax to not need to specify the type when it is obvious.
-Sometimes it is not obvious and you need to use Pegex::Input directly:
-
-    pegex(Pegex::Input(file => $somesuch))
-        ->parse(Pegex::Input->new(stringref => $someothersuch));
-    Pegex::Grammar::Foo->parse(Pegex::Input->new(handle => $somefoo));
-
-If you do specify the type, use one of these:
+The following input types are available:
 
 =over
 

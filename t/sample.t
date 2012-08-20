@@ -57,7 +57,7 @@ my $want = <<'...';
 use Pegex::Grammar;
 use Pegex::Compiler;
 my $grammar = Pegex::Grammar->new(
-    tree => Pegex::Compiler->compile($grammar_text)->tree,
+    tree => Pegex::Compiler->new->compile($grammar_text)->tree,
 );
 my $parser = Pegex::Parser->new(
     grammar => $grammar,
