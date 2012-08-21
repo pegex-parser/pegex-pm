@@ -18,7 +18,9 @@ sub flatten {
     $times //= -1;
     return $array unless $times--;
     return [
-        map { ref($_) ? @{$self->flatten($_, $times)} : $_ } @$array
+        map {
+            (ref($_) eq 'ARRAY') ? @{$self->flatten($_, $times)} : $_
+        } @$array
     ];
 }
 
