@@ -12,4 +12,14 @@ has parser => ();
 has data => ();
 has wrap => ( default => sub { 0 } );
 
+# Flatten a structure of nested arrays into a single array.
+sub flatten {
+    my ($self, $array, $times) = @_;
+    $times //= -1;
+    return $array unless $times--;
+    return [
+        map { ref($_) ? @{$self->flatten($_, $times)} : $_ } @$array
+    ];
+}
+
 1;

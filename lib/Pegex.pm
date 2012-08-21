@@ -40,13 +40,25 @@ sub pegex {
 
 sub _get_receiver {
     my ($options) = @_;
-    my $receiver = $options->{receiver} || 'Pegex::Receiver';
-    if (not ref $receiver) {
-        eval "require $receiver";
-        $receiver = $receiver->new;
+    my ($receiver, $wrap);
+    if ($options->{receiver}) {
+        $receiver = $options->{receiver};
+        if (not ref $receiver) {
+            eval "require $receiver";
+            die $@ if $@ and $@ !~ /Can't locate/;
+            $receiver = $receiver->new;
+        }
     }
-    my $wrap = $options->{wrap} // 1;
-    $receiver->wrap($wrap) if $receiver->can('wrap');
+    else {
+        require Pegex::Receiver;
+        $receiver = Pegex::Receiver->new;
+        if (not defined $options->{wrap}) {
+            $receiver->wrap(1);
+        }
+    }
+    if (defined $options->{wrap}) {
+        $receiver->wrap($wrap) if $receiver->can('wrap');
+    }
     return $receiver;
 }
 
