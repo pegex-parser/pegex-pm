@@ -40,7 +40,7 @@ sub pegex {
 
 sub _get_receiver {
     my ($options) = @_;
-    my ($receiver, $wrap);
+    my $receiver;
     if ($options->{receiver}) {
         $receiver = $options->{receiver};
         if (not ref $receiver) {
@@ -57,7 +57,8 @@ sub _get_receiver {
         }
     }
     if (defined $options->{wrap}) {
-        $receiver->wrap($wrap) if $receiver->can('wrap');
+        $receiver->wrap($options->{wrap})
+            if $receiver->can('wrap');
     }
     return $receiver;
 }
