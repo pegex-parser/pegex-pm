@@ -41,16 +41,19 @@ sub import {
     exit;
 }
 
-
 sub compile_into_module {
     my ($package) = @_;
-    my $grammar = $package->file;
+    my $grammar_file = $package->file;
+    open GRAMMAR, $grammar_file
+        or die "Can't open $grammar_file for input";
+    my $grammar_text = do {local $/; <GRAMMAR>};
+    close GRAMMAR;
     my $module = $package;
     $module =~ s!::!/!g;
     $module = "$module.pm";
     my $file = $INC{$module} or return;
     require Pegex::Compiler;
-    my $perl = Pegex::Compiler->compile($grammar)->to_perl;
+    my $perl = Pegex::Compiler->new->compile($grammar_text)->to_perl;
     open IN, $file or die $!;
     my $module_text = do {local $/; <IN>};
     close IN;
