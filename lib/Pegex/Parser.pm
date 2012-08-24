@@ -57,6 +57,18 @@ has 'debug' => (
     },
 );
 
+sub BUILD {
+    my ($self) = @_;
+    my $grammar = $self->grammar;
+    my $receiver = $self->receiver;
+    if ($grammar and not ref $grammar) {
+        $self->grammar($grammar->new);
+    }
+    if ($receiver and not ref $receiver) {
+        $self->receiver($receiver->new);
+    }
+}
+
 sub parse {
     my ($self, $input, $start_rule) = @_;
 
@@ -74,8 +86,8 @@ sub parse {
         or die "No 'grammar'. Can't parse";
 
     $start_rule ||=
-        $self->grammar->tree->{'+toprule'} ||
-        ($self->grammar->tree->{'TOP'} ? 'TOP' : undef)
+        $grammar->tree->{'+toprule'} ||
+        ($grammar->tree->{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
 
     my $receiver = $self->receiver
