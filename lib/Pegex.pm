@@ -1,6 +1,6 @@
 ##
 # name:      Pegex
-# abstract:  Pegex Parser Generator
+# abstract:  Acmeist PEG Parsing Framework
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2010, 2011, 2012
