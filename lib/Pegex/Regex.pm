@@ -158,7 +158,7 @@ There are different ways to input a grammar into a Pegex::Regex:
 Make sure to use the C<x> modifier if you are specifying the grammar as a
 literal string or in a variable.
 
-=head WARNING
+=head1 WARNING
 
 This gateway drug, er, module, technically should not even work.
 

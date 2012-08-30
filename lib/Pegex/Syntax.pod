@@ -3,8 +3,7 @@
 Pegex has a fairly simple set of syntax constructs. This document details them
 all.
 
-A grammar file/text is split up into two parts: A Meta section, and a Rule
-section:
+A grammar file/text is split up into two parts:
 
 =head2 Meta Statements
 
@@ -43,12 +42,13 @@ are optional (in most cases; see below).
     
 It can have a number of prefix modifiers:
     
-    # FIXME: What do these mean???
-    =<rule>  # Assertion?
-    !<rule>  # Anti-assertion?
-    .<rule>  # Skip?  Parse but don't capture a subpattern?
-    -<rule>  # Pass?  If wrap == 1, turn non-passes into wraps.
-    +<rule>  # Wrap?  $match = [ @$match ? { $ref => $match->[0] } : () ] unless $receiver->can("got_$rule");
+    =<rule>  # Zero-width positive assertion (look-ahead)
+    !<rule>  # Zero-width negative assertion (look-ahead)
+    .<rule>  # Skip (ie: parse but don't capture a subpattern)
+    -<rule>  # Pass (never wrap)
+    +<rule>  # Always wrap
+    
+(The latter two options and wrapping are discussed L<below|/Return_Values>.)
     
 As well as suffixed quantifiers (similar to REs):
 
@@ -66,7 +66,7 @@ Note that you must use angle brackets if you are using a numbered modifier:
     rule2+   # WRONG!  This would match rule "rule2", 1 or more times.
     rule2-3  # This -might- work, but it's certainly unreadable and risky.
 
-Pre-defined "L<Pegex::Grammar::Atoms|Atoms>" exist to enchance readability
+Pre-defined "L<Atoms|Pegex::Grammar::Atoms>" exist to enchance readability
 and allow for characters that normally cannot be used (like slash or hash):
 
     <TILDE>   # ~
@@ -80,7 +80,7 @@ and allow for characters that normally cannot be used (like slash or hash):
     <WS>      # \s
     <ws>      # <WS>*
     
-The full list can be found in the L<https://metacpan.org/source/Pegex::Grammar::Atoms|Atoms source code>. 
+The full list can be found in the L<Atoms source code|https://metacpan.org/source/Pegex::Grammar::Atoms>. 
     
 =item Regular Expression
 
@@ -90,13 +90,16 @@ A regular expression is a string inside forward slashes.
 
 The RE syntax mostly follows Perl, with the following exceptions:
     
+    # Any rules in angle brackets are referenced in the RE
+    / ( <rule1> | non_rule ) /  # "non_rule" is interpreted literally
+    
     # The syntax implies a /x modifier, so whitespace is ignored.
     / ( <rule1> | <rule2> ) /
     
-    # Whitespace is declared with a tilde.
-    / ~ <rule3> ~ /  # ~ is essentially <ws>
+    # Whitespace is declared with tildes.
+    / ~ <rule3> ~~ /  # ~ = <ws1>, ~~ = <ws2>, etc.
     
-    # FIXME: WTF?  I don't even???
+    # Any (?XX ) syntax can have the question mark removed
     / (: <this> | <that> ) /  # just like (?: ) syntax
     
 =item Error Message
@@ -122,19 +125,61 @@ is yes.)
 
 Rule tokens can be arranged in various ways:
 
-    ~                       # whitespace tilde can be used anywhere
+    ~                       # whitespace tildes can be used anywhere
     <token>                 # just a single token
     <token1> <token2>       # both tokens must exist (AND group)
     <token1> | <token2>     # either or (ANY group)
-    ( <token> | ~ )*        # use parens to group up tokens and apply quantifiers
-    .( <token> | ~ )*       # FIXME: Skip???
-    <token> % <DOT>         # FIXME: Is this a split command???
-    <token> %% <DOT>        # FIXME: eok?
-    <token> %%% <DOT>       # FIXME: eok+bok?
+    ( <token> | ~~ )*       # use parens to group up tokens and apply quantifiers
+    .( <token> | ~~ )*      # Skip (just like the rule modifier)
+    
+    <token>+ %  <DOT>       # one or more tokens are separated by <DOT>
+    <token>+ %% <DOT>       # with %%, a trailing <DOT> is okay
+    
+    a+ %  b                 # same as: a (b a)*
+    a+ %% b                 # same as: a (b a)* b?
     
     # This is perfectly legal
     rule_name_1: 
         / ( <token1>? ) <DOT> ~ /
         rule_name_2
         / ~ <DOT> ( <token2>? ) /
-        ( <token3> | <token4>1-6 )2
+        ( =<token3> | <token4>1-6 )2
+
+C<Any> pipes take precedence over everything else, similar to other parsers:
+    
+    # (these are the same)
+    a b c    | d %% e
+    (a b c ) | (d %% e)
+
+=head1 Return Values
+
+All return values are based on the capture groups (C<$1/$2/$3/etc.> type
+variables) of parsed RE statements.  With a basic parser (not invoked via
+C<pegex()>), the return value of parsed items are going to be:
+
+    [ $1 ]              # single capture group
+    [ [ @+[1..$#+] ] ]  # multiple capture groups
+
+However, you can also turn on "wrapping" with the C<wrap> (boolean) attribute
+within the parser.  This will wrap all match values in a hash with the rule
+name, like so:
+
+    [ { rule_A => $match } ]
+    [ { rule_B => [ @matches ] } ]
+
+Note that this behavior can be "hard set" with the C<+/-> rule modifiers:
+
+    -<rule>  # Never wrap  (even if wrap is set)
+    +<rule>  # Always wrap (even if wrap is off)
+
+Any C<got_*> Receiver subs will override even these settings, though, choosing
+to pass the match as-is.  In this case, the C<got_*> sub return value dictates 
+what ultimately gets put into the tree object:
+
+    +rule_A   # in this case, the + is useless here
+    
+    sub got_rule_A {
+       my ($self, $matches_arrayref) = @_;
+       return { foobar => $matches_arrayref };
+       # will be received as [ { foobar => [ @matches ] } ]
+    }

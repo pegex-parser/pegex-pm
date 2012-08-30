@@ -19,7 +19,7 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 4;
+Plan = 5;
 
 *grammar1.compile.yaml == *grammar2.compile.yaml;
 
@@ -53,3 +53,11 @@ a:
    )
 --- grammar2
 a: ( b c ) | ( d | e | ( f g h i ) )
+
+=== In-Line Comments
+--- grammar1
+a:  # test
+    b c  # not d
+    % e  # using e here...
+--- grammar2
+a: b c % e
