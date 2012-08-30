@@ -63,11 +63,12 @@ sub parse {
     die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
         unless 2 <= @_ and @_ <= 3;
 
-    $input = Pegex::Input->new(string => $input)->open
+    $input = Pegex::Input->new(string => $input)
         unless ref $input and UNIVERSAL::isa($input, 'Pegex::Input');
 
     $self->input($input);
 
+    $self->input->open unless $self->input->_is_open;
     $self->buffer($self->input->read);
 
     my $grammar = $self->grammar
