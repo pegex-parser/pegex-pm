@@ -3,12 +3,10 @@
 use Test::More tests => 1;
 
 use Pegex;
+use Pegex::Input;
 
 $grammar_file = 't/mice.pgx';
-open GRAMMAR, $grammar_file
-    or die "Can't open '$grammar_file' for input";
-$grammar = do {local $/; <GRAMMAR>};
 
-eval { pegex($grammar)->parse("3 blind mice\n") }; $@
+eval { pegex( Pegex::Input->new(file => $grammar_file) )->parse("3 blind mice\n") }; $@
 ? fail $@
 : pass "!<rule> works";
