@@ -25,7 +25,7 @@ sub make_tree {
     },
     'any_group' => {
       '+min' => '2',
-      '.ref' => 'rule_part',
+      '.ref' => 'all_group',
       '.sep' => {
         '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)*\|(?:\s|\#.*\n)*)/
       }
