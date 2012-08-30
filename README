@@ -1,5 +1,5 @@
 NAME
-    Pegex - Pegex Parser Generator
+    Pegex - Acmeist PEG Parsing Framework
 
 SYNOPSIS
         use Pegex;

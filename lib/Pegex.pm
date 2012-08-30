@@ -41,8 +41,7 @@ sub pegex {
 sub _get_receiver {
     my ($options) = @_;
     my $receiver;
-    if ($options->{receiver}) {
-        $receiver = $options->{receiver};
+    if ($receiver = $options->{receiver}) {
         if (not ref $receiver) {
             eval "require $receiver";
             die $@ if $@ and $@ !~ /Can't locate/;

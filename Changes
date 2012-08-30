@@ -1,6 +1,6 @@
 ---
 version: 0.20
-date:    
+date:    Thu Aug 30 00:06:30 PDT 2012
 changes:
 - Refactored Pegex to make API less flexible but more sensible, explainable
   and maintainable.
