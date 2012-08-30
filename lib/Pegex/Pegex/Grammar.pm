@@ -20,31 +20,31 @@ sub make_tree {
       '+min' => 1,
       '.ref' => 'rule_part',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)*)/
+        '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*)/
       }
     },
     'any_group' => {
       '+min' => '2',
       '.ref' => 'all_group',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)*\|(?:\s|\#.*\n)*)/
+        '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*)/
       }
     },
     'bracketed_group' => {
       '.all' => [
         {
-          '.rgx' => qr/(?-xism:\G(\.?)\((?:\s|\#.*\n)*)/
+          '.rgx' => qr/(?-xism:\G(\.?)\((?:\s|\#.*(?:\n|\z))*)/
         },
         {
           '.ref' => 'rule_group'
         },
         {
-          '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
+          '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
         }
       ]
     },
     'ending' => {
-      '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)*?(?:\n(?:\s|\#.*\n)*|;(?:\s|\#.*\n)*|\z))/
+      '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z))/
     },
     'error_message' => {
       '.rgx' => qr/(?-xism:\G`([^`\r\n]*)`)/
@@ -60,7 +60,7 @@ sub make_tree {
       ]
     },
     'meta_definition' => {
-      '.rgx' => qr/(?-xism:\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*\n)*?(?:\n(?:\s|\#.*\n)*|;(?:\s|\#.*\n)*|\z))/
+      '.rgx' => qr/(?-xism:\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z))/
     },
     'meta_section' => {
       '+min' => 0,
@@ -69,7 +69,7 @@ sub make_tree {
           '.ref' => 'meta_definition'
         },
         {
-          '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)+)/
+          '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))+)/
         }
       ]
     },
@@ -123,7 +123,7 @@ sub make_tree {
       '+min' => '1',
       '.ref' => 'rule_item',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)+(%{1,2})(?:\s|\#.*\n)+)/
+        '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+)/
       }
     },
     'rule_reference' => {
@@ -136,12 +136,12 @@ sub make_tree {
           '.ref' => 'rule_definition'
         },
         {
-          '.rgx' => qr/(?-xism:\G(?:\s|\#.*\n)+)/
+          '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))+)/
         }
       ]
     },
     'rule_start' => {
-      '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*\b)[\ \t]*:(?:\s|\#.*\n)*)/
+      '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*\b)[\ \t]*:(?:\s|\#.*(?:\n|\z))*)/
     },
     'whitespace_token' => {
       '.rgx' => qr/(?-xism:\G(\~+))/
