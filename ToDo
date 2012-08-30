@@ -1,3 +1,9 @@
+# Error Reporting
+- Add `error` msgs to pegex.pgx
+- Report the grammar name if present
+- Report the current rule stack.
+- Report 'End Of Input' message instead of '><'
+
 # Refactor
 
 - Document each module
