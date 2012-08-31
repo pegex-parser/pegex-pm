@@ -47,6 +47,9 @@ has 'position' => (         # Current position in buffer
 has 'farthest' => (         # Farthest point matched in buffer
     default => sub {0},
 );
+has 're_count' => (         # Loop counter for RE non-terminating spin prevention
+    default => sub {0},
+);
 
 # Debug the parsing of input.
 has 'debug' => (
@@ -241,18 +244,18 @@ sub match_ref {
     return $match;
 }
 
-my $xxx_terminator_hack = 0;
-my $xxx_terminator_max = 1000;
+my $terminator_max = 1000;
 
 sub match_rgx {
     my ($self, $regexp, $parent) = @_;
 
     my $start = pos($self->{buffer}) = $self->position;
-    # XXX A hack for non-terminating grammars. The grammar is bad, but without
-    # this hack, the parser will spin forever. Need to do this right.
-    die "Your grammar seems to not terminate at end of stream"
-        if $start >= length $self->{buffer}
-            and $xxx_terminator_hack++ > $xxx_terminator_max;
+    my $terminator_iterator = $self->re_count($self->re_count + 1);
+    if ($start >= length $self->{buffer} and $terminator_iterator > $terminator_max) {
+        $self->throw_on_error(1);
+        $self->throw_error("Your grammar seems to not terminate at end of stream");
+    }
+    
     $self->{buffer} =~ /$regexp/g or return 0;
     my $finish = pos($self->{buffer});
     no strict 'refs';
@@ -308,7 +311,10 @@ sub match_code {
 sub set_position {
     my ($self, $position) = @_;
     $self->position($position);
-    $self->farthest($position) if $position > $self->farthest;
+    if ($position > $self->farthest) {
+        $self->farthest($position);
+        $self->re_count(0);
+    }
 }
 
 sub trace {
@@ -336,17 +342,27 @@ sub throw_error {
 sub format_error {
     my ($self, $msg) = @_;
     my $position = $self->farthest;
+    my $real_pos = $self->position;
+    
     my $line = @{[substr($self->buffer, 0, $position) =~ /(\n)/g]} + 1;
     my $column = $position - rindex($self->buffer, "\n", $position);
+    
+    my $pretext = substr(
+        $self->buffer,
+        $position < 50 ? 0 : $position - 50,
+        $position < 50 ? $position : 50
+    );
     my $context = substr($self->buffer, $position, 50);
+    $pretext =~ s/.*\n//gs;
     $context =~ s/\n/\\n/g;
+    
     $self->error(<<"...");
 Error parsing Pegex document:
-  msg: $msg
-  line: $line
-  column: $column
-  context: "$context"
-  position: $position
+  msg:      $msg
+  line:     $line
+  column:   $column
+  context:  $pretext"$context"
+  position: $position ($real_pos pre-lookahead)
 ...
     $@ = $self->error;
 }
