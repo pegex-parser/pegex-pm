@@ -30,15 +30,14 @@ c: /c/
 bbbbddddd
 --- error: "ddddd\n"
 
-### TODO ###
-# === Pegex: Illegal meta rule
-# --- grammar
-# %grammar Test
-# %foobar Quark
-# a: /a+/
-# --- input
-# aaa
-# --- error: Illegal meta rule
+=== Pegex: Illegal meta rule
+--- grammar
+\%grammar Test
+\%foobar Quark
+a: /a+/
+--- input
+aaa
+--- error: Illegal meta rule
 
 === Pegex: Rule header syntax error
 --- grammar
