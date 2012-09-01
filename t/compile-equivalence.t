@@ -61,3 +61,32 @@ a:  # test
     % e  # using e here...
 --- grammar2
 a: b c % e
+
+=== Token Per Line
+--- SKIP: TODO
+--- grammar1
+a: /b/
+--- grammar2
+a
+:
+/b/
+
+=== Regex Combination
+--- SKIP: TODO
+--- grammar1: a: /b/ /c/
+--- grammar2: a: /bc/
+
+=== Regex Combination by Reference
+--- SKIP: TODO
+--- grammar1
+a: b /c/
+b: /b/
+--- grammar2: a: /bc/
+
+=== Multiple Rules Names per Definition
+--- SKIP: TODO
+--- grammar1
+a b: /O HAI/
+--- grammar2
+a: /O HAI/
+b: /O HAI/
