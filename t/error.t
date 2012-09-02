@@ -17,7 +17,7 @@ sub parse {
 __DATA__
 %TestML 1.0
 
-Plan = 16;
+Plan = 17;
 
 *grammar.parse(*input).Catch ~~ *error;
 
