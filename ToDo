@@ -1,16 +1,15 @@
+# New features
+- Multiple rule definitions per statement
+  - Allow multiline
+- Support special <RULE> reference (literal rule name)
+- Support single quoted token 'a + b = ...'
+  - defines a literal regex with YAML single quote semantics
+
 # Error Reporting
 - Add `error` msgs to pegex.pgx
 - Report the grammar name if present
 - Report the current rule stack.
 - Report 'End Of Input' message instead of '><'
 
-# Refactor
-
+# Documentation
 - Document each module
-
-+ Pegex.Parser needs a grammar and a receiver *object*.
-  + grammar must be class_object
-  + receiver must be class_object
-+ Parser has the parse(input) method
-+ Pegex module exports pegex(grammar, %options) function
-  + Returns a Parser object
