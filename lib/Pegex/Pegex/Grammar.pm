@@ -16,52 +16,6 @@ sub make_tree {
     '+grammar' => 'pegex',
     '+toprule' => 'grammar',
     '+version' => '0.2.0',
-    'ERROR_bracketed_group' => {
-      '.any' => [
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G(?!\.)(?=[^\w\(\)<\/\~\|`\s]\())/
-            },
-            {
-              '.err' => 'Illegal group rule modifier (can only use .)'
-            }
-          ]
-        },
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G\.?\((?:\s|\#.*(?:\n|\z))*)/
-            },
-            {
-              '.ref' => 'rule_group'
-            },
-            {
-              '.ref' => 'doc_ending'
-            },
-            {
-              '.err' => 'Runaway rule group; no ending parens at EOF'
-            }
-          ]
-        },
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G\.?\((?:\s|\#.*(?:\n|\z))*)/
-            },
-            {
-              '.ref' => 'rule_group'
-            },
-            {
-              '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
-            },
-            {
-              '.err' => 'Illegal character in group rule quantifier'
-            }
-          ]
-        }
-      ]
-    },
     'ERROR_error_message' => {
       '.any' => [
         {
@@ -81,6 +35,31 @@ sub make_tree {
             },
             {
               '.err' => 'Runaway error message; no ending grave at EOF'
+            }
+          ]
+        }
+      ]
+    },
+    'ERROR_inner_bracketed_group' => {
+      '.any' => [
+        {
+          '.all' => [
+            {
+              '+asr' => 1,
+              '.ref' => 'doc_ending'
+            },
+            {
+              '.err' => 'Runaway rule group; no ending parens at EOF'
+            }
+          ]
+        },
+        {
+          '.all' => [
+            {
+              '.rgx' => qr/(?-xism:\G(?=(?:\s|\#.*(?:\n|\z))*\)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;]))/
+            },
+            {
+              '.err' => 'Illegal character in group rule quantifier'
             }
           ]
         }
@@ -126,13 +105,23 @@ sub make_tree {
         }
       ]
     },
+    'ERROR_pre_bracketed_group' => {
+      '.all' => [
+        {
+          '.rgx' => qr/(?-xism:\G(?!\.)(?=[^\w\(\)<\/\~\|`\s]\())/
+        },
+        {
+          '.err' => 'Illegal group rule modifier (can only use .)'
+        }
+      ]
+    },
     'ERROR_pre_rule_item' => {
       '.any' => [
         {
           '.ref' => 'ERROR_pre_rule_reference'
         },
         {
-          '.ref' => 'ERROR_bracketed_group'
+          '.ref' => 'ERROR_pre_bracketed_group'
         }
       ]
     },
@@ -251,7 +240,14 @@ sub make_tree {
           '.ref' => 'rule_group'
         },
         {
-          '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
+          '.any' => [
+            {
+              '.ref' => 'ERROR_inner_bracketed_group'
+            },
+            {
+              '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
+            }
+          ]
         }
       ]
     },
