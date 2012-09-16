@@ -12,35 +12,59 @@ use Pegex::Mo;
 # Pegex regex atoms for grammars
 #------------------------------------------------------------------------------#
 my $atoms = {
+    # Default whitespace rules for that use '~'
     ws      => '<WS>',
     ws1     => '<ws>*',
     ws2     => '<ws>+',
+
+    # Special rules
     ALWAYS  => '',
     NEVER   => '(?!)',
-    ALL     => '[\s\S]',
-    ANY     => '.',
+
+    # Basics
+    ALL     => '[\s\S]',    # Every char (including newline and space)
+    ANY     => '.',         # Any char (except newline)
+    SPACE   => '\ ',        # ASCII space char
+    TAB     => '\t',        # Horizontal tab
+    WS      => '\s',        # Whitespace
+    NS      => '\S',        # Not Space
+    NL      => '\n',        # Newline
+    BREAK   => '\n',        # Line break (more readable alias for NL)
+    CR      => '\r',        # Carriage return
+    EOL     => '\r?\n',     # Unix/DOS line ending
+    DOS     => '\r\n',      # Windows/DOS line ending
+    EOS     => '\z',        # End of stream/string/file
+
+    # Common character classes
+    WORD    => '\w',
     BLANK   => '[\ \t]',
-    BLANKS  => '\ \t',
-    SPACE   => ' ',
-    TAB     => '\t',
-    WS      => '\s',
-    NS      => '\S',
-    BREAK   => '\n',
-    CR      => '\r',
-    EOL     => '\r?\n',
-    DOS     => '\r\n',
-    EOS     => '\z',
     ALPHA   => '[a-zA-Z]',
     LOWER   => '[a-z]',
     UPPER   => '[A-Z]',
     DIGIT   => '[0-9]',
-    XDIGIT  => '[0-9a-fA-F]',
+    OCTAL   => '[0-7]',
+    HEX     => '[0-9a-fA-F]',
     ALNUM   => '[a-zA-Z0-9]',
-    WORD    => '\w',
-    HICHARS => '[\x7f-\uffff]',
+    CONTROL => '[\x00-\x1f]',
+    HICHAR  => '[\x7f-\x{ffff}]',
 
+    # Ranges - for use inside character classes
+    WORDS   => '0-9A-Za-z_',
+    BLANKS  => '\ \t',
+    ALPHAS  => 'a-zA-Z',
+    LOWERS  => 'a-z',
+    UPPERS  => 'A-Z',
+    DIGITS  => '0-9',
+    OCTALS  => '0-7',
+    HEXS    => '0-9a-fA-F',
+    ALNUMS  => 'a-zA-Z0-9',
+    CONTROLS => '\x00-\x1f',
+    HICHARS => '\x7f-\x{ffff}',
+
+    # Paired punctuation
     SINGLE  => "'",
     DOUBLE  => '"',
+    GRAVE   => '`',
     LPAREN  => '\(',
     RPAREN  => '\)',
     LCURLY  => '\{',
@@ -50,6 +74,7 @@ my $atoms = {
     LANGLE  => '<',
     RANGLE  => '>',
 
+    # Other ASCII punctuation
     BANG    => '!',
     AT      => '\@',
     HASH    => '\#',
@@ -58,9 +83,7 @@ my $atoms = {
     CARET   => '\^',
     AMP     => '&',
     STAR    => '\*',
-
     TILDE   => '\~',
-    GRAVE   => '`',
     UNDER   => '_',
     DASH    => '\-',
     PLUS    => '\+',
@@ -73,6 +96,10 @@ my $atoms = {
     DOT     => '\.',
     QMARK   => '\?',
     SLASH   => '/',
+
+    # Special rules for named control chars
+    BS      => '\x08',    # Backspace
+    FF      => '\x12',    # Formfeed
 };
 
 sub atoms { return $atoms }
