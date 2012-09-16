@@ -1,14 +1,27 @@
 # New features
+- Rework atoms
+- Make atoms be an actual grammar
+  - Subclassable, Includable
 - Multiple rule definitions per statement
   - Allow multiline
 - Support special <RULE> reference (literal rule name)
 - Support single quoted token 'a + b = ...'
   - defines a literal regex with YAML single quote semantics
+- Support include and inherit
+  - Class/object resolution
+- '::' commit syntax
+- Combinate adjacent regexes
+- Fix 'a b | c' in bootstrap parser
+- Support position moving syntax
+  - -- ++ -2 +3 -x +x
+- Grammar auto compile PERL_PEGEX_AUTO_COMPILE
 
 # Error Reporting
 - Add `error` msgs to pegex.pgx
+- Report grammar class name
 - Report the grammar name if present
-- Report the current rule stack.
+- Report the current rule stack
+- Report info from the Input object
 - Report 'End Of Input' message instead of '><'
 
 # Documentation
