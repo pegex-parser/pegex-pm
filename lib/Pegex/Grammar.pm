@@ -34,11 +34,31 @@ sub make_tree {
 
 # This import is to support: perl -MPegex::Grammar::Module=compile
 sub import {
+    my ($package) = @_;
+    if (((caller))[1] =~ /^-e?$/ and @_ == 2 and $_[1] eq 'compile') {
+        $package->compile_into_module();
+        exit;
+    }
+    if (my $env = $ENV{PERL_PEGEX_AUTO_COMPILE}) {
+        my %modules = map {($_, 1)} split ',', $env;
+        if ($modules{$package}) {
+            if (my $grammar_file = $package->file) {
+                if (-f $grammar_file) {
+                    my $module = $package;
+                    $module =~ s!::!/!g;
+                    $module .= '.pm';
+                    my $module_file = $INC{$module};
+                    if (-M $grammar_file < -M $module_file) {
+                        $package->compile_into_module();
+                        local $SIG{__WARN__};
+                        delete $INC{$module};
+                        require $module;
+                    }
+                }
+            }
+        }
+    }
     goto &Pegex::Mo::import
-        unless ((caller))[1] =~ /^-e?$/ and @_ == 2 and $_[1] eq 'compile';
-    my $package = shift;
-    $package->compile_into_module();
-    exit;
 }
 
 sub compile_into_module {
