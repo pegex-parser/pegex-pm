@@ -255,7 +255,7 @@ sub make_tree {
       '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\z)/
     },
     'ending' => {
-      '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z))/
+      '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\z))/
     },
     'error_message' => {
       '.rgx' => qr/(?-xism:\G`([^`\r\n]*)`)/
@@ -273,7 +273,7 @@ sub make_tree {
     'meta_definition' => {
       '.any' => [
         {
-          '.rgx' => qr/(?-xism:\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z))/
+          '.rgx' => qr/(?-xism:\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\z))/
         },
         {
           '.ref' => 'ERROR_meta_definition'
@@ -292,7 +292,7 @@ sub make_tree {
       ]
     },
     'regular_expression' => {
-      '.rgx' => qr/(?-xism:\G\/([^\/]*)\/)/
+      '.rgx' => qr/(?-xism:\G\/([^\/]*?)\/)/
     },
     'rule_definition' => {
       '.all' => [
