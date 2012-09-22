@@ -58,9 +58,11 @@ a: ( b c ) | ( d | e | ( f g h i ) )
 --- grammar1
 a:  # test
     b c  # not d
+    /q/  # skipping to q
     % e  # using e here...
+    ;    # comment -> semicolon test
 --- grammar2
-a: b c % e
+a: b c /q/ % e
 
 === Token Per Line
 --- SKIP: TODO
