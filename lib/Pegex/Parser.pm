@@ -255,7 +255,7 @@ sub match_rgx {
         $self->throw_on_error(1);
         $self->throw_error("Your grammar seems to not terminate at end of stream");
     }
-    
+
     $self->{buffer} =~ /$regexp/g or return 0;
     my $finish = pos($self->{buffer});
     no strict 'refs';
@@ -343,10 +343,10 @@ sub format_error {
     my ($self, $msg) = @_;
     my $position = $self->farthest;
     my $real_pos = $self->position;
-    
+
     my $line = @{[substr($self->buffer, 0, $position) =~ /(\n)/g]} + 1;
     my $column = $position - rindex($self->buffer, "\n", $position);
-    
+
     my $pretext = substr(
         $self->buffer,
         $position < 50 ? 0 : $position - 50,
@@ -355,7 +355,7 @@ sub format_error {
     my $context = substr($self->buffer, $position, 50);
     $pretext =~ s/.*\n//gs;
     $context =~ s/\n/\\n/g;
-    
+
     $self->error(<<"...");
 Error parsing Pegex document:
   msg:      $msg
