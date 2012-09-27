@@ -88,7 +88,7 @@ or more explicitly:
     use Pegex::Grammar;
     use Pegex::Compiler;
     my $pegex_grammar = Pegex::Grammar->new(
-        tree => Pegex::Compiler->compile($grammar)->tree,
+        tree => Pegex::Compiler->new->compile($grammar)->tree,
     );
     my $parser = Pegex::Parser->new(
         grammar => $pegex_grammar,
