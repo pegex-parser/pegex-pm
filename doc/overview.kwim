@@ -1,0 +1,34 @@
+= What is Pegex?
+
+Pegex is a Friendly, Acmeist, PEG Parser framework. Friendly means that it is
+simple to create, understand, modify and maintain Pegex parsers. Acmeist means
+that the parsers will work automatically in many programming languages (as
+long as they have some kind of traditional "regex" support). PEG (Parser
+Expression Grammars) is the new style of Recursive-Descent/BNF style grammar
+definition syntax.
+
+The name "Pegex" comes from PEG + Regex. With Pegex you define top down
+grammars that eventually break down to regex fragments. ie The low level
+parsing matches are always done with regexes against the current position in
+the input stream.
+
+= How Pegex Works
+
+In the simplest terms, Pegex works like this:
+
+    parser = new PegexParserClass(
+        grammar: new PegexGrammarClass
+        receiver: new PegexReceiverClass
+    )
+    result = parser.parse(input)
+
+A Pegex parser applies a Pegex grammar to an input stream, and interacts with
+a receiver as the stream is parsed. If the parse is successful, the parser
+returns the result that was produced by the receiver.
+
+A parser object has two main components: a grammar object and a receiver
+object.
+
+
+
+The `parse_result` is determined by the receiver class. T
