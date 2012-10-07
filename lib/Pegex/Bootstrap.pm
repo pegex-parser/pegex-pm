@@ -86,12 +86,12 @@ sub parse {
         my $text = $self->tree->{$rule};
         my @tokens = grep $_,
         ($text =~ m{(
+            `[^`\n]*` |
             /[^/\n]*/ |
             ~+ |
             %%? |
             $modifier?<\w+>$quantifier? |
             $modifier?\w+$quantifier? |
-            `[^`\n]*` |
             \| |
             $group_modifier?\( |
             \)$quantifier? |
@@ -146,11 +146,11 @@ sub compile_next {
             : $self->compile_group($node, 'all')
     :
         $node =~ /^~+$/ ? $self->compile_ws($node) :
+        $node =~ m!^`! ? $self->compile_error($node) :
         $node =~ m!/! ? $self->compile_re($node) :
         $node =~ m!<! ? $self->compile_rule($node) :
         $node =~ m!^$modifier?\w+$quantifier?$!
             ? $self->compile_rule($node) :
-        $node =~ m!`! ? $self->compile_error($node) :
             XXX $node;
 
     while (defined $unit->{'.all'} and @{$unit->{'.all'}} == 1) {
