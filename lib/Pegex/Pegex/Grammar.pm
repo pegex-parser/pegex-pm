@@ -34,7 +34,7 @@ sub make_tree {
               '.rgx' => qr/(?-xism:\G(?=`[^`]*(?:\s|\#.*(?:\n|\z))*\z))/
             },
             {
-              '.err' => 'Runaway error message; no ending grave at EOF'
+              '.err' => 'Runaway error message. No ending grave at EOF'
             }
           ]
         }
@@ -49,7 +49,7 @@ sub make_tree {
               '.ref' => 'doc_ending'
             },
             {
-              '.err' => 'Runaway rule group; no ending parens at EOF'
+              '.err' => 'Runaway rule group. No ending parens at EOF'
             }
           ]
         },
@@ -163,7 +163,7 @@ sub make_tree {
               '.rgx' => qr/(?-xism:\G(?=[!=\+\-\.]?[a-zA-Z]\w*\b\-))/
             },
             {
-              '.err' => 'Unprotected rule name with numeric quantifier; please use <rule>#-# syntax!'
+              '.err' => 'Unprotected rule name with numeric quantifier. Please use <rule>#-# syntax!'
             }
           ]
         }
@@ -175,7 +175,7 @@ sub make_tree {
           '.rgx' => qr/(?-xism:\G(?=\/([^\/]*)(?:\s|\#.*(?:\n|\z))*\z))/
         },
         {
-          '.err' => 'Runaway regular expression; no ending slash at EOF'
+          '.err' => 'Runaway regular expression. No ending slash at EOF'
         }
       ]
     },
@@ -292,7 +292,7 @@ sub make_tree {
       ]
     },
     'regular_expression' => {
-      '.rgx' => qr/(?-xism:\G\/([^\/]*?)\/)/
+      '.rgx' => qr/(?-xism:\G\/([^\/]*)\/)/
     },
     'rule_definition' => {
       '.all' => [
