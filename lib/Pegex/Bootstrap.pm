@@ -33,7 +33,7 @@ sub parse {
     $grammar_text =~ s/^#.*\n+//gm;
 
     # Remove trailing comments
-    $grammar_text =~ s/\ *#.*//g;
+    $grammar_text =~ s/\ +#.*//g;
 
     # Remove blank lines
     $grammar_text =~ s/^\s*\n//gm;
