@@ -1,7 +1,16 @@
 #------------------------------------------
+- Input object should track position
+  - This way it can be handed off to another parse
+- parse() method can be partial, rather than full
+- parse() method can be passed an ending rule. EOS is default.
+- grammar object can have code rules
+- receiver classes completely control what is result
+  - Move default actions from parser to receiver
+
+#------------------------------------------
 + Generate Pegex::Pegex::Grammar with -M trick
 + Change tree_ to make_tree
-- Change +top to +toprule
++ Change +top to +toprule
 
 #------------------------------------------
 + Die at furthest point parsed

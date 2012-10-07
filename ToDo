@@ -1,5 +1,18 @@
+# 0.21 release
+- Merge grammar changes
+- Review grammar performance
+- Apply pull requests
+- Start documentation
+- Fix 'a b | c' breakage in grammar
+- Move AST primatives to Pegex::AST
+  - Pegex::AST subclass of Pegex::Receiver
+- Support grammar class methods as rules
+  - sub rule_indent { ... }
+
 # New features
-- Rework atoms
++ Rework atoms
++ Grammar auto compile PERL_PEGEX_AUTO_COMPILE
+
 - Make atoms be an actual grammar
   - Subclassable, Includable
 - Multiple rule definitions per statement
@@ -14,7 +27,6 @@
 - Fix 'a b | c' in bootstrap parser
 - Support position moving syntax
   - -- ++ -2 +3 -x +x
-- Grammar auto compile PERL_PEGEX_AUTO_COMPILE
 
 # Error Reporting
 - Add `error` msgs to pegex.pgx
