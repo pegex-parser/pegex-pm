@@ -123,14 +123,14 @@ or customized explicitly:
 =head1 DESCRIPTION
 
 Pegex is a Acmeist parser framework. It allows you to easily create parsers
-that will work equivalently in lots of programming langugages!
+that will work equivalently in lots of programming languages!
 
 Pegex gets it name by combining Parsing Expression Grammars (PEG), with
 Regular Expessions (regex). That's actually what Pegex does.
 
 PEG is the cool new way to elegantly specify recursive descent grammars. The
 Perl 6 language is defined in terms of a self modifying PEG language called
-B<Perl 6 Rules>. Regular expressions are familar to programmers of most modern
+B<Perl 6 Rules>. Regular expressions are familiar to programmers of most modern
 programming languages. Pegex defines a simple PEG syntax, where all the
 terminals are regular expressions. This means that Pegex can be quite fast and
 powerful.
