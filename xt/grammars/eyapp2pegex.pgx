@@ -1,0 +1,74 @@
+# Main rule
+eyapp:   +head +body +tail
+
+# "Atoms"
+E_CODE : /(
+   <LCURLY>
+   (:
+      [^ <LCURLY><RCURLY> ]+ |  # Most stuff
+      (?1)                      # Nesting braces
+   )*
+   <RCURLY>
+)/
+E_PERCODE  : / <PERCENT><E_CODE> ~ /  # bit of a hack
+E_BEGINCODE: / <PERCENT> begin ~ <E_CODE> ~ /
+E_IDENT    : / ( (: <ALPHA> | <UNDER> ) <WORD>* ) ~ /
+E_LABEL    : / <COLON> <WORD>+ ~ /
+E_LITERAL  : / <SINGLE> ([^ <SINGLE> ]+) <SINGLE> ~ /
+E_NAME     : / <PERCENT> name ~ /
+E_nameident: / (: <E_NAME> ~ <E_IDENT> ~ )? /
+E_OPTION   : / <E_nameident> <QMARK> ~ /
+E_PLUS     : / <E_nameident> <PLUS> ~ /
+E_PREC     : / <PERCENT> prec ~ /
+E_PLUS     : / <E_nameident> <STAR> ~ /
+E_section  : / ~ <PERCENT><PERCENT> ~ /
+
+# Common rules:
+percode: E_PERCODE
+symbol:  +literal | +token
+literal: E_LITERAL
+token:   E_IDENT
+
+# Head section:
+head:    decl* E_section
+decl:    ( / <PERCENT><E_IDENT> <wsc> [ ^<DOS> ]* <EOL> / | +percode ) wsc
+
+# Rule section
+body:    rules* E_section
+rules:   +comments ~ +lhs +rhs ~ <SEMI> ~
+lhs:     / <E_IDENT> ~ <COLON> ~ /
+rhs:     <rule>+ % / ~ <PIPE> ~ /
+rule:    optname? ~ rhselt* ~ ( prec code? )?
+
+rhselt:
+     symbol
+   | +code
+   | +comment
+   | .( E_PREC token )
+   ### (not used in Pg.eyp)
+   #| ( <LPAREN> optname? rhseltwithid* <RPAREN> )
+   #| ( rhselt (
+   #     E_STAR
+   #   | E_OPTION
+   #   | E_PLUS
+   #   | ( <LANGLE> ( E_STAR | E_PLUS ) symbol <LANGLE> )
+   #) )
+   
+optname: E_NAME ( ( E_IDENT E_LABEL? ) | E_LABEL )  # (not used in Pg.eyp)
+prec:    E_PREC ~ symbol
+code:    E_CODE | E_BEGINCODE
+
+# Tail section:
+tail:    / ( <ALL>+ ) /
+
+# whitespace
+wsc: / (: <WS> | <comment_null> )* /
+
+comment_null: /
+   <SLASH> <STAR>
+   <ALL>*?
+   <STAR> <SLASH> 
+/
+
+comment: / ~ ( <comment_null> ) ~ /
+comments: comment*

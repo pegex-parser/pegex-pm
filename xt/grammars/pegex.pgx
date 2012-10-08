@@ -1,0 +1,206 @@
+# This is the Pegex grammar for Pegex grammars!
+
+%grammar pegex
+%version 0.2.0
+
+
+grammar: meta_section rule_section
+
+meta_section: ( meta_definition | ~~ )*
+
+rule_section: ( rule_definition | ~~ )*
+
+# TODO With a commit prefix sigil, we can make these ERROR_rules more implicit
+# and elegant.
+meta_definition:
+    / <PERCENT> <meta_name> <BLANK>+ <meta_value> / | ERROR_meta_definition
+
+rule_definition: rule_start rule_group ( ending | ERROR_rule_ending )
+
+rule_start: / ( <rule_name> ) <BLANK>* <COLON> ~ / | ERROR_rule_start
+
+rule_group: any_group | all_group
+
+all_group: rule_part+ % ~
+
+any_group: <all_group>2+ % / ~ <PIPE> ~ /
+
+rule_part: <rule_item>1-2 % / ~~ ( <PERCENT>{1,2} ) ~~ /
+
+rule_item:
+    ERROR_pre_rule_item |
+    rule_reference |
+    regular_expression |
+    bracketed_group |
+    whitespace_token |
+    error_message |
+    ERROR_post_rule_item
+
+rule_reference:
+    /
+        ( <rule_modifier>? )        # [=!.-+]
+            (:                      # foo | <foo>
+                ( <rule_name> ) |
+                (: <LANGLE> ( <rule_name> ) <RANGLE> )
+            )
+        ( <rule_quantifier>? )      # [?*+] 2+ 2-3
+        (! <BLANK>* <COLON> )       # Avoid parsing 'foo:'
+    /                               # as a rule reference.
+
+regular_expression:
+    / <SLASH> ( [^ <SLASH> ]* ) <SLASH> /
+
+bracketed_group:
+    / ( <group_modifier>? ) <LPAREN> ~ /
+    rule_group
+    (
+        ERROR_inner_bracketed_group |
+        / ~ <RPAREN> ( <rule_quantifier>? ) /
+    )
+
+whitespace_token:
+    / ( <TILDE>+ ) /
+
+error_message:
+    / <GRAVE> ( [^ <GRAVE> <DOS> ]* ) <GRAVE> /
+
+rule_modifier: / [ <BANG> <EQUAL> <PLUS> <DASH> <DOT> ] /
+
+group_modifier: / <DOT> /
+
+rule_quantifier:
+    / (:
+        [ <STAR> <PLUS> <QMARK> ] |
+        <DIGIT>+ (: <DASH><DIGIT>+ | <PLUS>)?
+    ) /
+
+meta_name:
+    / ( grammar | extends | include | version ) /
+
+meta_value:
+    /
+        <BLANK>*
+        ( [^ <SEMI> <BREAK> ]*? )
+        <BLANK>*
+        <ending>
+    /
+
+rule_name: / <ALPHA> <WORD>* \b /
+
+ending: / ~? (: <BREAK> ~ | <SEMI> ~ | <comment> ~ <SEMI>? ~ | <EOS> ) /
+
+ws: / (: <WS> | <comment> ) /
+
+comment: / <HASH> <ANY>* (: <BREAK> | <EOS> ) /
+
+###
+# Pegex common error recognition and reporting:
+###
+
+doc_ending: / ~ <EOS> /
+
+illegal_non_modifier_char: / [^
+    <WORD> <LPAREN> <RPAREN> <LANGLE> <SLASH> <TILDE> <PIPE> <GRAVE> <WS>
+] /
+
+illegal_non_quantifier_char: / [^
+    <WORD> <LPAREN> <RPAREN> <LANGLE> <SLASH> <TILDE> <PIPE> <GRAVE> <WS>
+    <STAR> <PLUS> <QMARK> <BANG> <EQUAL> <PLUS> <DASH> <DOT> <COLON> <SEMI>
+] /
+
+ERROR_meta_definition:
+    /(= <PERCENT> <WORD>+ )/
+    `Illegal meta rule`
+
+ERROR_rule_start:
+    !doc_ending
+    `Rule header syntax error`
+
+ERROR_rule_ending:
+    `Rule ending syntax error`
+
+ERROR_pre_rule_item:
+    ERROR_pre_rule_reference |
+    ERROR_pre_bracketed_group
+
+ERROR_post_rule_item:
+    ERROR_post_rule_reference |
+    ERROR_regular_expression |
+    ERROR_error_message |
+    ERROR_separation
+
+# Errors - rule_reference
+ERROR_pre_rule_reference:
+(
+    /(= <rule_modifier>? <LANGLE> <rule_name> (! <RANGLE> ) )/
+    `Missing > in rule reference`
+)
+|
+(
+    /(= <rule_modifier>? <rule_name> <RANGLE> )/
+    `Missing < in rule reference`
+)
+|
+(
+    /(=
+        <rule_modifier>? (: <rule_name> | <LANGLE> <rule_name> <RANGLE> )
+        <illegal_non_quantifier_char>
+    )/
+    `Illegal character in rule quantifier`
+)
+|
+(
+    /(= <rule_modifier>? <rule_name> <DASH> )/
+    `Unprotected rule name with numeric quantifier. Please use <rule>#-# syntax!`
+)
+
+ERROR_post_rule_reference:
+    !rule_modifier
+    /(=
+        <illegal_non_modifier_char>
+        (: <rule_name> | <LANGLE> <rule_name> <RANGLE> )
+        <rule_quantifier>?         # [?*+] 2+ 2-3
+        (! <BLANK>* <COLON> )      # Avoid parsing 'foo:'
+    )/                             # as a rule reference.
+    `Illegal rule modifier (must be [=!.-+]?)`
+
+# Errors - regular_expression
+ERROR_regular_expression:
+    /(= <SLASH> ( [^ <SLASH> ]* ) <doc_ending> )/
+    `Runaway regular expression. No ending slash at EOF`
+
+# Errors - bracketed_group
+ERROR_pre_bracketed_group:
+    /(! <group_modifier>) (= <illegal_non_modifier_char> <LPAREN> )/
+    `Illegal group rule modifier (can only use .)`
+
+ERROR_inner_bracketed_group:
+(
+    =doc_ending
+    `Runaway rule group. No ending parens at EOF`
+)
+|
+(
+    / (= ~ <RPAREN> <illegal_non_quantifier_char> ) /
+    `Illegal character in group rule quantifier`
+)
+
+# Errors - error_message
+ERROR_error_message:
+(
+    /(= <GRAVE> [^ <GRAVE> <DOS> ]* [ <DOS> ] [^ <GRAVE> ]* <GRAVE> )/
+    `Multi-line error messages not allowed!`
+)
+|
+(
+    /(= <GRAVE> [^ <GRAVE> ]* <doc_ending> )/
+    `Runaway error message. No ending grave at EOF`
+)
+
+# Errors - separation
+ERROR_separation:
+    /(= ~ <PERCENT>{3} )/
+    `Leading separator form (BOK) no longer supported`
+|
+    /(= ~ <PERCENT>{1,2} [^ <WS> ] )/
+    `Illegal characters in separator indicator`

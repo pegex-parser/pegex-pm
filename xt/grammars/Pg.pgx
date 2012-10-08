@@ -1,0 +1,5453 @@
+%grammar SQL::Transform::Parser::Pg
+
+#   The target production for the whole parse.
+stmtblock: stmtmulti
+
+# the thrashing around here is to discard "empty" statements...
+stmtmulti: stmt+ % / ~ <SEMI> ~ /
+
+stmt: (
+     AlterEventTrigStmt
+   | AlterDatabaseStmt
+   | AlterDatabaseSetStmt
+   | AlterDefaultPrivilegesStmt
+   | AlterDomainStmt
+   | AlterEnumStmt
+   | AlterExtensionStmt
+   | AlterExtensionContentsStmt
+   | AlterFdwStmt
+   | AlterForeignServerStmt
+   | AlterForeignTableStmt
+   | AlterFunctionStmt
+   | AlterGroupStmt
+   | AlterObjectSchemaStmt
+   | AlterOwnerStmt
+   | AlterSeqStmt
+   | AlterTableStmt
+   | AlterCompositeTypeStmt
+   | AlterRoleSetStmt
+   | AlterRoleStmt
+   | AlterTSConfigurationStmt
+   | AlterTSDictionaryStmt
+   | AlterUserMappingStmt
+   | AlterUserSetStmt
+   | AlterUserStmt
+   | AnalyzeStmt
+   | CheckPointStmt
+   | ClosePortalStmt
+   | ClusterStmt
+   | CommentStmt
+   | ConstraintsSetStmt
+   | CopyStmt
+   | CreateAsStmt
+   | CreateAssertStmt
+   | CreateCastStmt
+   | CreateConversionStmt
+   | CreateDomainStmt
+   | CreateExtensionStmt
+   | CreateFdwStmt
+   | CreateForeignServerStmt
+   | CreateForeignTableStmt
+   | CreateFunctionStmt
+   | CreateGroupStmt
+   | CreateOpClassStmt
+   | CreateOpFamilyStmt
+   | AlterOpFamilyStmt
+   | CreatePLangStmt
+   | CreateSchemaStmt
+   | CreateSeqStmt
+   | CreateStmt
+   | CreateTableSpaceStmt
+   | CreateTrigStmt
+   | CreateEventTrigStmt
+   | CreateRoleStmt
+   | CreateUserStmt
+   | CreateUserMappingStmt
+   | CreatedbStmt
+   | DeallocateStmt
+   | DeclareCursorStmt
+   | DefineStmt
+   | DeleteStmt
+   | DiscardStmt
+   | DoStmt
+   | DropAssertStmt
+   | DropCastStmt
+   | DropFdwStmt
+   | DropForeignServerStmt
+   | DropGroupStmt
+   | DropOpClassStmt
+   | DropOpFamilyStmt
+   | DropOwnedStmt
+   | DropPLangStmt
+   | DropRuleStmt
+   | DropStmt
+   | DropTableSpaceStmt
+   | DropTrigStmt
+   | DropRoleStmt
+   | DropUserStmt
+   | DropUserMappingStmt
+   | DropdbStmt
+   | ExecuteStmt
+   | ExplainStmt
+   | FetchStmt
+   | GrantStmt
+   | GrantRoleStmt
+   | IndexStmt
+   | InsertStmt
+   | ListenStmt
+   | LoadStmt
+   | LockStmt
+   | NotifyStmt
+   | PrepareStmt
+   | ReassignOwnedStmt
+   | ReindexStmt
+   | RemoveAggrStmt
+   | RemoveFuncStmt
+   | RemoveOperStmt
+   | RenameStmt
+   | RevokeStmt
+   | RevokeRoleStmt
+   | RuleStmt
+   | SecLabelStmt
+   | SelectStmt
+   | TransactionStmt
+   | TruncateStmt
+   | UnlistenStmt
+   | UpdateStmt
+   | VacuumStmt
+   | VariableResetStmt
+   | VariableSetStmt
+   | VariableShowStmt
+   | ViewStmt
+)?
+
+#############################################################################
+#
+# Create a new Postgres DBMS role
+#
+#############################################################################
+CreateRoleStmt: CREATE ROLE RoleId opt_with OptRoleList
+
+opt_with: WITH?
+
+# Options for CREATE ROLE and ALTER ROLE (also used by CREATE/ALTER USER
+# for backwards compatibility).  Note: the only option required by SQL99
+# is "WITH ADMIN name".
+OptRoleList: CreateOptRoleElem* % ~
+
+AlterOptRoleList: AlterOptRoleElem* % ~
+
+AlterOptRoleElem  :
+     AlterOptRoleElem_1
+   | AlterOptRoleElem_2
+   | AlterOptRoleElem_3
+   | AlterOptRoleElem_4
+   | AlterOptRoleElem_5
+   | AlterOptRoleElem_6
+   | AlterOptRoleElem_7
+   | AlterOptRoleElem_8
+   | AlterOptRoleElem_9
+
+AlterOptRoleElem_1: PASSWORD Sconst
+AlterOptRoleElem_2: PASSWORD NULL
+AlterOptRoleElem_3: ENCRYPTED PASSWORD Sconst
+AlterOptRoleElem_4: UNENCRYPTED PASSWORD Sconst
+AlterOptRoleElem_5: INHERIT
+AlterOptRoleElem_6: CONNECTION LIMIT SignedIconst
+AlterOptRoleElem_7: VALID UNTIL Sconst
+AlterOptRoleElem_8: USER name_list
+AlterOptRoleElem_9: IDENT
+
+CreateOptRoleElem  :
+     CreateOptRoleElem_1
+   | CreateOptRoleElem_2
+   | CreateOptRoleElem_3
+   | CreateOptRoleElem_4
+   | CreateOptRoleElem_5
+   | CreateOptRoleElem_6
+
+CreateOptRoleElem_1: AlterOptRoleElem
+CreateOptRoleElem_2: SYSID Iconst
+CreateOptRoleElem_3: ADMIN name_list
+CreateOptRoleElem_4: ROLE name_list
+CreateOptRoleElem_5: IN ROLE name_list
+CreateOptRoleElem_6: IN GROUP name_list
+
+#############################################################################
+#
+# Create a new Postgres DBMS user (role with implied login ability)
+#
+#############################################################################
+CreateUserStmt: CREATE USER RoleId opt_with OptRoleList
+
+#############################################################################
+#
+# Alter a postgresql DBMS role
+#
+#############################################################################
+AlterRoleStmt: ALTER ROLE RoleId opt_with AlterOptRoleList
+
+opt_in_database: ( IN DATABASE database_name )?
+
+AlterRoleSetStmt: ALTER ROLE RoleId opt_in_database SetResetClause
+
+#############################################################################
+#
+# Alter a postgresql DBMS user
+#
+#############################################################################
+AlterUserStmt: ALTER USER RoleId opt_with AlterOptRoleList
+
+AlterUserSetStmt: ALTER USER RoleId SetResetClause
+
+#############################################################################
+#
+# Drop a postgresql DBMS role
+#
+# XXX Ideally this would have CASCADE/RESTRICT options, but since a role
+# might own objects in multiple databases, there is presently no way to
+# implement either cascading or restricting.  Caveat DBA.
+#############################################################################
+DropRoleStmt  :
+     DropRoleStmt_1
+   | DropRoleStmt_2
+
+DropRoleStmt_1: DROP ROLE name_list
+DropRoleStmt_2: DROP ROLE IF EXISTS name_list
+
+#############################################################################
+#
+# Drop a postgresql DBMS user
+#
+# XXX Ideally this would have CASCADE/RESTRICT options, but since a user
+# might own objects in multiple databases, there is presently no way to
+# implement either cascading or restricting.  Caveat DBA.
+#############################################################################
+DropUserStmt  :
+     DropUserStmt_1
+   | DropUserStmt_2
+
+DropUserStmt_1: DROP USER name_list
+DropUserStmt_2: DROP USER IF EXISTS name_list
+
+#############################################################################
+#
+# Create a postgresql group (role without login ability)
+#
+#############################################################################
+CreateGroupStmt: CREATE GROUP RoleId opt_with OptRoleList
+
+#############################################################################
+#
+# Alter a postgresql group
+#
+#############################################################################
+AlterGroupStmt: ALTER GROUP RoleId add_drop USER name_list
+
+add_drop  :
+     add_drop_1
+   | add_drop_2
+
+add_drop_1: ADD
+add_drop_2: DROP
+
+#############################################################################
+#
+# Drop a postgresql group
+#
+# XXX see above notes about cascading DROP USER; groups have same problem.
+#############################################################################
+DropGroupStmt  :
+     DropGroupStmt_1
+   | DropGroupStmt_2
+
+DropGroupStmt_1: DROP GROUP name_list
+DropGroupStmt_2: DROP GROUP IF EXISTS name_list
+
+#############################################################################
+#
+# Manipulate a schema
+#
+#############################################################################
+CreateSchemaStmt  :
+     CreateSchemaStmt_1
+   | CreateSchemaStmt_2
+
+CreateSchemaStmt_1: CREATE SCHEMA OptSchemaName AUTHORIZATION RoleId OptSchemaEltList
+CreateSchemaStmt_2: CREATE SCHEMA ColId OptSchemaEltList
+
+OptSchemaName: ColId?
+
+OptSchemaEltList: schema_stmt* % ~
+
+#   schema_stmt are the ones that can show up inside a CREATE SCHEMA
+#   statement (in addition to by themselves).
+schema_stmt:
+     CreateStmt
+   | IndexStmt
+   | CreateSeqStmt
+   | CreateTrigStmt
+   | GrantStmt
+   | ViewStmt
+
+
+#############################################################################
+#
+# Set PG internal variable
+#     SET name TO 'var_value'
+# Include SQL92 syntax (thomas 1997-10-22):
+#     SET TIME ZONE 'var_value'
+#
+#############################################################################
+VariableSetStmt  :
+     VariableSetStmt_1
+   | VariableSetStmt_2
+   | VariableSetStmt_3
+
+VariableSetStmt_1: SET set_rest
+VariableSetStmt_2: SET LOCAL set_rest
+VariableSetStmt_3: SET SESSION set_rest
+
+set_rest  :
+     set_rest_1
+   | set_rest_2
+   | set_rest_more
+
+set_rest_1: TRANSACTION transaction_mode_list
+set_rest_2: SESSION CHARACTERISTICS AS TRANSACTION transaction_mode_list
+
+set_rest_more   :
+     set_rest_more_1
+   | set_rest_more_2
+   | set_rest_more_3
+   | set_rest_more_4
+   | set_rest_more_5
+   | set_rest_more_6
+   | set_rest_more_7
+   | set_rest_more_8
+   | set_rest_more_9
+   | set_rest_more_10
+   | set_rest_more_11
+   | set_rest_more_12
+   | set_rest_more_13
+   | set_rest_more_14
+
+set_rest_more_1 : 
+# Generic SET syntaxes:
+    var_name TO var_list
+set_rest_more_2 : var_name <EQUAL> var_list
+set_rest_more_3 : var_name TO DEFAULT
+set_rest_more_4 : var_name <EQUAL> DEFAULT
+set_rest_more_5 : var_name FROM CURRENT
+set_rest_more_6 : TIME ZONE zone_value
+set_rest_more_7 : CATALOG Sconst
+set_rest_more_8 : SCHEMA Sconst
+set_rest_more_9 : NAMES opt_encoding
+set_rest_more_10: ROLE ColId_or_Sconst
+set_rest_more_11: SESSION AUTHORIZATION ColId_or_Sconst
+set_rest_more_12: SESSION AUTHORIZATION DEFAULT
+set_rest_more_13: XML OPTION document_or_content
+set_rest_more_14: TRANSACTION SNAPSHOT Sconst
+
+var_name: ColId+ % / ~ <DOT> ~ /
+
+var_list: var_value+ % / ~ <COMMA> ~ /
+
+var_value  :
+     var_value_1
+   | var_value_2
+
+var_value_1: opt_boolean_or_string
+var_value_2: NumericOnly
+
+iso_level  :
+     iso_level_1
+   | iso_level_2
+   | iso_level_3
+   | iso_level_4
+
+iso_level_1: READ UNCOMMITTED
+iso_level_2: READ COMMITTED
+iso_level_3: REPEATABLE READ
+iso_level_4: SERIALIZABLE
+
+opt_boolean_or_string  :
+     opt_boolean_or_string_1
+   | opt_boolean_or_string_2
+   | opt_boolean_or_string_3
+   | opt_boolean_or_string_4
+
+opt_boolean_or_string_1: TRUE
+opt_boolean_or_string_2: FALSE
+opt_boolean_or_string_3: ON
+opt_boolean_or_string_4: ColId_or_Sconst
+
+# Timezone values can be:
+# - a string such as 'pst8pdt'
+# - an identifier such as "pst8pdt"
+# - an integer or floating point number
+# - a time interval per SQL99
+# ColId gives reduce/reduce errors against ConstInterval and LOCAL,
+# so use IDENT (meaning we reject anything that is a key word).
+zone_value  :
+     zone_value_1
+   | zone_value_2
+   | zone_value_3
+   | zone_value_4
+   | zone_value_5
+   | zone_value_6
+   | zone_value_7
+
+zone_value_1: Sconst
+zone_value_2: IDENT
+zone_value_3: ConstInterval Sconst opt_interval
+zone_value_4: ConstInterval <LPAREN> Iconst <RPAREN> Sconst opt_interval
+zone_value_5: NumericOnly
+zone_value_6: DEFAULT
+zone_value_7: LOCAL
+
+opt_encoding  : (
+     opt_encoding_1
+   | opt_encoding_2
+)?
+opt_encoding_1: Sconst
+opt_encoding_2: DEFAULT
+
+ColId_or_Sconst  :
+     ColId_or_Sconst_1
+   | ColId_or_Sconst_2
+
+ColId_or_Sconst_1: ColId
+ColId_or_Sconst_2: Sconst
+
+VariableResetStmt  :
+     VariableResetStmt_1
+   | VariableResetStmt_2
+   | VariableResetStmt_3
+   | VariableResetStmt_4
+   | VariableResetStmt_5
+
+VariableResetStmt_1: RESET var_name
+VariableResetStmt_2: RESET TIME ZONE
+VariableResetStmt_3: RESET TRANSACTION ISOLATION LEVEL
+VariableResetStmt_4: RESET SESSION AUTHORIZATION
+VariableResetStmt_5: RESET ALL
+
+# SetResetClause allows SET or RESET without LOCAL
+SetResetClause  :
+     SetResetClause_1
+   | SetResetClause_2
+
+SetResetClause_1: SET set_rest
+SetResetClause_2: VariableResetStmt
+
+# SetResetClause allows SET or RESET without LOCAL
+FunctionSetResetClause  :
+     FunctionSetResetClause_1
+   | FunctionSetResetClause_2
+
+FunctionSetResetClause_1: SET set_rest_more
+FunctionSetResetClause_2: VariableResetStmt
+
+VariableShowStmt  :
+     VariableShowStmt_1
+   | VariableShowStmt_2
+   | VariableShowStmt_3
+   | VariableShowStmt_4
+   | VariableShowStmt_5
+
+VariableShowStmt_1: SHOW var_name
+VariableShowStmt_2: SHOW TIME ZONE
+VariableShowStmt_3: SHOW TRANSACTION ISOLATION LEVEL
+VariableShowStmt_4: SHOW SESSION AUTHORIZATION
+VariableShowStmt_5: SHOW ALL
+
+ConstraintsSetStmt: SET CONSTRAINTS constraints_set_list constraints_set_mode
+
+constraints_set_list  :
+     constraints_set_list_1
+   | constraints_set_list_2
+
+constraints_set_list_1: ALL
+constraints_set_list_2: qualified_name_list
+
+constraints_set_mode  :
+     constraints_set_mode_1
+   | constraints_set_mode_2
+
+constraints_set_mode_1: DEFERRED
+constraints_set_mode_2: IMMEDIATE
+
+# Checkpoint statement
+CheckPointStmt: CHECKPOINT
+
+#############################################################################
+#
+# DISCARD { ALL | TEMP | PLANS }
+#
+#############################################################################
+DiscardStmt  :
+     DiscardStmt_1
+   | DiscardStmt_2
+   | DiscardStmt_3
+   | DiscardStmt_4
+
+DiscardStmt_1: DISCARD ALL
+DiscardStmt_2: DISCARD TEMP
+DiscardStmt_3: DISCARD TEMPORARY
+DiscardStmt_4: DISCARD PLANS
+
+#############################################################################
+#
+#   ALTER [ TABLE | INDEX | SEQUENCE | VIEW ] variations
+#
+# Note: we accept all subcommands for each of the four variants, and sort
+# out what's really legal at execution time.
+#############################################################################
+AlterTableStmt  :
+     AlterTableStmt_1
+   | AlterTableStmt_2
+   | AlterTableStmt_3
+   | AlterTableStmt_4
+   | AlterTableStmt_5
+   | AlterTableStmt_6
+   | AlterTableStmt_7
+   | AlterTableStmt_8
+
+AlterTableStmt_1: ALTER TABLE relation_expr alter_table_cmds
+AlterTableStmt_2: ALTER TABLE IF EXISTS relation_expr alter_table_cmds
+AlterTableStmt_3: ALTER INDEX qualified_name alter_table_cmds
+AlterTableStmt_4: ALTER INDEX IF EXISTS qualified_name alter_table_cmds
+AlterTableStmt_5: ALTER SEQUENCE qualified_name alter_table_cmds
+AlterTableStmt_6: ALTER SEQUENCE IF EXISTS qualified_name alter_table_cmds
+AlterTableStmt_7: ALTER VIEW qualified_name alter_table_cmds
+AlterTableStmt_8: ALTER VIEW IF EXISTS qualified_name alter_table_cmds
+
+alter_table_cmds: alter_table_cmd+ % / ~ <COMMA> ~ /
+
+alter_table_cmd   :
+     alter_table_cmd_1
+   | alter_table_cmd_2
+   | alter_table_cmd_3
+   | alter_table_cmd_4
+   | alter_table_cmd_5
+   | alter_table_cmd_6
+   | alter_table_cmd_7
+   | alter_table_cmd_8
+   | alter_table_cmd_9
+   | alter_table_cmd_10
+   | alter_table_cmd_11
+   | alter_table_cmd_12
+   | alter_table_cmd_13
+   | alter_table_cmd_14
+   | alter_table_cmd_15
+   | alter_table_cmd_16
+   | alter_table_cmd_17
+   | alter_table_cmd_18
+   | alter_table_cmd_19
+   | alter_table_cmd_20
+   | alter_table_cmd_21
+   | alter_table_cmd_22
+   | alter_table_cmd_23
+   | alter_table_cmd_24
+   | alter_table_cmd_25
+   | alter_table_cmd_26
+   | alter_table_cmd_27
+   | alter_table_cmd_28
+   | alter_table_cmd_29
+   | alter_table_cmd_30
+   | alter_table_cmd_31
+   | alter_table_cmd_32
+   | alter_table_cmd_33
+   | alter_table_cmd_34
+   | alter_table_cmd_35
+   | alter_table_cmd_36
+   | alter_table_cmd_37
+   | alter_table_cmd_38
+   | alter_table_cmd_39
+   | alter_table_cmd_40
+   | alter_table_cmd_41
+   | alter_table_cmd_42
+
+alter_table_cmd_1 : 
+# ALTER TABLE <name> ADD <coldef>
+    ADD columnDef
+alter_table_cmd_2 : ADD COLUMN columnDef
+alter_table_cmd_3 : ALTER opt_column ColId alter_column_default
+alter_table_cmd_4 : ALTER opt_column ColId DROP NOT NULL
+alter_table_cmd_5 : ALTER opt_column ColId SET NOT NULL
+alter_table_cmd_6 : ALTER opt_column ColId SET STATISTICS SignedIconst
+alter_table_cmd_7 : ALTER opt_column ColId SET reloptions
+alter_table_cmd_8 : ALTER opt_column ColId RESET reloptions
+alter_table_cmd_9 : ALTER opt_column ColId SET STORAGE ColId
+alter_table_cmd_10: DROP opt_column IF EXISTS ColId opt_drop_behavior
+alter_table_cmd_11: DROP opt_column ColId opt_drop_behavior
+alter_table_cmd_12: ALTER opt_column ColId opt_set_data TYPE Typename opt_collate_clause alter_using
+alter_table_cmd_13: ALTER opt_column ColId alter_generic_options
+alter_table_cmd_14: ADD TableConstraint
+alter_table_cmd_15: VALIDATE CONSTRAINT name
+alter_table_cmd_16: DROP CONSTRAINT IF EXISTS name opt_drop_behavior
+alter_table_cmd_17: DROP CONSTRAINT name opt_drop_behavior
+alter_table_cmd_18: SET WITH OIDS
+alter_table_cmd_19: SET WITHOUT OIDS
+alter_table_cmd_20: CLUSTER ON name
+alter_table_cmd_21: SET WITHOUT CLUSTER
+alter_table_cmd_22: ENABLE TRIGGER name
+alter_table_cmd_23: ENABLE ALWAYS TRIGGER name
+alter_table_cmd_24: ENABLE REPLICA TRIGGER name
+alter_table_cmd_25: ENABLE TRIGGER ALL
+alter_table_cmd_26: ENABLE TRIGGER USER
+alter_table_cmd_27: DISABLE TRIGGER name
+alter_table_cmd_28: DISABLE TRIGGER ALL
+alter_table_cmd_29: DISABLE TRIGGER USER
+alter_table_cmd_30: ENABLE RULE name
+alter_table_cmd_31: ENABLE ALWAYS RULE name
+alter_table_cmd_32: ENABLE REPLICA RULE name
+alter_table_cmd_33: DISABLE RULE name
+alter_table_cmd_34: INHERIT qualified_name
+alter_table_cmd_35: NO INHERIT qualified_name
+alter_table_cmd_36: OF any_name
+alter_table_cmd_37: NOT OF
+alter_table_cmd_38: OWNER TO RoleId
+alter_table_cmd_39: SET TABLESPACE name
+alter_table_cmd_40: SET reloptions
+alter_table_cmd_41: RESET reloptions
+alter_table_cmd_42: alter_generic_options
+
+alter_column_default  :
+     alter_column_default_1
+   | alter_column_default_2
+
+alter_column_default_1: SET DEFAULT a_expr
+alter_column_default_2: DROP DEFAULT
+
+opt_drop_behavior  : (
+     opt_drop_behavior_1
+   | opt_drop_behavior_2
+)?
+opt_drop_behavior_1: CASCADE
+opt_drop_behavior_2: RESTRICT
+
+opt_collate_clause: ( COLLATE any_name )?
+
+alter_using: ( USING a_expr )?
+
+reloptions: <LPAREN> reloption_list <RPAREN>
+
+opt_reloptions: ( WITH reloptions )?
+
+reloption_list: reloption_elem+ % / ~ <COMMA> ~ /
+
+# This should match def_elem and also allow qualified names
+reloption_elem  :
+     reloption_elem_1
+   | reloption_elem_2
+   | reloption_elem_3
+   | reloption_elem_4
+
+reloption_elem_1: ColLabel <EQUAL> def_arg
+reloption_elem_2: ColLabel
+reloption_elem_3: ColLabel <DOT> ColLabel <EQUAL> def_arg
+reloption_elem_4: ColLabel <DOT> ColLabel
+
+#############################################################################
+#
+#   ALTER TYPE
+#
+# really variants of the ALTER TABLE subcommands with different spellings
+#############################################################################
+AlterCompositeTypeStmt: ALTER TYPE any_name alter_type_cmds
+
+alter_type_cmds: alter_type_cmd+ % / ~ <COMMA> ~ /
+
+alter_type_cmd  :
+     alter_type_cmd_1
+   | alter_type_cmd_2
+   | alter_type_cmd_3
+   | alter_type_cmd_4
+
+alter_type_cmd_1: 
+# ALTER TYPE <name> ADD ATTRIBUTE <coldef> [RESTRICT|CASCADE]
+    ADD ATTRIBUTE TableFuncElement opt_drop_behavior
+alter_type_cmd_2: DROP ATTRIBUTE IF EXISTS ColId opt_drop_behavior
+alter_type_cmd_3: DROP ATTRIBUTE ColId opt_drop_behavior
+alter_type_cmd_4: ALTER ATTRIBUTE ColId opt_set_data TYPE Typename opt_collate_clause opt_drop_behavior
+
+#############################################################################
+#
+#      QUERY :
+#            close <portalname>
+#
+#############################################################################
+ClosePortalStmt  :
+     ClosePortalStmt_1
+   | ClosePortalStmt_2
+
+ClosePortalStmt_1: CLOSE cursor_name
+ClosePortalStmt_2: CLOSE ALL
+
+#############################################################################
+#
+#      QUERY :
+#            COPY relname [(columnList)] FROM/TO file [WITH] [(options)]
+#            COPY ( SELECT ... ) TO file [WITH] [(options)]
+#
+#            In the preferred syntax the options are comma-separated
+#            and use generic identifiers instead of keywords.  The pre-9.0
+#            syntax had a hard-wired, space-separated set of options.
+#
+#            Really old syntax, from versions 7.2 and prior:
+#            COPY [ BINARY ] table [ WITH OIDS ] FROM/TO file
+#               [ [ USING ] DELIMITERS 'delimiter' ] ]
+#               [ WITH NULL AS 'null string' ]
+#            This option placement is not supported with COPY (SELECT...).
+#
+#############################################################################
+CopyStmt  :
+     CopyStmt_1
+   | CopyStmt_2
+
+CopyStmt_1: COPY opt_binary qualified_name opt_column_list opt_oids copy_from copy_file_name copy_delimiter opt_with copy_options
+CopyStmt_2: COPY select_with_parens TO copy_file_name opt_with copy_options
+
+copy_from  :
+     copy_from_1
+   | copy_from_2
+
+copy_from_1: FROM
+copy_from_2: TO
+
+# copy_file_name NULL indicates stdio is used. Whether stdin or stdout is
+# used depends on the direction. (It really doesn't make sense to copy from
+# stdout. We silently correct the "typo".)       - AY 9/94
+copy_file_name  :
+     copy_file_name_1
+   | copy_file_name_2
+   | copy_file_name_3
+
+copy_file_name_1: Sconst
+copy_file_name_2: STDIN
+copy_file_name_3: STDOUT
+
+copy_options  :
+     copy_options_1
+   | copy_options_2
+
+copy_options_1: copy_opt_list
+copy_options_2: <LPAREN> copy_generic_opt_list <RPAREN>
+
+# old COPY option syntax
+copy_opt_list: copy_opt_item* % ~
+
+copy_opt_item   :
+     copy_opt_item_1
+   | copy_opt_item_2
+   | copy_opt_item_3
+   | copy_opt_item_4
+   | copy_opt_item_5
+   | copy_opt_item_6
+   | copy_opt_item_7
+   | copy_opt_item_8
+   | copy_opt_item_9
+   | copy_opt_item_10
+   | copy_opt_item_11
+   | copy_opt_item_12
+
+copy_opt_item_1 : BINARY
+copy_opt_item_2 : OIDS
+copy_opt_item_3 : DELIMITER opt_as Sconst
+copy_opt_item_4 : NULL opt_as Sconst
+copy_opt_item_5 : CSV
+copy_opt_item_6 : HEADER
+copy_opt_item_7 : QUOTE opt_as Sconst
+copy_opt_item_8 : ESCAPE opt_as Sconst
+copy_opt_item_9 : FORCE QUOTE columnList
+copy_opt_item_10: FORCE QUOTE <STAR>
+copy_opt_item_11: FORCE NOT NULL columnList
+copy_opt_item_12: ENCODING Sconst
+
+# The following exist for backward compatibility with very old versions
+opt_binary: BINARY?
+
+opt_oids: ( WITH OIDS )?
+
+copy_delimiter: ( opt_using DELIMITERS Sconst )?
+
+opt_using: USING?
+
+# new COPY option syntax
+copy_generic_opt_list: copy_generic_opt_elem+ % / ~ <COMMA> ~ /
+
+copy_generic_opt_elem: ColLabel copy_generic_opt_arg
+
+copy_generic_opt_arg  : (
+     copy_generic_opt_arg_1
+   | copy_generic_opt_arg_2
+   | copy_generic_opt_arg_3
+   | copy_generic_opt_arg_4
+)?
+copy_generic_opt_arg_1: opt_boolean_or_string
+copy_generic_opt_arg_2: NumericOnly
+copy_generic_opt_arg_3: <STAR>
+copy_generic_opt_arg_4: <LPAREN> copy_generic_opt_arg_list <RPAREN>
+
+copy_generic_opt_arg_list: copy_generic_opt_arg_list_item+ % / ~ <COMMA> ~ /
+
+# beware of emitting non-string list elements here; see commands/define.c
+copy_generic_opt_arg_list_item: opt_boolean_or_string
+
+#############################################################################
+#
+#      QUERY :
+#            CREATE TABLE relname
+#
+#############################################################################
+CreateStmt  :
+     CreateStmt_1
+   | CreateStmt_2
+   | CreateStmt_3
+   | CreateStmt_4
+
+CreateStmt_1: CREATE OptTemp TABLE qualified_name <LPAREN> OptTableElementList <RPAREN> OptInherit OptWith OnCommitOption OptTableSpace
+CreateStmt_2: CREATE OptTemp TABLE IF NOT EXISTS qualified_name <LPAREN> OptTableElementList <RPAREN> OptInherit OptWith OnCommitOption OptTableSpace
+CreateStmt_3: CREATE OptTemp TABLE qualified_name OF any_name OptTypedTableElementList OptWith OnCommitOption OptTableSpace
+CreateStmt_4: CREATE OptTemp TABLE IF NOT EXISTS qualified_name OF any_name OptTypedTableElementList OptWith OnCommitOption OptTableSpace
+
+# Redundancy here is needed to avoid shift/reduce conflicts,
+# since TEMP is not a reserved word.  See also OptTempTableName.
+#
+# NOTE: we accept both GLOBAL and LOCAL options; since we have no modules
+# the LOCAL keyword is really meaningless.
+OptTemp  : (
+     OptTemp_1
+   | OptTemp_2
+   | OptTemp_3
+   | OptTemp_4
+   | OptTemp_5
+   | OptTemp_6
+   | OptTemp_7
+)?
+OptTemp_1: TEMPORARY
+OptTemp_2: TEMP
+OptTemp_3: LOCAL TEMPORARY
+OptTemp_4: LOCAL TEMP
+OptTemp_5: GLOBAL TEMPORARY
+OptTemp_6: GLOBAL TEMP
+OptTemp_7: UNLOGGED
+
+OptTableElementList: TableElementList?
+
+OptTypedTableElementList: ( <LPAREN> TypedTableElementList <RPAREN> )?
+
+TableElementList: TableElement+ % / ~ <COMMA> ~ /
+
+TypedTableElementList: TypedTableElement+ % / ~ <COMMA> ~ /
+
+TableElement  :
+     TableElement_1
+   | TableElement_2
+   | TableElement_3
+
+TableElement_1: columnDef
+TableElement_2: TableLikeClause
+TableElement_3: TableConstraint
+
+TypedTableElement  :
+     TypedTableElement_1
+   | TypedTableElement_2
+
+TypedTableElement_1: columnOptions
+TypedTableElement_2: TableConstraint
+
+columnDef: ColId Typename create_generic_options ColQualList
+
+columnOptions: ColId WITH OPTIONS ColQualList
+
+ColQualList: ColConstraint* % ~
+
+ColConstraint  :
+     ColConstraint_1
+   | ColConstraint_2
+   | ColConstraint_3
+   | ColConstraint_4
+
+ColConstraint_1: CONSTRAINT name ColConstraintElem
+ColConstraint_2: ColConstraintElem
+ColConstraint_3: ConstraintAttr
+ColConstraint_4: COLLATE any_name
+
+# DEFAULT NULL is already the default for Postgres.
+# But define it here and carry it forward into the system
+# to make it explicit.
+# - thomas 1998-09-13
+#
+# WITH NULL and NULL are not SQL92-standard syntax elements,
+# so leave them out. Use DEFAULT NULL to explicitly indicate
+# that a column may have that value. WITH NULL leads to
+# shift/reduce conflicts with WITH TIME ZONE anyway.
+# - thomas 1999-01-08
+#
+# DEFAULT expression must be b_expr not a_expr to prevent shift/reduce
+# conflict on NOT (since NOT might start a subsequent NOT NULL constraint,
+# or be part of a_expr NOT LIKE or similar constructs).
+ColConstraintElem  :
+     ColConstraintElem_1
+   | ColConstraintElem_2
+   | ColConstraintElem_3
+   | ColConstraintElem_4
+   | ColConstraintElem_5
+   | ColConstraintElem_6
+   | ColConstraintElem_7
+
+ColConstraintElem_1: NOT NULL
+ColConstraintElem_2: NULL
+ColConstraintElem_3: UNIQUE opt_definition OptConsTableSpace
+ColConstraintElem_4: PRIMARY KEY opt_definition OptConsTableSpace
+ColConstraintElem_5: CHECK <LPAREN> a_expr <RPAREN> opt_no_inherit
+ColConstraintElem_6: DEFAULT b_expr
+ColConstraintElem_7: REFERENCES qualified_name opt_column_list key_match key_actions
+
+# ConstraintAttr represents constraint attributes, which we parse as if
+# they were independent constraint clauses, in order to avoid shift/reduce
+# conflicts (since NOT might start either an independent NOT NULL clause
+# or an attribute).  parse_utilcmd.c is responsible for attaching the
+# attribute information to the preceding "real" constraint node, and for
+# complaining if attribute clauses appear in the wrong place or wrong
+# combinations.
+#
+# See also ConstraintAttributeSpec, which can be used in places where
+# there is no parsing conflict.  (Note: currently, NOT VALID and NO INHERIT
+# are allowed clauses in ConstraintAttributeSpec, but not here.  Someday we
+# might need to allow them here too, but for the moment it doesn't seem
+# useful in the statements that use ConstraintAttr.)
+ConstraintAttr  :
+     ConstraintAttr_1
+   | ConstraintAttr_2
+   | ConstraintAttr_3
+   | ConstraintAttr_4
+
+ConstraintAttr_1: DEFERRABLE
+ConstraintAttr_2: NOT DEFERRABLE
+ConstraintAttr_3: INITIALLY DEFERRED
+ConstraintAttr_4: INITIALLY IMMEDIATE
+
+TableLikeClause: LIKE qualified_name TableLikeOptionList
+
+TableLikeOptionList  :
+     TableLikeOptionList_1
+   | TableLikeOptionList_2
+
+TableLikeOptionList_1: TableLikeOption* % / ~ INCLUDING ~ /
+TableLikeOptionList_2: <TableLikeOption>2+ % / ~ EXCLUDING ~ /
+
+TableLikeOption  :
+     TableLikeOption_1
+   | TableLikeOption_2
+   | TableLikeOption_3
+   | TableLikeOption_4
+   | TableLikeOption_5
+   | TableLikeOption_6
+
+TableLikeOption_1: DEFAULTS
+TableLikeOption_2: CONSTRAINTS
+TableLikeOption_3: INDEXES
+TableLikeOption_4: STORAGE
+TableLikeOption_5: COMMENTS
+TableLikeOption_6: ALL
+
+# ConstraintElem specifies constraint syntax which is not embedded into
+#   a column definition. ColConstraintElem specifies the embedded form.
+# - thomas 1997-12-03
+TableConstraint  :
+     TableConstraint_1
+   | TableConstraint_2
+
+TableConstraint_1: CONSTRAINT name ConstraintElem
+TableConstraint_2: ConstraintElem
+
+ConstraintElem  :
+     ConstraintElem_1
+   | ConstraintElem_2
+   | ConstraintElem_3
+   | ConstraintElem_4
+   | ConstraintElem_5
+   | ConstraintElem_6
+   | ConstraintElem_7
+
+ConstraintElem_1: CHECK <LPAREN> a_expr <RPAREN> ConstraintAttributeSpec
+ConstraintElem_2: UNIQUE <LPAREN> columnList <RPAREN> opt_definition OptConsTableSpace ConstraintAttributeSpec
+ConstraintElem_3: UNIQUE ExistingIndex ConstraintAttributeSpec
+ConstraintElem_4: PRIMARY KEY <LPAREN> columnList <RPAREN> opt_definition OptConsTableSpace ConstraintAttributeSpec
+ConstraintElem_5: PRIMARY KEY ExistingIndex ConstraintAttributeSpec
+ConstraintElem_6: EXCLUDE access_method_clause <LPAREN> ExclusionConstraintList <RPAREN> opt_definition OptConsTableSpace ExclusionWhereClause ConstraintAttributeSpec
+ConstraintElem_7: FOREIGN KEY <LPAREN> columnList <RPAREN> REFERENCES qualified_name opt_column_list key_match key_actions ConstraintAttributeSpec
+
+opt_no_inherit: ( NO INHERIT )?
+
+opt_column_list: ( <LPAREN> columnList <RPAREN> )?
+
+columnList: columnElem+ % / ~ <COMMA> ~ /
+
+columnElem: ColId
+
+key_match  : (
+     key_match_1
+   | key_match_2
+   | key_match_3
+)?
+key_match_1: MATCH FULL
+key_match_2: MATCH PARTIAL
+key_match_3: MATCH SIMPLE
+
+ExclusionConstraintList: ExclusionConstraintElem+ % / ~ <COMMA> ~ /
+
+ExclusionConstraintElem  :
+     ExclusionConstraintElem_1
+   | ExclusionConstraintElem_2
+
+ExclusionConstraintElem_1: index_elem WITH any_operator
+ExclusionConstraintElem_2: index_elem WITH OPERATOR <LPAREN> any_operator <RPAREN>
+
+ExclusionWhereClause: ( WHERE <LPAREN> a_expr <RPAREN> )?
+
+# We combine the update and delete actions into one value temporarily
+# for simplicity of parsing, and then break them down again in the
+# calling production.  update is in the left 8 bits, delete in the right.
+# Note that NOACTION is the default.
+key_actions  : (
+     key_actions_1
+   | key_actions_2
+   | key_actions_3
+   | key_actions_4
+)?
+key_actions_1: key_update
+key_actions_2: key_delete
+key_actions_3: key_update key_delete
+key_actions_4: key_delete key_update
+
+key_update: ON UPDATE key_action
+
+key_delete: ON DELETE key_action
+
+key_action  :
+     key_action_1
+   | key_action_2
+   | key_action_3
+   | key_action_4
+   | key_action_5
+
+key_action_1: NO ACTION
+key_action_2: RESTRICT
+key_action_3: CASCADE
+key_action_4: SET NULL
+key_action_5: SET DEFAULT
+
+OptInherit: ( INHERITS <LPAREN> qualified_name_list <RPAREN> )?
+
+# WITH (options) is preferred, WITH OIDS and WITHOUT OIDS are legacy forms
+OptWith  : (
+     OptWith_1
+   | OptWith_2
+   | OptWith_3
+)?
+OptWith_1: WITH reloptions
+OptWith_2: WITH OIDS
+OptWith_3: WITHOUT OIDS
+
+OnCommitOption  : (
+     OnCommitOption_1
+   | OnCommitOption_2
+   | OnCommitOption_3
+)?
+OnCommitOption_1: ON COMMIT DROP
+OnCommitOption_2: ON COMMIT DELETE ROWS
+OnCommitOption_3: ON COMMIT PRESERVE ROWS
+
+OptTableSpace: ( TABLESPACE name )?
+
+OptConsTableSpace: ( USING INDEX TABLESPACE name )?
+
+ExistingIndex: USING INDEX index_name
+
+#############################################################################
+#
+#      QUERY :
+#            CREATE TABLE relname AS SelectStmt [ WITH [NO] DATA ]
+#
+#
+# Note: SELECT ... INTO is a now-deprecated alternative for this.
+#
+#############################################################################
+CreateAsStmt: CREATE OptTemp TABLE create_as_target AS SelectStmt opt_with_data
+
+create_as_target: qualified_name opt_column_list OptWith OnCommitOption OptTableSpace
+
+opt_with_data  : (
+     opt_with_data_1
+   | opt_with_data_2
+)?
+opt_with_data_1: WITH DATA
+opt_with_data_2: WITH NO DATA
+
+#############################################################################
+#
+#      QUERY :
+#            CREATE SEQUENCE seqname
+#            ALTER SEQUENCE seqname
+#
+#############################################################################
+CreateSeqStmt: CREATE OptTemp SEQUENCE qualified_name OptSeqOptList
+
+AlterSeqStmt  :
+     AlterSeqStmt_1
+   | AlterSeqStmt_2
+
+AlterSeqStmt_1: ALTER SEQUENCE qualified_name SeqOptList
+AlterSeqStmt_2: ALTER SEQUENCE IF EXISTS qualified_name SeqOptList
+
+OptSeqOptList: SeqOptList?
+
+SeqOptList: SeqOptElem+ % ~
+
+SeqOptElem   :
+     SeqOptElem_1
+   | SeqOptElem_2
+   | SeqOptElem_3
+   | SeqOptElem_4
+   | SeqOptElem_5
+   | SeqOptElem_6
+   | SeqOptElem_7
+   | SeqOptElem_8
+   | SeqOptElem_9
+   | SeqOptElem_10
+   | SeqOptElem_11
+   | SeqOptElem_12
+
+SeqOptElem_1 : CACHE NumericOnly
+SeqOptElem_2 : CYCLE
+SeqOptElem_3 : NO CYCLE
+SeqOptElem_4 : INCREMENT opt_by NumericOnly
+SeqOptElem_5 : MAXVALUE NumericOnly
+SeqOptElem_6 : MINVALUE NumericOnly
+SeqOptElem_7 : NO MAXVALUE
+SeqOptElem_8 : NO MINVALUE
+SeqOptElem_9 : OWNED BY any_name
+SeqOptElem_10: START opt_with NumericOnly
+SeqOptElem_11: RESTART
+SeqOptElem_12: RESTART opt_with NumericOnly
+
+opt_by: BY?
+
+NumericOnly  :
+     NumericOnly_1
+   | NumericOnly_2
+   | NumericOnly_3
+
+NumericOnly_1: FCONST
+NumericOnly_2: <DASH> FCONST
+NumericOnly_3: SignedIconst
+
+NumericOnly_list: NumericOnly+ % / ~ <COMMA> ~ /
+
+#############################################################################
+#
+#      QUERIES :
+#            CREATE [OR REPLACE] [TRUSTED] [PROCEDURAL] LANGUAGE ...
+#            DROP [PROCEDURAL] LANGUAGE ...
+#
+#############################################################################
+CreatePLangStmt  :
+     CreatePLangStmt_1
+   | CreatePLangStmt_2
+
+CreatePLangStmt_1: CREATE opt_or_replace opt_trusted opt_procedural LANGUAGE ColId_or_Sconst
+CreatePLangStmt_2: CREATE opt_or_replace opt_trusted opt_procedural LANGUAGE ColId_or_Sconst HANDLER handler_name opt_inline_handler opt_validator
+
+opt_trusted: TRUSTED?
+
+# This ought to be just func_name, but that causes reduce/reduce conflicts
+# (CREATE LANGUAGE is the only place where func_name isn't followed by '(').
+# Work around by using simple names, instead.
+handler_name  :
+     handler_name_1
+   | handler_name_2
+
+handler_name_1: name
+handler_name_2: name attrs
+
+opt_inline_handler: ( INLINE handler_name )?
+
+validator_clause  :
+     validator_clause_1
+   | validator_clause_2
+
+validator_clause_1: VALIDATOR handler_name
+validator_clause_2: NO VALIDATOR
+
+opt_validator: validator_clause?
+
+DropPLangStmt  :
+     DropPLangStmt_1
+   | DropPLangStmt_2
+
+DropPLangStmt_1: DROP opt_procedural LANGUAGE ColId_or_Sconst opt_drop_behavior
+DropPLangStmt_2: DROP opt_procedural LANGUAGE IF EXISTS ColId_or_Sconst opt_drop_behavior
+
+opt_procedural: PROCEDURAL?
+
+#############################################################################
+#
+#       QUERY:
+#             CREATE TABLESPACE tablespace LOCATION '/path/to/tablespace/''
+#
+#############################################################################
+CreateTableSpaceStmt: CREATE TABLESPACE name OptTableSpaceOwner LOCATION Sconst
+
+OptTableSpaceOwner: ( OWNER name )?
+
+#############################################################################
+#
+#       QUERY :
+#            DROP TABLESPACE <tablespace>
+#
+#      No need for drop behaviour as we cannot implement dependencies for
+#      objects in other databases; we can only support RESTRICT.
+#
+############################################################################
+DropTableSpaceStmt  :
+     DropTableSpaceStmt_1
+   | DropTableSpaceStmt_2
+
+DropTableSpaceStmt_1: DROP TABLESPACE name
+DropTableSpaceStmt_2: DROP TABLESPACE IF EXISTS name
+
+#############################################################################
+#
+#       QUERY:
+#             CREATE EXTENSION extension
+#             [ WITH ] [ SCHEMA schema ] [ VERSION version ] [ FROM oldversion ]
+#
+#############################################################################
+CreateExtensionStmt  :
+     CreateExtensionStmt_1
+   | CreateExtensionStmt_2
+
+CreateExtensionStmt_1: CREATE EXTENSION name opt_with create_extension_opt_list
+CreateExtensionStmt_2: CREATE EXTENSION IF NOT EXISTS name opt_with create_extension_opt_list
+
+create_extension_opt_list: create_extension_opt_item* % ~
+
+create_extension_opt_item  :
+     create_extension_opt_item_1
+   | create_extension_opt_item_2
+   | create_extension_opt_item_3
+
+create_extension_opt_item_1: SCHEMA name
+create_extension_opt_item_2: VERSION ColId_or_Sconst
+create_extension_opt_item_3: FROM ColId_or_Sconst
+
+#############################################################################
+#
+# ALTER EXTENSION name UPDATE [ TO version ]
+#
+#############################################################################
+AlterExtensionStmt: ALTER EXTENSION name UPDATE alter_extension_opt_list
+
+alter_extension_opt_list: alter_extension_opt_item* % ~
+
+alter_extension_opt_item: TO ColId_or_Sconst
+
+#############################################################################
+#
+# ALTER EXTENSION name ADD/DROP object-identifier
+#
+#############################################################################
+AlterExtensionContentsStmt   :
+     AlterExtensionContentsStmt_1
+   | AlterExtensionContentsStmt_2
+   | AlterExtensionContentsStmt_3
+   | AlterExtensionContentsStmt_4
+   | AlterExtensionContentsStmt_5
+   | AlterExtensionContentsStmt_6
+   | AlterExtensionContentsStmt_7
+   | AlterExtensionContentsStmt_8
+   | AlterExtensionContentsStmt_9
+   | AlterExtensionContentsStmt_10
+   | AlterExtensionContentsStmt_11
+   | AlterExtensionContentsStmt_12
+   | AlterExtensionContentsStmt_13
+   | AlterExtensionContentsStmt_14
+   | AlterExtensionContentsStmt_15
+   | AlterExtensionContentsStmt_16
+   | AlterExtensionContentsStmt_17
+   | AlterExtensionContentsStmt_18
+   | AlterExtensionContentsStmt_19
+   | AlterExtensionContentsStmt_20
+   | AlterExtensionContentsStmt_21
+   | AlterExtensionContentsStmt_22
+   | AlterExtensionContentsStmt_23
+
+AlterExtensionContentsStmt_1 : ALTER EXTENSION name add_drop AGGREGATE func_name aggr_args
+AlterExtensionContentsStmt_2 : ALTER EXTENSION name add_drop CAST <LPAREN> Typename AS Typename <RPAREN>
+AlterExtensionContentsStmt_3 : ALTER EXTENSION name add_drop COLLATION any_name
+AlterExtensionContentsStmt_4 : ALTER EXTENSION name add_drop CONVERSION any_name
+AlterExtensionContentsStmt_5 : ALTER EXTENSION name add_drop DOMAIN any_name
+AlterExtensionContentsStmt_6 : ALTER EXTENSION name add_drop FUNCTION function_with_argtypes
+AlterExtensionContentsStmt_7 : ALTER EXTENSION name add_drop opt_procedural LANGUAGE name
+AlterExtensionContentsStmt_8 : ALTER EXTENSION name add_drop OPERATOR any_operator oper_argtypes
+AlterExtensionContentsStmt_9 : ALTER EXTENSION name add_drop OPERATOR CLASS any_name USING access_method
+AlterExtensionContentsStmt_10: ALTER EXTENSION name add_drop OPERATOR FAMILY any_name USING access_method
+AlterExtensionContentsStmt_11: ALTER EXTENSION name add_drop SCHEMA name
+AlterExtensionContentsStmt_12: ALTER EXTENSION name add_drop TABLE any_name
+AlterExtensionContentsStmt_13: ALTER EXTENSION name add_drop EVENT TRIGGER name
+AlterExtensionContentsStmt_14: ALTER EXTENSION name add_drop TEXT SEARCH PARSER any_name
+AlterExtensionContentsStmt_15: ALTER EXTENSION name add_drop TEXT SEARCH DICTIONARY any_name
+AlterExtensionContentsStmt_16: ALTER EXTENSION name add_drop TEXT SEARCH TEMPLATE any_name
+AlterExtensionContentsStmt_17: ALTER EXTENSION name add_drop TEXT SEARCH CONFIGURATION any_name
+AlterExtensionContentsStmt_18: ALTER EXTENSION name add_drop SEQUENCE any_name
+AlterExtensionContentsStmt_19: ALTER EXTENSION name add_drop VIEW any_name
+AlterExtensionContentsStmt_20: ALTER EXTENSION name add_drop FOREIGN TABLE any_name
+AlterExtensionContentsStmt_21: ALTER EXTENSION name add_drop FOREIGN DATA WRAPPER name
+AlterExtensionContentsStmt_22: ALTER EXTENSION name add_drop SERVER name
+AlterExtensionContentsStmt_23: ALTER EXTENSION name add_drop TYPE any_name
+
+#############################################################################
+#
+#       QUERY:
+#             CREATE FOREIGN DATA WRAPPER name options
+#
+#############################################################################
+CreateFdwStmt: CREATE FOREIGN DATA WRAPPER name opt_fdw_options create_generic_options
+
+fdw_option  :
+     fdw_option_1
+   | fdw_option_2
+   | fdw_option_3
+   | fdw_option_4
+
+fdw_option_1: HANDLER handler_name
+fdw_option_2: NO HANDLER
+fdw_option_3: VALIDATOR handler_name
+fdw_option_4: NO VALIDATOR
+
+fdw_options: fdw_option+ % ~
+
+opt_fdw_options: fdw_options?
+
+#############################################################################
+#
+#       QUERY :
+#            DROP FOREIGN DATA WRAPPER name
+#
+############################################################################
+DropFdwStmt  :
+     DropFdwStmt_1
+   | DropFdwStmt_2
+
+DropFdwStmt_1: DROP FOREIGN DATA WRAPPER name opt_drop_behavior
+DropFdwStmt_2: DROP FOREIGN DATA WRAPPER IF EXISTS name opt_drop_behavior
+
+#############################################################################
+#
+#       QUERY :
+#            ALTER FOREIGN DATA WRAPPER name options
+#
+############################################################################
+AlterFdwStmt  :
+     AlterFdwStmt_1
+   | AlterFdwStmt_2
+
+AlterFdwStmt_1: ALTER FOREIGN DATA WRAPPER name opt_fdw_options alter_generic_options
+AlterFdwStmt_2: ALTER FOREIGN DATA WRAPPER name fdw_options
+
+# Options definition for CREATE FDW, SERVER and USER MAPPING
+create_generic_options: ( OPTIONS <LPAREN> generic_option_list <RPAREN> )?
+
+generic_option_list: generic_option_elem+ % / ~ <COMMA> ~ /
+
+# Options definition for ALTER FDW, SERVER and USER MAPPING
+alter_generic_options: OPTIONS <LPAREN> alter_generic_option_list <RPAREN>
+
+alter_generic_option_list: alter_generic_option_elem+ % / ~ <COMMA> ~ /
+
+alter_generic_option_elem  :
+     alter_generic_option_elem_1
+   | alter_generic_option_elem_2
+   | alter_generic_option_elem_3
+   | alter_generic_option_elem_4
+
+alter_generic_option_elem_1: generic_option_elem
+alter_generic_option_elem_2: SET generic_option_elem
+alter_generic_option_elem_3: ADD generic_option_elem
+alter_generic_option_elem_4: DROP generic_option_name
+
+generic_option_elem: generic_option_name generic_option_arg
+
+generic_option_name: ColLabel
+
+# We could use def_arg here, but the spec only requires string literals
+generic_option_arg: Sconst
+
+#############################################################################
+#
+#       QUERY:
+#             CREATE SERVER name [TYPE] [VERSION] [OPTIONS]
+#
+#############################################################################
+CreateForeignServerStmt: CREATE SERVER name opt_type opt_foreign_server_version FOREIGN DATA WRAPPER name create_generic_options
+
+opt_type: ( TYPE Sconst )?
+
+foreign_server_version  :
+     foreign_server_version_1
+   | foreign_server_version_2
+
+foreign_server_version_1: VERSION Sconst
+foreign_server_version_2: VERSION NULL
+
+opt_foreign_server_version: foreign_server_version?
+
+#############################################################################
+#
+#       QUERY :
+#            DROP SERVER name
+#
+############################################################################
+DropForeignServerStmt  :
+     DropForeignServerStmt_1
+   | DropForeignServerStmt_2
+
+DropForeignServerStmt_1: DROP SERVER name opt_drop_behavior
+DropForeignServerStmt_2: DROP SERVER IF EXISTS name opt_drop_behavior
+
+#############################################################################
+#
+#       QUERY :
+#            ALTER SERVER name [VERSION] [OPTIONS]
+#
+############################################################################
+AlterForeignServerStmt  :
+     AlterForeignServerStmt_1
+   | AlterForeignServerStmt_2
+   | AlterForeignServerStmt_3
+
+AlterForeignServerStmt_1: ALTER SERVER name foreign_server_version alter_generic_options
+AlterForeignServerStmt_2: ALTER SERVER name foreign_server_version
+AlterForeignServerStmt_3: ALTER SERVER name alter_generic_options
+
+#############################################################################
+#
+#       QUERY:
+#             CREATE FOREIGN TABLE relname (...) SERVER name (...)
+#
+#############################################################################
+CreateForeignTableStmt  :
+     CreateForeignTableStmt_1
+   | CreateForeignTableStmt_2
+
+CreateForeignTableStmt_1: CREATE FOREIGN TABLE qualified_name OptForeignTableElementList SERVER name create_generic_options
+CreateForeignTableStmt_2: CREATE FOREIGN TABLE IF NOT EXISTS qualified_name OptForeignTableElementList SERVER name create_generic_options
+
+OptForeignTableElementList  :
+     OptForeignTableElementList_1
+   | OptForeignTableElementList_2
+
+OptForeignTableElementList_1: <LPAREN> ForeignTableElementList <RPAREN>
+OptForeignTableElementList_2: <LPAREN> <RPAREN>
+
+ForeignTableElementList: ForeignTableElement+ % / ~ <COMMA> ~ /
+
+ForeignTableElement: columnDef
+
+#############################################################################
+#
+#       QUERY:
+#             ALTER FOREIGN TABLE relname [...]
+#
+#############################################################################
+AlterForeignTableStmt  :
+     AlterForeignTableStmt_1
+   | AlterForeignTableStmt_2
+
+AlterForeignTableStmt_1: ALTER FOREIGN TABLE relation_expr alter_table_cmds
+AlterForeignTableStmt_2: ALTER FOREIGN TABLE IF EXISTS relation_expr alter_table_cmds
+
+#############################################################################
+#
+#       QUERY:
+#             CREATE USER MAPPING FOR auth_ident SERVER name [OPTIONS]
+#
+#############################################################################
+CreateUserMappingStmt: CREATE USER MAPPING FOR auth_ident SERVER name create_generic_options
+
+# User mapping authorization identifier
+auth_ident  :
+     auth_ident_1
+   | auth_ident_2
+   | auth_ident_3
+
+auth_ident_1: CURRENT_USER
+auth_ident_2: USER
+auth_ident_3: RoleId
+
+#############################################################################
+#
+#       QUERY :
+#            DROP USER MAPPING FOR auth_ident SERVER name
+#
+############################################################################
+DropUserMappingStmt  :
+     DropUserMappingStmt_1
+   | DropUserMappingStmt_2
+
+DropUserMappingStmt_1: DROP USER MAPPING FOR auth_ident SERVER name
+DropUserMappingStmt_2: DROP USER MAPPING IF EXISTS FOR auth_ident SERVER name
+
+#############################################################################
+#
+#       QUERY :
+#            ALTER USER MAPPING FOR auth_ident SERVER name OPTIONS
+#
+############################################################################
+AlterUserMappingStmt: ALTER USER MAPPING FOR auth_ident SERVER name alter_generic_options
+
+#############################################################################
+#
+#      QUERIES :
+#            CREATE TRIGGER ...
+#            DROP TRIGGER ...
+#
+#############################################################################
+CreateTrigStmt  :
+     CreateTrigStmt_1
+   | CreateTrigStmt_2
+
+CreateTrigStmt_1: CREATE TRIGGER name TriggerActionTime TriggerEvents ON qualified_name TriggerForSpec TriggerWhen EXECUTE PROCEDURE func_name <LPAREN> TriggerFuncArgs <RPAREN>
+CreateTrigStmt_2: CREATE CONSTRAINT TRIGGER name AFTER TriggerEvents ON qualified_name OptConstrFromTable ConstraintAttributeSpec FOR EACH ROW TriggerWhen EXECUTE PROCEDURE func_name <LPAREN> TriggerFuncArgs <RPAREN>
+
+TriggerActionTime  :
+     TriggerActionTime_1
+   | TriggerActionTime_2
+   | TriggerActionTime_3
+
+TriggerActionTime_1: BEFORE
+TriggerActionTime_2: AFTER
+TriggerActionTime_3: INSTEAD OF
+
+TriggerEvents: TriggerOneEvent+ % / ~ OR ~ /
+
+TriggerOneEvent  :
+     TriggerOneEvent_1
+   | TriggerOneEvent_2
+   | TriggerOneEvent_3
+   | TriggerOneEvent_4
+   | TriggerOneEvent_5
+
+TriggerOneEvent_1: INSERT
+TriggerOneEvent_2: DELETE
+TriggerOneEvent_3: UPDATE
+TriggerOneEvent_4: UPDATE OF columnList
+TriggerOneEvent_5: TRUNCATE
+
+TriggerForSpec: ( FOR TriggerForOptEach TriggerForType )?
+
+TriggerForOptEach: EACH?
+
+TriggerForType  :
+     TriggerForType_1
+   | TriggerForType_2
+
+TriggerForType_1: ROW
+TriggerForType_2: STATEMENT
+
+TriggerWhen: ( WHEN <LPAREN> a_expr <RPAREN> )?
+
+TriggerFuncArgs  :
+     TriggerFuncArgs_1
+   | TriggerFuncArgs_2
+
+TriggerFuncArgs_1: TriggerFuncArg
+TriggerFuncArgs_2: TriggerFuncArg* % / ~ <COMMA> ~ /
+
+TriggerFuncArg  :
+     TriggerFuncArg_1
+   | TriggerFuncArg_2
+   | TriggerFuncArg_3
+   | TriggerFuncArg_4
+
+TriggerFuncArg_1: Iconst
+TriggerFuncArg_2: FCONST
+TriggerFuncArg_3: Sconst
+TriggerFuncArg_4: ColLabel
+
+OptConstrFromTable: ( FROM qualified_name )?
+
+ConstraintAttributeSpec: ConstraintAttributeElem* % ~
+
+ConstraintAttributeElem  :
+     ConstraintAttributeElem_1
+   | ConstraintAttributeElem_2
+   | ConstraintAttributeElem_3
+   | ConstraintAttributeElem_4
+   | ConstraintAttributeElem_5
+   | ConstraintAttributeElem_6
+
+ConstraintAttributeElem_1: NOT DEFERRABLE
+ConstraintAttributeElem_2: DEFERRABLE
+ConstraintAttributeElem_3: INITIALLY IMMEDIATE
+ConstraintAttributeElem_4: INITIALLY DEFERRED
+ConstraintAttributeElem_5: NOT VALID
+ConstraintAttributeElem_6: NO INHERIT
+
+DropTrigStmt  :
+     DropTrigStmt_1
+   | DropTrigStmt_2
+
+DropTrigStmt_1: DROP TRIGGER name ON qualified_name opt_drop_behavior
+DropTrigStmt_2: DROP TRIGGER IF EXISTS name ON qualified_name opt_drop_behavior
+
+#############################################################################
+#
+#      QUERIES :
+#            CREATE EVENT TRIGGER ...
+#            DROP EVENT TRIGGER ...
+#            ALTER EVENT TRIGGER ...
+#
+#############################################################################
+CreateEventTrigStmt  :
+     CreateEventTrigStmt_1
+   | CreateEventTrigStmt_2
+
+CreateEventTrigStmt_1: CREATE EVENT TRIGGER name ON ColLabel EXECUTE PROCEDURE func_name <LPAREN> <RPAREN>
+CreateEventTrigStmt_2: CREATE EVENT TRIGGER name ON ColLabel WHEN event_trigger_when_list EXECUTE PROCEDURE func_name <LPAREN> <RPAREN>
+
+event_trigger_when_list: event_trigger_when_item+ % / ~ AND ~ /
+
+event_trigger_when_item: ColId IN <LPAREN> event_trigger_value_list <RPAREN>
+
+event_trigger_value_list: SCONST+ % / ~ <COMMA> ~ /
+
+AlterEventTrigStmt: ALTER EVENT TRIGGER name enable_trigger
+
+enable_trigger  :
+     enable_trigger_1
+   | enable_trigger_2
+   | enable_trigger_3
+   | enable_trigger_4
+
+enable_trigger_1: ENABLE
+enable_trigger_2: ENABLE REPLICA
+enable_trigger_3: ENABLE ALWAYS
+enable_trigger_4: DISABLE
+
+#############################################################################
+#
+#      QUERIES :
+#            CREATE ASSERTION ...
+#            DROP ASSERTION ...
+#
+#############################################################################
+CreateAssertStmt: CREATE ASSERTION name CHECK <LPAREN> a_expr <RPAREN> ConstraintAttributeSpec
+
+DropAssertStmt: DROP ASSERTION name opt_drop_behavior
+
+#############################################################################
+#
+#      QUERY :
+#            define (aggregate,operator,type)
+#
+#############################################################################
+DefineStmt   :
+     DefineStmt_1
+   | DefineStmt_2
+   | DefineStmt_3
+   | DefineStmt_4
+   | DefineStmt_5
+   | DefineStmt_6
+   | DefineStmt_7
+   | DefineStmt_8
+   | DefineStmt_9
+   | DefineStmt_10
+   | DefineStmt_11
+   | DefineStmt_12
+   | DefineStmt_13
+   | DefineStmt_14
+
+DefineStmt_1 : CREATE AGGREGATE func_name aggr_args definition
+DefineStmt_2 : CREATE AGGREGATE func_name old_aggr_definition
+DefineStmt_3 : CREATE OPERATOR any_operator definition
+DefineStmt_4 : CREATE TYPE any_name definition
+DefineStmt_5 : CREATE TYPE any_name
+DefineStmt_6 : CREATE TYPE any_name AS <LPAREN> OptTableFuncElementList <RPAREN>
+DefineStmt_7 : CREATE TYPE any_name AS ENUM <LPAREN> opt_enum_val_list <RPAREN>
+DefineStmt_8 : CREATE TYPE any_name AS RANGE definition
+DefineStmt_9 : CREATE TEXT SEARCH PARSER any_name definition
+DefineStmt_10: CREATE TEXT SEARCH DICTIONARY any_name definition
+DefineStmt_11: CREATE TEXT SEARCH TEMPLATE any_name definition
+DefineStmt_12: CREATE TEXT SEARCH CONFIGURATION any_name definition
+DefineStmt_13: CREATE COLLATION any_name definition
+DefineStmt_14: CREATE COLLATION any_name FROM any_name
+
+definition: <LPAREN> def_list <RPAREN>
+
+def_list: def_elem+ % / ~ <COMMA> ~ /
+
+def_elem  :
+     def_elem_1
+   | def_elem_2
+
+def_elem_1: ColLabel <EQUAL> def_arg
+def_elem_2: ColLabel
+
+# Note: any simple identifier will be returned as a type name!
+def_arg  :
+     def_arg_1
+   | def_arg_2
+   | def_arg_3
+   | def_arg_4
+   | def_arg_5
+
+def_arg_1: func_type
+def_arg_2: reserved_keyword
+def_arg_3: qual_all_Op
+def_arg_4: NumericOnly
+def_arg_5: Sconst
+
+aggr_args  :
+     aggr_args_1
+   | aggr_args_2
+
+aggr_args_1: <LPAREN> type_list <RPAREN>
+aggr_args_2: <LPAREN> <STAR> <RPAREN>
+
+old_aggr_definition: <LPAREN> old_aggr_list <RPAREN>
+
+old_aggr_list: old_aggr_elem+ % / ~ <COMMA> ~ /
+
+# Must use IDENT here to avoid reduce/reduce conflicts; fortunately none of
+# the item names needed in old aggregate definitions are likely to become
+# SQL keywords.
+old_aggr_elem: IDENT <EQUAL> def_arg
+
+opt_enum_val_list: enum_val_list?
+
+enum_val_list: Sconst+ % / ~ <COMMA> ~ /
+
+#############################################################################
+#
+#   ALTER TYPE enumtype ADD ...
+#
+#############################################################################
+AlterEnumStmt  :
+     AlterEnumStmt_1
+   | AlterEnumStmt_2
+   | AlterEnumStmt_3
+
+AlterEnumStmt_1: ALTER TYPE any_name ADD VALUE Sconst
+AlterEnumStmt_2: ALTER TYPE any_name ADD VALUE Sconst BEFORE Sconst
+AlterEnumStmt_3: ALTER TYPE any_name ADD VALUE Sconst AFTER Sconst
+
+#############################################################################
+#
+#      QUERIES :
+#            CREATE OPERATOR CLASS ...
+#            CREATE OPERATOR FAMILY ...
+#            ALTER OPERATOR FAMILY ...
+#            DROP OPERATOR CLASS ...
+#            DROP OPERATOR FAMILY ...
+#
+#############################################################################
+CreateOpClassStmt: CREATE OPERATOR CLASS any_name opt_default FOR TYPE Typename USING access_method opt_opfamily AS opclass_item_list
+
+opclass_item_list: opclass_item+ % / ~ <COMMA> ~ /
+
+opclass_item  :
+     opclass_item_1
+   | opclass_item_2
+   | opclass_item_3
+   | opclass_item_4
+   | opclass_item_5
+
+opclass_item_1: OPERATOR Iconst any_operator opclass_purpose opt_recheck
+opclass_item_2: OPERATOR Iconst any_operator oper_argtypes opclass_purpose opt_recheck
+opclass_item_3: FUNCTION Iconst func_name func_args
+opclass_item_4: FUNCTION Iconst <LPAREN> type_list <RPAREN> func_name func_args
+opclass_item_5: STORAGE Typename
+
+opt_default: DEFAULT?
+
+opt_opfamily: ( FAMILY any_name )?
+
+opclass_purpose  : (
+     opclass_purpose_1
+   | opclass_purpose_2
+)?
+opclass_purpose_1: FOR SEARCH
+opclass_purpose_2: FOR ORDER BY any_name
+
+# RECHECK no longer does anything in opclass definitions,
+# but we still accept it to ease porting of old database
+# dumps.
+opt_recheck: RECHECK?
+
+CreateOpFamilyStmt: CREATE OPERATOR FAMILY any_name USING access_method
+
+AlterOpFamilyStmt  :
+     AlterOpFamilyStmt_1
+   | AlterOpFamilyStmt_2
+
+AlterOpFamilyStmt_1: ALTER OPERATOR FAMILY any_name USING access_method ADD opclass_item_list
+AlterOpFamilyStmt_2: ALTER OPERATOR FAMILY any_name USING access_method DROP opclass_drop_list
+
+opclass_drop_list: opclass_drop+ % / ~ <COMMA> ~ /
+
+opclass_drop  :
+     opclass_drop_1
+   | opclass_drop_2
+
+opclass_drop_1: OPERATOR Iconst <LPAREN> type_list <RPAREN>
+opclass_drop_2: FUNCTION Iconst <LPAREN> type_list <RPAREN>
+
+DropOpClassStmt  :
+     DropOpClassStmt_1
+   | DropOpClassStmt_2
+
+DropOpClassStmt_1: DROP OPERATOR CLASS any_name USING access_method opt_drop_behavior
+DropOpClassStmt_2: DROP OPERATOR CLASS IF EXISTS any_name USING access_method opt_drop_behavior
+
+DropOpFamilyStmt  :
+     DropOpFamilyStmt_1
+   | DropOpFamilyStmt_2
+
+DropOpFamilyStmt_1: DROP OPERATOR FAMILY any_name USING access_method opt_drop_behavior
+DropOpFamilyStmt_2: DROP OPERATOR FAMILY IF EXISTS any_name USING access_method opt_drop_behavior
+
+#############################################################################
+#
+#      QUERY:
+#
+#      DROP OWNED BY username [, username ...] [ RESTRICT | CASCADE ]
+#      REASSIGN OWNED BY username [, username ...] TO username
+#
+#############################################################################
+DropOwnedStmt: DROP OWNED BY name_list opt_drop_behavior
+
+ReassignOwnedStmt: REASSIGN OWNED BY name_list TO name
+
+#############################################################################
+#
+#      QUERY:
+#
+#      DROP itemtype [ IF EXISTS ] itemname [, itemname ...]
+#           [ RESTRICT | CASCADE ]
+#
+#############################################################################
+DropStmt  :
+     DropStmt_1
+   | DropStmt_2
+   | DropStmt_3
+   | DropStmt_4
+
+DropStmt_1: DROP drop_type IF EXISTS any_name_list opt_drop_behavior
+DropStmt_2: DROP drop_type any_name_list opt_drop_behavior
+DropStmt_3: DROP INDEX CONCURRENTLY any_name_list opt_drop_behavior
+DropStmt_4: DROP INDEX CONCURRENTLY IF EXISTS any_name_list opt_drop_behavior
+
+drop_type   :
+     drop_type_1
+   | drop_type_2
+   | drop_type_3
+   | drop_type_4
+   | drop_type_5
+   | drop_type_6
+   | drop_type_7
+   | drop_type_8
+   | drop_type_9
+   | drop_type_10
+   | drop_type_11
+   | drop_type_12
+   | drop_type_13
+   | drop_type_14
+   | drop_type_15
+   | drop_type_16
+
+drop_type_1 : TABLE
+drop_type_2 : SEQUENCE
+drop_type_3 : VIEW
+drop_type_4 : INDEX
+drop_type_5 : FOREIGN TABLE
+drop_type_6 : EVENT_TRIGGER
+drop_type_7 : TYPE
+drop_type_8 : DOMAIN
+drop_type_9 : COLLATION
+drop_type_10: CONVERSION
+drop_type_11: SCHEMA
+drop_type_12: EXTENSION
+drop_type_13: TEXT SEARCH PARSER
+drop_type_14: TEXT SEARCH DICTIONARY
+drop_type_15: TEXT SEARCH TEMPLATE
+drop_type_16: TEXT SEARCH CONFIGURATION
+
+any_name_list: any_name+ % / ~ <COMMA> ~ /
+
+any_name  :
+     any_name_1
+   | any_name_2
+
+any_name_1: ColId
+any_name_2: ColId attrs
+
+attrs  :
+     attrs_1
+   | attrs_2
+
+attrs_1: <DOT> attr_name
+attrs_2: <attr_name>2+ % / ~ <DOT> ~ /
+
+#############################################################################
+#
+#      QUERY:
+#            truncate table relname1, relname2, ...
+#
+#############################################################################
+TruncateStmt: TRUNCATE opt_table relation_expr_list opt_restart_seqs opt_drop_behavior
+
+opt_restart_seqs  : (
+     opt_restart_seqs_1
+   | opt_restart_seqs_2
+)?
+opt_restart_seqs_1: CONTINUE IDENTITY
+opt_restart_seqs_2: RESTART IDENTITY
+
+#############################################################################
+#
+#   The COMMENT ON statement can take different forms based upon the type of
+#   the object associated with the comment. The form of the statement is:
+#
+#   COMMENT ON [ [ DATABASE | DOMAIN | INDEX | SEQUENCE | TABLE | TYPE | VIEW |
+#               COLLATION | CONVERSION | LANGUAGE | OPERATOR CLASS |
+#               LARGE OBJECT | CAST | COLUMN | SCHEMA | TABLESPACE |
+#               EXTENSION | ROLE | TEXT SEARCH PARSER |
+#               TEXT SEARCH DICTIONARY | TEXT SEARCH TEMPLATE |
+#               TEXT SEARCH CONFIGURATION | FOREIGN TABLE |
+#               FOREIGN DATA WRAPPER | SERVER | EVENT TRIGGER ] <objname> |
+#             AGGREGATE <aggname> (arg1, ...) |
+#             FUNCTION <funcname> (arg1, arg2, ...) |
+#             OPERATOR <op> (leftoperand_typ, rightoperand_typ) |
+#             TRIGGER <triggername> ON <relname> |
+#             CONSTRAINT <constraintname> ON <relname> |
+#             RULE <rulename> ON <relname> ]
+#            IS 'text'
+#
+#############################################################################
+CommentStmt   :
+     CommentStmt_1
+   | CommentStmt_2
+   | CommentStmt_3
+   | CommentStmt_4
+   | CommentStmt_5
+   | CommentStmt_6
+   | CommentStmt_7
+   | CommentStmt_8
+   | CommentStmt_9
+   | CommentStmt_10
+   | CommentStmt_11
+   | CommentStmt_12
+   | CommentStmt_13
+   | CommentStmt_14
+   | CommentStmt_15
+   | CommentStmt_16
+   | CommentStmt_17
+
+CommentStmt_1 : COMMENT ON comment_type any_name IS comment_text
+CommentStmt_2 : COMMENT ON AGGREGATE func_name aggr_args IS comment_text
+CommentStmt_3 : COMMENT ON FUNCTION func_name func_args IS comment_text
+CommentStmt_4 : COMMENT ON OPERATOR any_operator oper_argtypes IS comment_text
+CommentStmt_5 : COMMENT ON CONSTRAINT name ON any_name IS comment_text
+CommentStmt_6 : COMMENT ON RULE name ON any_name IS comment_text
+CommentStmt_7 : COMMENT ON RULE name IS comment_text
+CommentStmt_8 : COMMENT ON TRIGGER name ON any_name IS comment_text
+CommentStmt_9 : COMMENT ON OPERATOR CLASS any_name USING access_method IS comment_text
+CommentStmt_10: COMMENT ON OPERATOR FAMILY any_name USING access_method IS comment_text
+CommentStmt_11: COMMENT ON LARGE OBJECT NumericOnly IS comment_text
+CommentStmt_12: COMMENT ON CAST <LPAREN> Typename AS Typename <RPAREN> IS comment_text
+CommentStmt_13: COMMENT ON opt_procedural LANGUAGE any_name IS comment_text
+CommentStmt_14: COMMENT ON TEXT SEARCH PARSER any_name IS comment_text
+CommentStmt_15: COMMENT ON TEXT SEARCH DICTIONARY any_name IS comment_text
+CommentStmt_16: COMMENT ON TEXT SEARCH TEMPLATE any_name IS comment_text
+CommentStmt_17: COMMENT ON TEXT SEARCH CONFIGURATION any_name IS comment_text
+
+comment_type   :
+     comment_type_1
+   | comment_type_2
+   | comment_type_3
+   | comment_type_4
+   | comment_type_5
+   | comment_type_6
+   | comment_type_7
+   | comment_type_8
+   | comment_type_9
+   | comment_type_10
+   | comment_type_11
+   | comment_type_12
+   | comment_type_13
+   | comment_type_14
+   | comment_type_15
+   | comment_type_16
+   | comment_type_17
+   | comment_type_18
+
+comment_type_1 : COLUMN
+comment_type_2 : DATABASE
+comment_type_3 : SCHEMA
+comment_type_4 : INDEX
+comment_type_5 : SEQUENCE
+comment_type_6 : TABLE
+comment_type_7 : DOMAIN
+comment_type_8 : TYPE
+comment_type_9 : VIEW
+comment_type_10: COLLATION
+comment_type_11: CONVERSION
+comment_type_12: TABLESPACE
+comment_type_13: EXTENSION
+comment_type_14: ROLE
+comment_type_15: FOREIGN TABLE
+comment_type_16: SERVER
+comment_type_17: FOREIGN DATA WRAPPER
+comment_type_18: EVENT TRIGGER
+
+comment_text  :
+     comment_text_1
+   | comment_text_2
+
+comment_text_1: Sconst
+comment_text_2: NULL
+
+#############################################################################
+#
+#  SECURITY LABEL [FOR <provider>] ON <object> IS <label>
+#
+#  As with COMMENT ON, <object> can refer to various types of database
+#  objects (e.g. TABLE, COLUMN, etc.).
+#
+#############################################################################
+SecLabelStmt  :
+     SecLabelStmt_1
+   | SecLabelStmt_2
+   | SecLabelStmt_3
+   | SecLabelStmt_4
+   | SecLabelStmt_5
+
+SecLabelStmt_1: SECURITY LABEL opt_provider ON security_label_type any_name IS security_label
+SecLabelStmt_2: SECURITY LABEL opt_provider ON AGGREGATE func_name aggr_args IS security_label
+SecLabelStmt_3: SECURITY LABEL opt_provider ON FUNCTION func_name func_args IS security_label
+SecLabelStmt_4: SECURITY LABEL opt_provider ON LARGE OBJECT NumericOnly IS security_label
+SecLabelStmt_5: SECURITY LABEL opt_provider ON opt_procedural LANGUAGE any_name IS security_label
+
+opt_provider: ( FOR ColId_or_Sconst )?
+
+security_label_type   :
+     security_label_type_1
+   | security_label_type_2
+   | security_label_type_3
+   | security_label_type_4
+   | security_label_type_5
+   | security_label_type_6
+   | security_label_type_7
+   | security_label_type_8
+   | security_label_type_9
+   | security_label_type_10
+   | security_label_type_11
+   | security_label_type_12
+   | security_label_type_13
+
+security_label_type_1 : COLUMN
+security_label_type_2 : DATABASE
+security_label_type_3 : EVENT TRIGGER
+security_label_type_4 : SCHEMA
+security_label_type_5 : FOREIGN TABLE
+security_label_type_6 : SCHEMA
+security_label_type_7 : SEQUENCE
+security_label_type_8 : TABLE
+security_label_type_9 : DOMAIN
+security_label_type_10: ROLE
+security_label_type_11: TABLESPACE
+security_label_type_12: TYPE
+security_label_type_13: VIEW
+
+security_label  :
+     security_label_1
+   | security_label_2
+
+security_label_1: Sconst
+security_label_2: NULL
+
+#############################################################################
+#
+#      QUERY:
+#         fetch/move
+#
+#############################################################################
+FetchStmt  :
+     FetchStmt_1
+   | FetchStmt_2
+
+FetchStmt_1: FETCH fetch_args
+FetchStmt_2: MOVE fetch_args
+
+fetch_args   :
+     fetch_args_1
+   | fetch_args_2
+   | fetch_args_3
+   | fetch_args_4
+   | fetch_args_5
+   | fetch_args_6
+   | fetch_args_7
+   | fetch_args_8
+   | fetch_args_9
+   | fetch_args_10
+   | fetch_args_11
+   | fetch_args_12
+   | fetch_args_13
+   | fetch_args_14
+   | fetch_args_15
+   | fetch_args_16
+
+fetch_args_1 : cursor_name
+fetch_args_2 : from_in cursor_name
+fetch_args_3 : NEXT opt_from_in cursor_name
+fetch_args_4 : PRIOR opt_from_in cursor_name
+fetch_args_5 : FIRST opt_from_in cursor_name
+fetch_args_6 : LAST opt_from_in cursor_name
+fetch_args_7 : ABSOLUTE SignedIconst opt_from_in cursor_name
+fetch_args_8 : RELATIVE SignedIconst opt_from_in cursor_name
+fetch_args_9 : SignedIconst opt_from_in cursor_name
+fetch_args_10: ALL opt_from_in cursor_name
+fetch_args_11: FORWARD opt_from_in cursor_name
+fetch_args_12: FORWARD SignedIconst opt_from_in cursor_name
+fetch_args_13: FORWARD ALL opt_from_in cursor_name
+fetch_args_14: BACKWARD opt_from_in cursor_name
+fetch_args_15: BACKWARD SignedIconst opt_from_in cursor_name
+fetch_args_16: BACKWARD ALL opt_from_in cursor_name
+
+from_in  :
+     from_in_1
+   | from_in_2
+
+from_in_1: FROM
+from_in_2: IN
+
+opt_from_in: from_in?
+
+#############################################################################
+#
+# GRANT and REVOKE statements
+#
+#############################################################################
+GrantStmt: GRANT privileges ON privilege_target TO grantee_list opt_grant_grant_option
+
+RevokeStmt  :
+     RevokeStmt_1
+   | RevokeStmt_2
+
+RevokeStmt_1: REVOKE privileges ON privilege_target FROM grantee_list opt_drop_behavior
+RevokeStmt_2: REVOKE GRANT OPTION FOR privileges ON privilege_target FROM grantee_list opt_drop_behavior
+
+# Privilege names are represented as strings; the validity of the privilege
+# names gets checked at execution.  This is a bit annoying but we have little
+# choice because of the syntactic conflict with lists of role names in
+# GRANT/REVOKE.  What's more, we have to call out in the "privilege"
+# production any reserved keywords that need to be usable as privilege names.
+
+# either ALL [PRIVILEGES] or a list of individual privileges
+privileges  :
+     privileges_1
+   | privileges_2
+   | privileges_3
+   | privileges_4
+   | privileges_5
+
+privileges_1: privilege_list
+privileges_2: ALL
+privileges_3: ALL PRIVILEGES
+privileges_4: ALL <LPAREN> columnList <RPAREN>
+privileges_5: ALL PRIVILEGES <LPAREN> columnList <RPAREN>
+
+privilege_list: privilege+ % / ~ <COMMA> ~ /
+
+privilege  :
+     privilege_1
+   | privilege_2
+   | privilege_3
+   | privilege_4
+
+privilege_1: SELECT opt_column_list
+privilege_2: REFERENCES opt_column_list
+privilege_3: CREATE opt_column_list
+privilege_4: ColId opt_column_list
+
+# Don't bother trying to fold the first two rules into one using
+# opt_table.  You're going to get conflicts.
+privilege_target   :
+     privilege_target_1
+   | privilege_target_2
+   | privilege_target_3
+   | privilege_target_4
+   | privilege_target_5
+   | privilege_target_6
+   | privilege_target_7
+   | privilege_target_8
+   | privilege_target_9
+   | privilege_target_10
+   | privilege_target_11
+   | privilege_target_12
+   | privilege_target_13
+   | privilege_target_14
+   | privilege_target_15
+   | privilege_target_16
+
+privilege_target_1 : qualified_name_list
+privilege_target_2 : TABLE qualified_name_list
+privilege_target_3 : SEQUENCE qualified_name_list
+privilege_target_4 : FOREIGN DATA WRAPPER name_list
+privilege_target_5 : FOREIGN SERVER name_list
+privilege_target_6 : FUNCTION function_with_argtypes_list
+privilege_target_7 : DATABASE name_list
+privilege_target_8 : DOMAIN any_name_list
+privilege_target_9 : LANGUAGE name_list
+privilege_target_10: LARGE OBJECT NumericOnly_list
+privilege_target_11: SCHEMA name_list
+privilege_target_12: TABLESPACE name_list
+privilege_target_13: TYPE any_name_list
+privilege_target_14: ALL TABLES IN SCHEMA name_list
+privilege_target_15: ALL SEQUENCES IN SCHEMA name_list
+privilege_target_16: ALL FUNCTIONS IN SCHEMA name_list
+
+grantee_list: grantee+ % / ~ <COMMA> ~ /
+
+grantee  :
+     grantee_1
+   | grantee_2
+
+grantee_1: RoleId
+grantee_2: GROUP RoleId
+
+opt_grant_grant_option: ( WITH GRANT OPTION )?
+
+function_with_argtypes_list: function_with_argtypes+ % / ~ <COMMA> ~ /
+
+function_with_argtypes: func_name func_args
+
+#############################################################################
+#
+# GRANT and REVOKE ROLE statements
+#
+#############################################################################
+GrantRoleStmt: GRANT privilege_list TO name_list opt_grant_admin_option opt_granted_by
+
+RevokeRoleStmt  :
+     RevokeRoleStmt_1
+   | RevokeRoleStmt_2
+
+RevokeRoleStmt_1: REVOKE privilege_list FROM name_list opt_granted_by opt_drop_behavior
+RevokeRoleStmt_2: REVOKE ADMIN OPTION FOR privilege_list FROM name_list opt_granted_by opt_drop_behavior
+
+opt_grant_admin_option: ( WITH ADMIN OPTION )?
+
+opt_granted_by: ( GRANTED BY RoleId )?
+
+#############################################################################
+#
+# ALTER DEFAULT PRIVILEGES statement
+#
+#############################################################################
+AlterDefaultPrivilegesStmt: ALTER DEFAULT PRIVILEGES DefACLOptionList DefACLAction
+
+DefACLOptionList: DefACLOption* % ~
+
+DefACLOption  :
+     DefACLOption_1
+   | DefACLOption_2
+   | DefACLOption_3
+
+DefACLOption_1: IN SCHEMA name_list
+DefACLOption_2: FOR ROLE name_list
+DefACLOption_3: FOR USER name_list
+
+# This should match GRANT/REVOKE, except that individual target objects
+# are not mentioned and we only allow a subset of object types.
+DefACLAction  :
+     DefACLAction_1
+   | DefACLAction_2
+   | DefACLAction_3
+
+DefACLAction_1: GRANT privileges ON defacl_privilege_target TO grantee_list opt_grant_grant_option
+DefACLAction_2: REVOKE privileges ON defacl_privilege_target FROM grantee_list opt_drop_behavior
+DefACLAction_3: REVOKE GRANT OPTION FOR privileges ON defacl_privilege_target FROM grantee_list opt_drop_behavior
+
+defacl_privilege_target  :
+     defacl_privilege_target_1
+   | defacl_privilege_target_2
+   | defacl_privilege_target_3
+   | defacl_privilege_target_4
+
+defacl_privilege_target_1: TABLES
+defacl_privilege_target_2: FUNCTIONS
+defacl_privilege_target_3: SEQUENCES
+defacl_privilege_target_4: TYPES
+
+#############################################################################
+#
+#      QUERY: CREATE INDEX
+#
+# Note: we cannot put TABLESPACE clause after WHERE clause unless we are
+# willing to make TABLESPACE a fully reserved word.
+#############################################################################
+IndexStmt: CREATE opt_unique INDEX opt_concurrently opt_index_name ON qualified_name access_method_clause <LPAREN> index_params <RPAREN> opt_reloptions OptTableSpace where_clause
+
+opt_unique: UNIQUE?
+
+opt_concurrently: CONCURRENTLY?
+
+opt_index_name: index_name?
+
+access_method_clause: ( USING access_method )?
+
+index_params: index_elem+ % / ~ <COMMA> ~ /
+
+# Index attributes can be either simple column references, or arbitrary
+# expressions in parens.  For backwards-compatibility reasons, we allow
+# an expression that's just a function call to be written without parens.
+index_elem  :
+     index_elem_1
+   | index_elem_2
+   | index_elem_3
+
+index_elem_1: ColId opt_collate opt_class opt_asc_desc opt_nulls_order
+index_elem_2: func_expr opt_collate opt_class opt_asc_desc opt_nulls_order
+index_elem_3: <LPAREN> a_expr <RPAREN> opt_collate opt_class opt_asc_desc opt_nulls_order
+
+opt_collate: ( COLLATE any_name )?
+
+opt_class  : (
+     opt_class_1
+   | opt_class_2
+)?
+opt_class_1: any_name
+opt_class_2: USING any_name
+
+opt_asc_desc  : (
+     opt_asc_desc_1
+   | opt_asc_desc_2
+)?
+opt_asc_desc_1: ASC
+opt_asc_desc_2: DESC
+
+opt_nulls_order  : (
+     opt_nulls_order_1
+   | opt_nulls_order_2
+)?
+opt_nulls_order_1: NULLS_FIRST
+opt_nulls_order_2: NULLS_LAST
+
+#############################################################################
+#
+#      QUERY:
+#            create [or replace] function <fname>
+#                  [(<type-1> { , <type-n>})]
+#                  returns <type-r>
+#                  as <filename or code in language as appropriate>
+#                  language <lang> [with parameters]
+#
+#############################################################################
+CreateFunctionStmt  :
+     CreateFunctionStmt_1
+   | CreateFunctionStmt_2
+   | CreateFunctionStmt_3
+
+CreateFunctionStmt_1: CREATE opt_or_replace FUNCTION func_name func_args_with_defaults RETURNS func_return createfunc_opt_list opt_definition
+CreateFunctionStmt_2: CREATE opt_or_replace FUNCTION func_name func_args_with_defaults RETURNS TABLE <LPAREN> table_func_column_list <RPAREN> createfunc_opt_list opt_definition
+CreateFunctionStmt_3: CREATE opt_or_replace FUNCTION func_name func_args_with_defaults createfunc_opt_list opt_definition
+
+opt_or_replace: ( OR REPLACE )?
+
+func_args  :
+     func_args_1
+   | func_args_2
+
+func_args_1: <LPAREN> func_args_list <RPAREN>
+func_args_2: <LPAREN> <RPAREN>
+
+func_args_list: func_arg+ % / ~ <COMMA> ~ /
+
+# func_args_with_defaults is separate because we only want to accept
+# defaults in CREATE FUNCTION, not in ALTER etc.
+func_args_with_defaults  :
+     func_args_with_defaults_1
+   | func_args_with_defaults_2
+
+func_args_with_defaults_1: <LPAREN> func_args_with_defaults_list <RPAREN>
+func_args_with_defaults_2: <LPAREN> <RPAREN>
+
+func_args_with_defaults_list: func_arg_with_default+ % / ~ <COMMA> ~ /
+
+# The style with arg_class first is SQL99 standard, but Oracle puts
+# param_name first; accept both since it's likely people will try both
+# anyway.  Don't bother trying to save productions by letting arg_class
+# have an empty alternative ... you'll get shift/reduce conflicts.
+#
+# We can catch over-specified arguments here if we want to,
+# but for now better to silently swallow typmod, etc.
+# - thomas 2000-03-22
+func_arg  :
+     func_arg_1
+   | func_arg_2
+   | func_arg_3
+   | func_arg_4
+   | func_arg_5
+
+func_arg_1: arg_class param_name func_type
+func_arg_2: param_name arg_class func_type
+func_arg_3: param_name func_type
+func_arg_4: arg_class func_type
+func_arg_5: func_type
+
+# INOUT is SQL99 standard, IN OUT is for Oracle compatibility
+arg_class  :
+     arg_class_1
+   | arg_class_2
+   | arg_class_3
+   | arg_class_4
+   | arg_class_5
+
+arg_class_1: IN
+arg_class_2: OUT
+arg_class_3: INOUT
+arg_class_4: IN OUT
+arg_class_5: VARIADIC
+
+# Ideally param_name should be ColId, but that causes too many conflicts.
+param_name: type_function_name
+
+func_return: func_type
+
+# We would like to make the %TYPE productions here be ColId attrs etc,
+# but that causes reduce/reduce conflicts.  type_function_name
+# is next best choice.
+func_type  :
+     func_type_1
+   | func_type_2
+   | func_type_3
+
+func_type_1: Typename
+func_type_2: type_function_name attrs <PERCENT> TYPE
+func_type_3: SETOF type_function_name attrs <PERCENT> TYPE
+
+func_arg_with_default  :
+     func_arg_with_default_1
+   | func_arg_with_default_2
+   | func_arg_with_default_3
+
+func_arg_with_default_1: func_arg
+func_arg_with_default_2: func_arg DEFAULT a_expr
+func_arg_with_default_3: func_arg <EQUAL> a_expr
+
+createfunc_opt_list: createfunc_opt_item+ % ~
+
+# Options common to both CREATE FUNCTION and ALTER FUNCTION
+common_func_opt_item   :
+     common_func_opt_item_1
+   | common_func_opt_item_2
+   | common_func_opt_item_3
+   | common_func_opt_item_4
+   | common_func_opt_item_5
+   | common_func_opt_item_6
+   | common_func_opt_item_7
+   | common_func_opt_item_8
+   | common_func_opt_item_9
+   | common_func_opt_item_10
+   | common_func_opt_item_11
+   | common_func_opt_item_12
+   | common_func_opt_item_13
+   | common_func_opt_item_14
+   | common_func_opt_item_15
+
+common_func_opt_item_1 : CALLED ON NULL INPUT
+common_func_opt_item_2 : RETURNS NULL ON NULL INPUT
+common_func_opt_item_3 : STRICT
+common_func_opt_item_4 : IMMUTABLE
+common_func_opt_item_5 : STABLE
+common_func_opt_item_6 : VOLATILE
+common_func_opt_item_7 : EXTERNAL SECURITY DEFINER
+common_func_opt_item_8 : EXTERNAL SECURITY INVOKER
+common_func_opt_item_9 : SECURITY DEFINER
+common_func_opt_item_10: SECURITY INVOKER
+common_func_opt_item_11: LEAKPROOF
+common_func_opt_item_12: NOT LEAKPROOF
+common_func_opt_item_13: COST NumericOnly
+common_func_opt_item_14: ROWS NumericOnly
+common_func_opt_item_15: FunctionSetResetClause
+
+createfunc_opt_item  :
+     createfunc_opt_item_1
+   | createfunc_opt_item_2
+   | createfunc_opt_item_3
+   | createfunc_opt_item_4
+
+createfunc_opt_item_1: AS func_as
+createfunc_opt_item_2: LANGUAGE ColId_or_Sconst
+createfunc_opt_item_3: WINDOW
+createfunc_opt_item_4: common_func_opt_item
+
+func_as  :
+     func_as_1
+   | func_as_2
+
+func_as_1: Sconst
+func_as_2: Sconst <COMMA> Sconst
+
+opt_definition: ( WITH definition )?
+
+table_func_column: param_name func_type
+
+table_func_column_list: table_func_column+ % / ~ <COMMA> ~ /
+
+#############################################################################
+# ALTER FUNCTION
+#
+# RENAME and OWNER subcommands are already provided by the generic
+# ALTER infrastructure, here we just specify alterations that can
+# only be applied to functions.
+#
+#############################################################################
+AlterFunctionStmt: ALTER FUNCTION function_with_argtypes alterfunc_opt_list opt_restrict
+
+alterfunc_opt_list: common_func_opt_item+ % ~
+
+# Ignored, merely for SQL compliance
+opt_restrict: RESTRICT?
+
+#############################################################################
+#
+#      QUERY:
+#
+#      DROP FUNCTION funcname (arg1, arg2, ...) [ RESTRICT | CASCADE ]
+#      DROP AGGREGATE aggname (arg1, ...) [ RESTRICT | CASCADE ]
+#      DROP OPERATOR opname (leftoperand_typ, rightoperand_typ) [ RESTRICT | CASCADE ]
+#
+#############################################################################
+RemoveFuncStmt  :
+     RemoveFuncStmt_1
+   | RemoveFuncStmt_2
+
+RemoveFuncStmt_1: DROP FUNCTION func_name func_args opt_drop_behavior
+RemoveFuncStmt_2: DROP FUNCTION IF EXISTS func_name func_args opt_drop_behavior
+
+RemoveAggrStmt  :
+     RemoveAggrStmt_1
+   | RemoveAggrStmt_2
+
+RemoveAggrStmt_1: DROP AGGREGATE func_name aggr_args opt_drop_behavior
+RemoveAggrStmt_2: DROP AGGREGATE IF EXISTS func_name aggr_args opt_drop_behavior
+
+RemoveOperStmt  :
+     RemoveOperStmt_1
+   | RemoveOperStmt_2
+
+RemoveOperStmt_1: DROP OPERATOR any_operator oper_argtypes opt_drop_behavior
+RemoveOperStmt_2: DROP OPERATOR IF EXISTS any_operator oper_argtypes opt_drop_behavior
+
+oper_argtypes  :
+     oper_argtypes_1
+   | oper_argtypes_2
+   | oper_argtypes_3
+   | oper_argtypes_4
+
+oper_argtypes_1: <LPAREN> Typename <RPAREN>
+oper_argtypes_2: <LPAREN> Typename <COMMA> Typename <RPAREN>
+oper_argtypes_3: <LPAREN> NONE <COMMA> Typename <RPAREN>
+oper_argtypes_4: <LPAREN> Typename <COMMA> NONE <RPAREN>
+
+any_operator  :
+     any_operator_1
+   | any_operator_2
+
+any_operator_1: all_Op
+any_operator_2: <ColId>2+ % / ~ <DOT> ~ /
+
+#############################################################################
+#
+#      DO <anonymous code block> [ LANGUAGE language ]
+#
+# We use a DefElem list for future extensibility, and to allow flexibility
+# in the clause order.
+#
+#############################################################################
+DoStmt: DO dostmt_opt_list
+
+dostmt_opt_list: dostmt_opt_item+ % ~
+
+dostmt_opt_item  :
+     dostmt_opt_item_1
+   | dostmt_opt_item_2
+
+dostmt_opt_item_1: Sconst
+dostmt_opt_item_2: LANGUAGE ColId_or_Sconst
+
+#############################################################################
+#
+#      CREATE CAST / DROP CAST
+#
+#############################################################################
+CreateCastStmt  :
+     CreateCastStmt_1
+   | CreateCastStmt_2
+   | CreateCastStmt_3
+
+CreateCastStmt_1: CREATE CAST <LPAREN> Typename AS Typename <RPAREN> WITH FUNCTION function_with_argtypes cast_context
+CreateCastStmt_2: CREATE CAST <LPAREN> Typename AS Typename <RPAREN> WITHOUT FUNCTION cast_context
+CreateCastStmt_3: CREATE CAST <LPAREN> Typename AS Typename <RPAREN> WITH INOUT cast_context
+
+cast_context  : (
+     cast_context_1
+   | cast_context_2
+)?
+cast_context_1: AS IMPLICIT
+cast_context_2: AS ASSIGNMENT
+
+DropCastStmt: DROP CAST opt_if_exists <LPAREN> Typename AS Typename <RPAREN> opt_drop_behavior
+
+opt_if_exists: ( IF EXISTS )?
+
+#############################################################################
+#
+#      QUERY:
+#
+#      REINDEX type <name> [FORCE]
+#
+# FORCE no longer does anything, but we accept it for backwards compatibility
+#############################################################################
+ReindexStmt  :
+     ReindexStmt_1
+   | ReindexStmt_2
+   | ReindexStmt_3
+
+ReindexStmt_1: REINDEX reindex_type qualified_name opt_force
+ReindexStmt_2: REINDEX SYSTEM name opt_force
+ReindexStmt_3: REINDEX DATABASE name opt_force
+
+reindex_type  :
+     reindex_type_1
+   | reindex_type_2
+
+reindex_type_1: INDEX
+reindex_type_2: TABLE
+
+opt_force: FORCE?
+
+#############################################################################
+#
+# ALTER THING name RENAME TO newname
+#
+#############################################################################
+RenameStmt   :
+     RenameStmt_1
+   | RenameStmt_2
+   | RenameStmt_3
+   | RenameStmt_4
+   | RenameStmt_5
+   | RenameStmt_6
+   | RenameStmt_7
+   | RenameStmt_8
+   | RenameStmt_9
+   | RenameStmt_10
+   | RenameStmt_11
+   | RenameStmt_12
+   | RenameStmt_13
+   | RenameStmt_14
+   | RenameStmt_15
+   | RenameStmt_16
+   | RenameStmt_17
+   | RenameStmt_18
+   | RenameStmt_19
+   | RenameStmt_20
+   | RenameStmt_21
+   | RenameStmt_22
+   | RenameStmt_23
+   | RenameStmt_24
+   | RenameStmt_25
+   | RenameStmt_26
+   | RenameStmt_27
+   | RenameStmt_28
+   | RenameStmt_29
+   | RenameStmt_30
+   | RenameStmt_31
+   | RenameStmt_32
+   | RenameStmt_33
+   | RenameStmt_34
+   | RenameStmt_35
+   | RenameStmt_36
+   | RenameStmt_37
+   | RenameStmt_38
+   | RenameStmt_39
+   | RenameStmt_40
+   | RenameStmt_41
+   | RenameStmt_42
+
+RenameStmt_1 : ALTER AGGREGATE func_name aggr_args RENAME TO name
+RenameStmt_2 : ALTER COLLATION any_name RENAME TO name
+RenameStmt_3 : ALTER CONVERSION any_name RENAME TO name
+RenameStmt_4 : ALTER DATABASE database_name RENAME TO database_name
+RenameStmt_5 : ALTER DOMAIN any_name RENAME TO name
+RenameStmt_6 : ALTER DOMAIN any_name RENAME CONSTRAINT name TO name
+RenameStmt_7 : ALTER FOREIGN DATA WRAPPER name RENAME TO name
+RenameStmt_8 : ALTER FUNCTION function_with_argtypes RENAME TO name
+RenameStmt_9 : ALTER GROUP RoleId RENAME TO RoleId
+RenameStmt_10: ALTER opt_procedural LANGUAGE name RENAME TO name
+RenameStmt_11: ALTER OPERATOR CLASS any_name USING access_method RENAME TO name
+RenameStmt_12: ALTER OPERATOR FAMILY any_name USING access_method RENAME TO name
+RenameStmt_13: ALTER SCHEMA name RENAME TO name
+RenameStmt_14: ALTER SERVER name RENAME TO name
+RenameStmt_15: ALTER TABLE relation_expr RENAME TO name
+RenameStmt_16: ALTER TABLE IF EXISTS relation_expr RENAME TO name
+RenameStmt_17: ALTER SEQUENCE qualified_name RENAME TO name
+RenameStmt_18: ALTER SEQUENCE IF EXISTS qualified_name RENAME TO name
+RenameStmt_19: ALTER VIEW qualified_name RENAME TO name
+RenameStmt_20: ALTER VIEW IF EXISTS qualified_name RENAME TO name
+RenameStmt_21: ALTER INDEX qualified_name RENAME TO name
+RenameStmt_22: ALTER INDEX IF EXISTS qualified_name RENAME TO name
+RenameStmt_23: ALTER FOREIGN TABLE relation_expr RENAME TO name
+RenameStmt_24: ALTER FOREIGN TABLE IF EXISTS relation_expr RENAME TO name
+RenameStmt_25: ALTER TABLE relation_expr RENAME opt_column name TO name
+RenameStmt_26: ALTER TABLE IF EXISTS relation_expr RENAME opt_column name TO name
+RenameStmt_27: ALTER TABLE relation_expr RENAME CONSTRAINT name TO name
+RenameStmt_28: ALTER FOREIGN TABLE relation_expr RENAME opt_column name TO name
+RenameStmt_29: ALTER FOREIGN TABLE IF EXISTS relation_expr RENAME opt_column name TO name
+RenameStmt_30: ALTER TRIGGER name ON qualified_name RENAME TO name
+RenameStmt_31: ALTER EVENT TRIGGER name RENAME TO name
+RenameStmt_32: ALTER ROLE RoleId RENAME TO RoleId
+RenameStmt_33: ALTER USER RoleId RENAME TO RoleId
+RenameStmt_34: ALTER TABLESPACE name RENAME TO name
+RenameStmt_35: ALTER TABLESPACE name SET reloptions
+RenameStmt_36: ALTER TABLESPACE name RESET reloptions
+RenameStmt_37: ALTER TEXT SEARCH PARSER any_name RENAME TO name
+RenameStmt_38: ALTER TEXT SEARCH DICTIONARY any_name RENAME TO name
+RenameStmt_39: ALTER TEXT SEARCH TEMPLATE any_name RENAME TO name
+RenameStmt_40: ALTER TEXT SEARCH CONFIGURATION any_name RENAME TO name
+RenameStmt_41: ALTER TYPE any_name RENAME TO name
+RenameStmt_42: ALTER TYPE any_name RENAME ATTRIBUTE name TO name opt_drop_behavior
+
+opt_column: COLUMN?
+
+opt_set_data: ( SET DATA )?
+
+#############################################################################
+#
+# ALTER THING name SET SCHEMA name
+#
+#############################################################################
+AlterObjectSchemaStmt   :
+     AlterObjectSchemaStmt_1
+   | AlterObjectSchemaStmt_2
+   | AlterObjectSchemaStmt_3
+   | AlterObjectSchemaStmt_4
+   | AlterObjectSchemaStmt_5
+   | AlterObjectSchemaStmt_6
+   | AlterObjectSchemaStmt_7
+   | AlterObjectSchemaStmt_8
+   | AlterObjectSchemaStmt_9
+   | AlterObjectSchemaStmt_10
+   | AlterObjectSchemaStmt_11
+   | AlterObjectSchemaStmt_12
+   | AlterObjectSchemaStmt_13
+   | AlterObjectSchemaStmt_14
+   | AlterObjectSchemaStmt_15
+   | AlterObjectSchemaStmt_16
+   | AlterObjectSchemaStmt_17
+   | AlterObjectSchemaStmt_18
+   | AlterObjectSchemaStmt_19
+   | AlterObjectSchemaStmt_20
+   | AlterObjectSchemaStmt_21
+   | AlterObjectSchemaStmt_22
+
+AlterObjectSchemaStmt_1 : ALTER AGGREGATE func_name aggr_args SET SCHEMA name
+AlterObjectSchemaStmt_2 : ALTER COLLATION any_name SET SCHEMA name
+AlterObjectSchemaStmt_3 : ALTER CONVERSION any_name SET SCHEMA name
+AlterObjectSchemaStmt_4 : ALTER DOMAIN any_name SET SCHEMA name
+AlterObjectSchemaStmt_5 : ALTER EXTENSION any_name SET SCHEMA name
+AlterObjectSchemaStmt_6 : ALTER FUNCTION function_with_argtypes SET SCHEMA name
+AlterObjectSchemaStmt_7 : ALTER OPERATOR any_operator oper_argtypes SET SCHEMA name
+AlterObjectSchemaStmt_8 : ALTER OPERATOR CLASS any_name USING access_method SET SCHEMA name
+AlterObjectSchemaStmt_9 : ALTER OPERATOR FAMILY any_name USING access_method SET SCHEMA name
+AlterObjectSchemaStmt_10: ALTER TABLE relation_expr SET SCHEMA name
+AlterObjectSchemaStmt_11: ALTER TABLE IF EXISTS relation_expr SET SCHEMA name
+AlterObjectSchemaStmt_12: ALTER TEXT SEARCH PARSER any_name SET SCHEMA name
+AlterObjectSchemaStmt_13: ALTER TEXT SEARCH DICTIONARY any_name SET SCHEMA name
+AlterObjectSchemaStmt_14: ALTER TEXT SEARCH TEMPLATE any_name SET SCHEMA name
+AlterObjectSchemaStmt_15: ALTER TEXT SEARCH CONFIGURATION any_name SET SCHEMA name
+AlterObjectSchemaStmt_16: ALTER SEQUENCE qualified_name SET SCHEMA name
+AlterObjectSchemaStmt_17: ALTER SEQUENCE IF EXISTS qualified_name SET SCHEMA name
+AlterObjectSchemaStmt_18: ALTER VIEW qualified_name SET SCHEMA name
+AlterObjectSchemaStmt_19: ALTER VIEW IF EXISTS qualified_name SET SCHEMA name
+AlterObjectSchemaStmt_20: ALTER FOREIGN TABLE relation_expr SET SCHEMA name
+AlterObjectSchemaStmt_21: ALTER FOREIGN TABLE IF EXISTS relation_expr SET SCHEMA name
+AlterObjectSchemaStmt_22: ALTER TYPE any_name SET SCHEMA name
+
+#############################################################################
+#
+# ALTER THING name OWNER TO newname
+#
+#############################################################################
+AlterOwnerStmt   :
+     AlterOwnerStmt_1
+   | AlterOwnerStmt_2
+   | AlterOwnerStmt_3
+   | AlterOwnerStmt_4
+   | AlterOwnerStmt_5
+   | AlterOwnerStmt_6
+   | AlterOwnerStmt_7
+   | AlterOwnerStmt_8
+   | AlterOwnerStmt_9
+   | AlterOwnerStmt_10
+   | AlterOwnerStmt_11
+   | AlterOwnerStmt_12
+   | AlterOwnerStmt_13
+   | AlterOwnerStmt_14
+   | AlterOwnerStmt_15
+   | AlterOwnerStmt_16
+   | AlterOwnerStmt_17
+   | AlterOwnerStmt_18
+   | AlterOwnerStmt_19
+
+AlterOwnerStmt_1 : ALTER AGGREGATE func_name aggr_args OWNER TO RoleId
+AlterOwnerStmt_2 : ALTER COLLATION any_name OWNER TO RoleId
+AlterOwnerStmt_3 : ALTER CONVERSION any_name OWNER TO RoleId
+AlterOwnerStmt_4 : ALTER DATABASE database_name OWNER TO RoleId
+AlterOwnerStmt_5 : ALTER DOMAIN any_name OWNER TO RoleId
+AlterOwnerStmt_6 : ALTER FUNCTION function_with_argtypes OWNER TO RoleId
+AlterOwnerStmt_7 : ALTER opt_procedural LANGUAGE name OWNER TO RoleId
+AlterOwnerStmt_8 : ALTER LARGE OBJECT NumericOnly OWNER TO RoleId
+AlterOwnerStmt_9 : ALTER OPERATOR any_operator oper_argtypes OWNER TO RoleId
+AlterOwnerStmt_10: ALTER OPERATOR CLASS any_name USING access_method OWNER TO RoleId
+AlterOwnerStmt_11: ALTER OPERATOR FAMILY any_name USING access_method OWNER TO RoleId
+AlterOwnerStmt_12: ALTER SCHEMA name OWNER TO RoleId
+AlterOwnerStmt_13: ALTER TYPE any_name OWNER TO RoleId
+AlterOwnerStmt_14: ALTER TABLESPACE name OWNER TO RoleId
+AlterOwnerStmt_15: ALTER TEXT SEARCH DICTIONARY any_name OWNER TO RoleId
+AlterOwnerStmt_16: ALTER TEXT SEARCH CONFIGURATION any_name OWNER TO RoleId
+AlterOwnerStmt_17: ALTER FOREIGN DATA WRAPPER name OWNER TO RoleId
+AlterOwnerStmt_18: ALTER SERVER name OWNER TO RoleId
+AlterOwnerStmt_19: ALTER EVENT TRIGGER name OWNER TO RoleId
+
+#############################################################################
+#
+#      QUERY:   Define Rewrite Rule
+#
+#############################################################################
+RuleStmt: CREATE opt_or_replace RULE name AS ON event TO qualified_name where_clause DO opt_instead RuleActionList
+
+RuleActionList  :
+     RuleActionList_1
+   | RuleActionList_2
+   | RuleActionList_3
+
+RuleActionList_1: NOTHING
+RuleActionList_2: RuleActionStmt
+RuleActionList_3: <LPAREN> RuleActionMulti <RPAREN>
+
+# the thrashing around here is to discard "empty" statements...
+RuleActionMulti: RuleActionStmtOrEmpty+ % / ~ <SEMI> ~ /
+
+RuleActionStmt:
+     SelectStmt
+   | InsertStmt
+   | UpdateStmt
+   | DeleteStmt
+   | NotifyStmt
+
+
+RuleActionStmtOrEmpty: RuleActionStmt?
+
+event  :
+     event_1
+   | event_2
+   | event_3
+   | event_4
+
+event_1: SELECT
+event_2: UPDATE
+event_3: DELETE
+event_4: INSERT
+
+opt_instead  : (
+     opt_instead_1
+   | opt_instead_2
+)?
+opt_instead_1: INSTEAD
+opt_instead_2: ALSO
+
+DropRuleStmt  :
+     DropRuleStmt_1
+   | DropRuleStmt_2
+
+DropRuleStmt_1: DROP RULE name ON qualified_name opt_drop_behavior
+DropRuleStmt_2: DROP RULE IF EXISTS name ON qualified_name opt_drop_behavior
+
+#############################################################################
+#
+#      QUERY:
+#            NOTIFY <identifier> can appear both in rule bodies and
+#            as a query-level command
+#
+#############################################################################
+NotifyStmt: NOTIFY ColId notify_payload
+
+notify_payload: ( <COMMA> Sconst )?
+
+ListenStmt: LISTEN ColId
+
+UnlistenStmt  :
+     UnlistenStmt_1
+   | UnlistenStmt_2
+
+UnlistenStmt_1: UNLISTEN ColId
+UnlistenStmt_2: UNLISTEN <STAR>
+
+#############################################################################
+#
+#      Transactions:
+#
+#      BEGIN / COMMIT / ROLLBACK
+#      (also older versions END / ABORT)
+#
+#############################################################################
+TransactionStmt   :
+     TransactionStmt_1
+   | TransactionStmt_2
+   | TransactionStmt_3
+   | TransactionStmt_4
+   | TransactionStmt_5
+   | TransactionStmt_6
+   | TransactionStmt_7
+   | TransactionStmt_8
+   | TransactionStmt_9
+   | TransactionStmt_10
+   | TransactionStmt_11
+   | TransactionStmt_12
+   | TransactionStmt_13
+   | TransactionStmt_14
+
+TransactionStmt_1 : ABORT opt_transaction
+TransactionStmt_2 : BEGIN opt_transaction transaction_mode_list_or_empty
+TransactionStmt_3 : START TRANSACTION transaction_mode_list_or_empty
+TransactionStmt_4 : COMMIT opt_transaction
+TransactionStmt_5 : END opt_transaction
+TransactionStmt_6 : ROLLBACK opt_transaction
+TransactionStmt_7 : SAVEPOINT ColId
+TransactionStmt_8 : RELEASE SAVEPOINT ColId
+TransactionStmt_9 : RELEASE ColId
+TransactionStmt_10: ROLLBACK opt_transaction TO SAVEPOINT ColId
+TransactionStmt_11: ROLLBACK opt_transaction TO ColId
+TransactionStmt_12: PREPARE TRANSACTION Sconst
+TransactionStmt_13: COMMIT PREPARED Sconst
+TransactionStmt_14: ROLLBACK PREPARED Sconst
+
+opt_transaction  : (
+     opt_transaction_1
+   | opt_transaction_2
+)?
+opt_transaction_1: WORK
+opt_transaction_2: TRANSACTION
+
+transaction_mode_item  :
+     transaction_mode_item_1
+   | transaction_mode_item_2
+   | transaction_mode_item_3
+   | transaction_mode_item_4
+   | transaction_mode_item_5
+
+transaction_mode_item_1: ISOLATION LEVEL iso_level
+transaction_mode_item_2: READ ONLY
+transaction_mode_item_3: READ WRITE
+transaction_mode_item_4: DEFERRABLE
+transaction_mode_item_5: NOT DEFERRABLE
+
+# Syntax with commas is SQL-spec, without commas is Postgres historical
+
+### WARNING: Recursion; needs refactoring! ###
+transaction_mode_list  :
+     transaction_mode_list_1
+   | transaction_mode_list_2
+   | transaction_mode_list_3
+
+transaction_mode_list_1: transaction_mode_item
+transaction_mode_list_2: transaction_mode_list <COMMA> transaction_mode_item
+transaction_mode_list_3: transaction_mode_list transaction_mode_item
+
+transaction_mode_list_or_empty: transaction_mode_list?
+
+#############################################################################
+#
+#   QUERY:
+#      CREATE [ OR REPLACE ] [ TEMP ] VIEW <viewname> '('target-list ')'
+#         AS <query> [ WITH [ CASCADED | LOCAL ] CHECK OPTION ]
+#
+#############################################################################
+ViewStmt  :
+     ViewStmt_1
+   | ViewStmt_2
+
+ViewStmt_1: CREATE OptTemp VIEW qualified_name opt_column_list opt_reloptions AS SelectStmt opt_check_option
+ViewStmt_2: CREATE OR REPLACE OptTemp VIEW qualified_name opt_column_list opt_reloptions AS SelectStmt opt_check_option
+
+opt_check_option  : (
+     opt_check_option_1
+   | opt_check_option_2
+   | opt_check_option_3
+)?
+opt_check_option_1: WITH CHECK OPTION
+opt_check_option_2: WITH CASCADED CHECK OPTION
+opt_check_option_3: WITH LOCAL CHECK OPTION
+
+#############################################################################
+#
+#      QUERY:
+#            LOAD "filename"
+#
+#############################################################################
+LoadStmt: LOAD file_name
+
+#############################################################################
+#
+#      CREATE DATABASE
+#
+#############################################################################
+CreatedbStmt: CREATE DATABASE database_name opt_with createdb_opt_list
+
+createdb_opt_list: createdb_opt_item* % ~
+
+createdb_opt_item   :
+     createdb_opt_item_1
+   | createdb_opt_item_2
+   | createdb_opt_item_3
+   | createdb_opt_item_4
+   | createdb_opt_item_5
+   | createdb_opt_item_6
+   | createdb_opt_item_7
+   | createdb_opt_item_8
+   | createdb_opt_item_9
+   | createdb_opt_item_10
+   | createdb_opt_item_11
+   | createdb_opt_item_12
+   | createdb_opt_item_13
+   | createdb_opt_item_14
+   | createdb_opt_item_15
+   | createdb_opt_item_16
+
+createdb_opt_item_1 : TABLESPACE opt_equal name
+createdb_opt_item_2 : TABLESPACE opt_equal DEFAULT
+createdb_opt_item_3 : LOCATION opt_equal Sconst
+createdb_opt_item_4 : LOCATION opt_equal DEFAULT
+createdb_opt_item_5 : TEMPLATE opt_equal name
+createdb_opt_item_6 : TEMPLATE opt_equal DEFAULT
+createdb_opt_item_7 : ENCODING opt_equal Sconst
+createdb_opt_item_8 : ENCODING opt_equal Iconst
+createdb_opt_item_9 : ENCODING opt_equal DEFAULT
+createdb_opt_item_10: LC_COLLATE opt_equal Sconst
+createdb_opt_item_11: LC_COLLATE opt_equal DEFAULT
+createdb_opt_item_12: LC_CTYPE opt_equal Sconst
+createdb_opt_item_13: LC_CTYPE opt_equal DEFAULT
+createdb_opt_item_14: CONNECTION LIMIT opt_equal SignedIconst
+createdb_opt_item_15: OWNER opt_equal name
+createdb_opt_item_16: OWNER opt_equal DEFAULT
+
+#   Though the equals sign doesn't match other WITH options, pg_dump uses
+#   equals for backward compatibility, and it doesn't seem worth removing it.
+opt_equal: <EQUAL>?
+
+#############################################################################
+#
+#      ALTER DATABASE
+#
+#############################################################################
+AlterDatabaseStmt  :
+     AlterDatabaseStmt_1
+   | AlterDatabaseStmt_2
+
+AlterDatabaseStmt_1: ALTER DATABASE database_name opt_with alterdb_opt_list
+AlterDatabaseStmt_2: ALTER DATABASE database_name SET TABLESPACE name
+
+AlterDatabaseSetStmt: ALTER DATABASE database_name SetResetClause
+
+alterdb_opt_list: alterdb_opt_item* % ~
+
+alterdb_opt_item: CONNECTION LIMIT opt_equal SignedIconst
+
+#############################################################################
+#
+#      DROP DATABASE [ IF EXISTS ]
+#
+# This is implicitly CASCADE, no need for drop behavior
+#############################################################################
+DropdbStmt  :
+     DropdbStmt_1
+   | DropdbStmt_2
+
+DropdbStmt_1: DROP DATABASE database_name
+DropdbStmt_2: DROP DATABASE IF EXISTS database_name
+
+#############################################################################
+#
+# Manipulate a domain
+#
+#############################################################################
+CreateDomainStmt: CREATE DOMAIN any_name opt_as Typename ColQualList
+
+AlterDomainStmt  :
+     AlterDomainStmt_1
+   | AlterDomainStmt_2
+   | AlterDomainStmt_3
+   | AlterDomainStmt_4
+   | AlterDomainStmt_5
+   | AlterDomainStmt_6
+   | AlterDomainStmt_7
+
+AlterDomainStmt_1: 
+# ALTER DOMAIN <domain> {SET DEFAULT <expr>|DROP DEFAULT}
+    ALTER DOMAIN any_name alter_column_default
+AlterDomainStmt_2: ALTER DOMAIN any_name DROP NOT NULL
+AlterDomainStmt_3: ALTER DOMAIN any_name SET NOT NULL
+AlterDomainStmt_4: ALTER DOMAIN any_name ADD TableConstraint
+AlterDomainStmt_5: ALTER DOMAIN any_name DROP CONSTRAINT name opt_drop_behavior
+AlterDomainStmt_6: ALTER DOMAIN any_name DROP CONSTRAINT IF EXISTS name opt_drop_behavior
+AlterDomainStmt_7: ALTER DOMAIN any_name VALIDATE CONSTRAINT name
+
+opt_as: AS?
+
+#############################################################################
+#
+# Manipulate a text search dictionary or configuration
+#
+#############################################################################
+AlterTSDictionaryStmt: ALTER TEXT SEARCH DICTIONARY any_name definition
+
+AlterTSConfigurationStmt  :
+     AlterTSConfigurationStmt_1
+   | AlterTSConfigurationStmt_2
+   | AlterTSConfigurationStmt_3
+   | AlterTSConfigurationStmt_4
+   | AlterTSConfigurationStmt_5
+   | AlterTSConfigurationStmt_6
+
+AlterTSConfigurationStmt_1: ALTER TEXT SEARCH CONFIGURATION any_name ADD MAPPING FOR name_list WITH any_name_list
+AlterTSConfigurationStmt_2: ALTER TEXT SEARCH CONFIGURATION any_name ALTER MAPPING FOR name_list WITH any_name_list
+AlterTSConfigurationStmt_3: ALTER TEXT SEARCH CONFIGURATION any_name ALTER MAPPING REPLACE any_name WITH any_name
+AlterTSConfigurationStmt_4: ALTER TEXT SEARCH CONFIGURATION any_name ALTER MAPPING FOR name_list REPLACE any_name WITH any_name
+AlterTSConfigurationStmt_5: ALTER TEXT SEARCH CONFIGURATION any_name DROP MAPPING FOR name_list
+AlterTSConfigurationStmt_6: ALTER TEXT SEARCH CONFIGURATION any_name DROP MAPPING IF EXISTS FOR name_list
+
+#############################################################################
+#
+# Manipulate a conversion
+#
+#      CREATE [DEFAULT] CONVERSION <conversion_name>
+#      FOR <encoding_name> TO <encoding_name> FROM <func_name>
+#
+#############################################################################
+CreateConversionStmt: CREATE opt_default CONVERSION any_name FOR Sconst TO Sconst FROM any_name
+
+#############################################################################
+#
+#      QUERY:
+#            CLUSTER [VERBOSE] <qualified_name> [ USING <index_name> ]
+#            CLUSTER [VERBOSE]
+#            CLUSTER [VERBOSE] <index_name> ON <qualified_name> (for pre-8.3)
+#
+#############################################################################
+ClusterStmt  :
+     ClusterStmt_1
+   | ClusterStmt_2
+   | ClusterStmt_3
+
+ClusterStmt_1: CLUSTER opt_verbose qualified_name cluster_index_specification
+ClusterStmt_2: CLUSTER opt_verbose
+ClusterStmt_3: CLUSTER opt_verbose index_name ON qualified_name
+
+cluster_index_specification: ( USING index_name )?
+
+#############################################################################
+#
+#      QUERY:
+#            VACUUM
+#            ANALYZE
+#
+#############################################################################
+VacuumStmt  :
+     VacuumStmt_1
+   | VacuumStmt_2
+   | VacuumStmt_3
+   | VacuumStmt_4
+   | VacuumStmt_5
+
+VacuumStmt_1: VACUUM opt_full opt_freeze opt_verbose
+VacuumStmt_2: VACUUM opt_full opt_freeze opt_verbose qualified_name
+VacuumStmt_3: VACUUM opt_full opt_freeze opt_verbose AnalyzeStmt
+VacuumStmt_4: VACUUM <LPAREN> vacuum_option_list <RPAREN>
+VacuumStmt_5: VACUUM <LPAREN> vacuum_option_list <RPAREN> qualified_name opt_name_list
+
+vacuum_option_list: vacuum_option_elem+ % / ~ <COMMA> ~ /
+
+vacuum_option_elem  :
+     vacuum_option_elem_1
+   | vacuum_option_elem_2
+   | vacuum_option_elem_3
+   | vacuum_option_elem_4
+
+vacuum_option_elem_1: analyze_keyword
+vacuum_option_elem_2: VERBOSE
+vacuum_option_elem_3: FREEZE
+vacuum_option_elem_4: FULL
+
+AnalyzeStmt  :
+     AnalyzeStmt_1
+   | AnalyzeStmt_2
+
+AnalyzeStmt_1: analyze_keyword opt_verbose
+AnalyzeStmt_2: analyze_keyword opt_verbose qualified_name opt_name_list
+
+analyze_keyword  :
+     analyze_keyword_1
+   | analyze_keyword_2
+
+analyze_keyword_1: ANALYZE
+analyze_keyword_2: ANALYSE
+
+opt_verbose: VERBOSE?
+
+opt_full: FULL?
+
+opt_freeze: FREEZE?
+
+opt_name_list: ( <LPAREN> name_list <RPAREN> )?
+
+#############################################################################
+#
+#      QUERY:
+#            EXPLAIN [ANALYZE] [VERBOSE] query
+#            EXPLAIN ( options ) query
+#
+#############################################################################
+ExplainStmt  :
+     ExplainStmt_1
+   | ExplainStmt_2
+   | ExplainStmt_3
+   | ExplainStmt_4
+
+ExplainStmt_1: EXPLAIN ExplainableStmt
+ExplainStmt_2: EXPLAIN analyze_keyword opt_verbose ExplainableStmt
+ExplainStmt_3: EXPLAIN VERBOSE ExplainableStmt
+ExplainStmt_4: EXPLAIN <LPAREN> explain_option_list <RPAREN> ExplainableStmt
+
+ExplainableStmt:
+     SelectStmt
+   | InsertStmt
+   | UpdateStmt
+   | DeleteStmt
+   | DeclareCursorStmt
+   | CreateAsStmt
+   | ExecuteStmt 
+# by default all are $$=$_[1]
+
+
+explain_option_list: explain_option_elem+ % / ~ <COMMA> ~ /
+
+explain_option_elem: explain_option_name explain_option_arg
+
+explain_option_name  :
+     explain_option_name_1
+   | explain_option_name_2
+   | explain_option_name_3
+
+explain_option_name_1: ColId
+explain_option_name_2: analyze_keyword
+explain_option_name_3: VERBOSE
+
+explain_option_arg  : (
+     explain_option_arg_1
+   | explain_option_arg_2
+)?
+explain_option_arg_1: opt_boolean_or_string
+explain_option_arg_2: NumericOnly
+
+#############################################################################
+#
+#      QUERY:
+#            PREPARE <plan_name> [(args, ...)] AS <query>
+#
+#############################################################################
+PrepareStmt: PREPARE name prep_type_clause AS PreparableStmt
+
+prep_type_clause: ( <LPAREN> type_list <RPAREN> )?
+
+PreparableStmt:
+     SelectStmt
+   | InsertStmt
+   | UpdateStmt
+   | DeleteStmt 
+# by default all are $$=$_[1]
+
+
+#############################################################################
+#
+# EXECUTE <plan_name> [(params, ...)]
+# CREATE TABLE <name> AS EXECUTE <plan_name> [(params, ...)]
+#
+#############################################################################
+ExecuteStmt  :
+     ExecuteStmt_1
+   | ExecuteStmt_2
+
+ExecuteStmt_1: EXECUTE name execute_param_clause
+ExecuteStmt_2: CREATE OptTemp TABLE create_as_target AS EXECUTE name execute_param_clause opt_with_data
+
+execute_param_clause: ( <LPAREN> expr_list <RPAREN> )?
+
+#############################################################################
+#
+#      QUERY:
+#            DEALLOCATE [PREPARE] <plan_name>
+#
+#############################################################################
+DeallocateStmt  :
+     DeallocateStmt_1
+   | DeallocateStmt_2
+   | DeallocateStmt_3
+   | DeallocateStmt_4
+
+DeallocateStmt_1: DEALLOCATE name
+DeallocateStmt_2: DEALLOCATE PREPARE name
+DeallocateStmt_3: DEALLOCATE ALL
+DeallocateStmt_4: DEALLOCATE PREPARE ALL
+
+#############################################################################
+#
+#      QUERY:
+#            INSERT STATEMENTS
+#
+#############################################################################
+InsertStmt: opt_with_clause INSERT INTO qualified_name insert_rest returning_clause
+
+insert_rest  :
+     insert_rest_1
+   | insert_rest_2
+   | insert_rest_3
+
+insert_rest_1: SelectStmt
+insert_rest_2: <LPAREN> insert_column_list <RPAREN> SelectStmt
+insert_rest_3: DEFAULT VALUES
+
+insert_column_list: insert_column_item+ % / ~ <COMMA> ~ /
+
+insert_column_item: ColId opt_indirection
+
+returning_clause: ( RETURNING target_list )?
+
+#############################################################################
+#
+#      QUERY:
+#            DELETE STATEMENTS
+#
+#############################################################################
+DeleteStmt: opt_with_clause DELETE FROM relation_expr_opt_alias using_clause where_or_current_clause returning_clause
+
+using_clause: ( USING from_list )?
+
+#############################################################################
+#
+#      QUERY:
+#            LOCK TABLE
+#
+#############################################################################
+LockStmt: LOCK opt_table relation_expr_list opt_lock opt_nowait
+
+opt_lock: ( IN lock_type MODE )?
+
+lock_type  :
+     lock_type_1
+   | lock_type_2
+   | lock_type_3
+   | lock_type_4
+   | lock_type_5
+   | lock_type_6
+   | lock_type_7
+   | lock_type_8
+
+lock_type_1: ACCESS SHARE
+lock_type_2: ROW SHARE
+lock_type_3: ROW EXCLUSIVE
+lock_type_4: SHARE UPDATE EXCLUSIVE
+lock_type_5: SHARE
+lock_type_6: SHARE ROW EXCLUSIVE
+lock_type_7: EXCLUSIVE
+lock_type_8: ACCESS EXCLUSIVE
+
+opt_nowait: NOWAIT?
+
+#############################################################################
+#
+#      QUERY:
+#            UpdateStmt (UPDATE)
+#
+#############################################################################
+UpdateStmt: opt_with_clause UPDATE relation_expr_opt_alias SET set_clause_list from_clause where_or_current_clause returning_clause
+
+set_clause_list: set_clause+ % / ~ <COMMA> ~ /
+
+set_clause  :
+     set_clause_1
+   | set_clause_2
+
+set_clause_1: single_set_clause
+set_clause_2: multiple_set_clause
+
+single_set_clause: set_target <EQUAL> ctext_expr
+
+multiple_set_clause: <LPAREN> set_target_list <RPAREN> <EQUAL> ctext_row
+
+set_target: ColId opt_indirection
+
+set_target_list: set_target+ % / ~ <COMMA> ~ /
+
+#############################################################################
+#
+#      QUERY:
+#            CURSOR STATEMENTS
+#
+#############################################################################
+DeclareCursorStmt: DECLARE cursor_name cursor_options CURSOR opt_hold FOR SelectStmt
+
+cursor_name: name
+
+### WARNING: Recursion; needs refactoring! ###
+cursor_options  : (
+     cursor_options_1
+   | cursor_options_2
+   | cursor_options_3
+   | cursor_options_4
+)?
+cursor_options_1: cursor_options NO SCROLL
+cursor_options_2: cursor_options SCROLL
+cursor_options_3: cursor_options BINARY
+cursor_options_4: cursor_options INSENSITIVE
+
+opt_hold  : (
+     opt_hold_1
+   | opt_hold_2
+)?
+opt_hold_1: WITH HOLD
+opt_hold_2: WITHOUT HOLD
+
+#############################################################################
+#
+#      QUERY:
+#            SELECT STATEMENTS
+#
+#############################################################################
+
+# A complete SELECT statement looks like this.
+#
+# The rule returns either a single SelectStmt node or a tree of them,
+# representing a set-operation tree.
+#
+# There is an ambiguity when a sub-SELECT is within an a_expr and there
+# are excess parentheses: do the parentheses belong to the sub-SELECT or
+# to the surrounding a_expr?  We don't really care, but bison wants to know.
+# To resolve the ambiguity, we are careful to define the grammar so that
+# the decision is staved off as long as possible: as long as we can keep
+# absorbing parentheses into the sub-SELECT, we will do so, and only when
+# it's no longer possible to do that will we decide that parens belong to
+# the expression.   For example, in "SELECT (((SELECT 2)) + 3)" the extra
+# parentheses are treated as part of the sub-select.  The necessity of doing
+# it that way is shown by "SELECT (((SELECT 2)) UNION SELECT 2)".   Had we
+# parsed "((SELECT 2))" as an a_expr, it'd be too late to go back to the
+# SELECT viewpoint when we see the UNION.
+#
+# This approach is implemented by defining a nonterminal select_with_parens,
+# which represents a SELECT with at least one outer layer of parentheses,
+# and being careful to use select_with_parens, never '(' SelectStmt ')',
+# in the expression grammar.  We will then have shift-reduce conflicts
+# which we can resolve in favor of always treating '(' <select> ')' as
+# a select_with_parens.  To resolve the conflicts, the productions that
+# conflict with the select_with_parens productions are manually given
+# precedences lower than the precedence of ')', thereby ensuring that we
+# shift ')' (and then reduce to select_with_parens) rather than trying to
+# reduce the inner <select> nonterminal to something else.  We use UMINUS
+# precedence for this, which is a fairly arbitrary choice.
+#
+# To be able to define select_with_parens itself without ambiguity, we need
+# a nonterminal select_no_parens that represents a SELECT structure with no
+# outermost parentheses.  This is a little bit tedious, but it works.
+#
+# In non-expression contexts, we use SelectStmt which can represent a SELECT
+# with or without outer parentheses.
+SelectStmt:
+     select_no_parens
+   | select_with_parens
+
+
+### WARNING: Recursion; needs refactoring! ###
+select_with_parens  :
+     select_with_parens_1
+   | select_with_parens_2
+
+select_with_parens_1: <LPAREN> select_no_parens <RPAREN>
+select_with_parens_2: <LPAREN> select_with_parens <RPAREN>
+
+# This rule parses the equivalent of the standard's <query expression>.
+# The duplicative productions are annoying, but hard to get rid of without
+# creating shift/reduce conflicts.
+#
+#   FOR UPDATE/SHARE may be before or after LIMIT/OFFSET.
+#   In <=7.2.X, LIMIT/OFFSET had to be after FOR UPDATE
+#   We now support both orderings, but prefer LIMIT/OFFSET before FOR UPDATE/SHARE
+#   2002-08-28 bjm
+select_no_parens  :
+     select_no_parens_1
+   | select_no_parens_2
+   | select_no_parens_3
+   | select_no_parens_4
+   | select_no_parens_5
+   | select_no_parens_6
+   | select_no_parens_7
+   | select_no_parens_8
+
+select_no_parens_1: simple_select
+select_no_parens_2: select_clause sort_clause
+select_no_parens_3: select_clause opt_sort_clause for_locking_clause opt_select_limit
+select_no_parens_4: select_clause opt_sort_clause select_limit opt_for_locking_clause
+select_no_parens_5: with_clause select_clause
+select_no_parens_6: with_clause select_clause sort_clause
+select_no_parens_7: with_clause select_clause opt_sort_clause for_locking_clause opt_select_limit
+select_no_parens_8: with_clause select_clause opt_sort_clause select_limit opt_for_locking_clause
+
+select_clause  :
+     select_clause_1
+   | select_clause_2
+
+select_clause_1: simple_select
+select_clause_2: select_with_parens
+
+# This rule parses SELECT statements that can appear within set operations,
+# including UNION, INTERSECT and EXCEPT.  '(' and ')' can be used to specify
+# the ordering of the set operations.   Without '(' and ')' we want the
+# operations to be ordered per the precedence specs at the head of this file.
+#
+# As with select_no_parens, simple_select cannot have outer parentheses,
+# but can have parenthesized subclauses.
+#
+# Note that sort clauses cannot be included at this level --- SQL92 requires
+#      SELECT foo UNION SELECT bar ORDER BY baz
+# to be parsed as
+#      (SELECT foo UNION SELECT bar) ORDER BY baz
+# not
+#      SELECT foo UNION (SELECT bar ORDER BY baz)
+# Likewise for WITH, FOR UPDATE and LIMIT.  Therefore, those clauses are
+# described as part of the select_no_parens production, not simple_select.
+# This does not limit functionality, because you can reintroduce these
+# clauses inside parentheses.
+#
+# NOTE: only the leftmost component SelectStmt should have INTO.
+# However, this is not checked by the grammar; parse analysis must check it.
+simple_select  :
+     simple_select_1
+   | simple_select_2
+   | simple_select_3
+   | simple_select_4
+   | simple_select_5
+   | simple_select_6
+
+simple_select_1: SELECT opt_distinct target_list into_clause from_clause where_clause group_clause having_clause window_clause
+simple_select_2: values_clause
+simple_select_3: TABLE relation_expr
+simple_select_4: select_clause UNION opt_all select_clause
+simple_select_5: select_clause INTERSECT opt_all select_clause
+simple_select_6: select_clause EXCEPT opt_all select_clause
+
+# SQL standard WITH clause looks like:
+#
+# WITH [ RECURSIVE ] <query name> [ (<column>,...) ]
+#      AS (query) [ SEARCH or CYCLE clause ]
+#
+# We don't currently support the SEARCH or CYCLE clause.
+with_clause  :
+     with_clause_1
+   | with_clause_2
+
+with_clause_1: WITH cte_list
+with_clause_2: WITH RECURSIVE cte_list
+
+cte_list: common_table_expr+ % / ~ <COMMA> ~ /
+
+common_table_expr: name opt_name_list AS <LPAREN> PreparableStmt <RPAREN>
+
+opt_with_clause: with_clause?
+
+into_clause: ( INTO OptTempTableName )?
+
+# Redundancy here is needed to avoid shift/reduce conflicts,
+# since TEMP is not a reserved word.  See also OptTemp.
+OptTempTableName  :
+     OptTempTableName_1
+   | OptTempTableName_2
+   | OptTempTableName_3
+   | OptTempTableName_4
+   | OptTempTableName_5
+   | OptTempTableName_6
+   | OptTempTableName_7
+   | OptTempTableName_8
+   | OptTempTableName_9
+
+OptTempTableName_1: TEMPORARY opt_table qualified_name
+OptTempTableName_2: TEMP opt_table qualified_name
+OptTempTableName_3: LOCAL TEMPORARY opt_table qualified_name
+OptTempTableName_4: LOCAL TEMP opt_table qualified_name
+OptTempTableName_5: GLOBAL TEMPORARY opt_table qualified_name
+OptTempTableName_6: GLOBAL TEMP opt_table qualified_name
+OptTempTableName_7: UNLOGGED opt_table qualified_name
+OptTempTableName_8: TABLE qualified_name
+OptTempTableName_9: qualified_name
+
+opt_table: TABLE?
+
+opt_all  : (
+     opt_all_1
+   | opt_all_2
+)?
+opt_all_1: ALL
+opt_all_2: DISTINCT
+
+# We use (NIL) as a placeholder to indicate that all target expressions
+# should be placed in the DISTINCT list during parsetree analysis.
+opt_distinct  : (
+     opt_distinct_1
+   | opt_distinct_2
+   | opt_distinct_3
+)?
+opt_distinct_1: DISTINCT
+opt_distinct_2: DISTINCT ON <LPAREN> expr_list <RPAREN>
+opt_distinct_3: ALL
+
+opt_sort_clause: sort_clause?
+
+sort_clause: ORDER BY sortby_list
+
+sortby_list: sortby+ % / ~ <COMMA> ~ /
+
+sortby  :
+     sortby_1
+   | sortby_2
+
+sortby_1: a_expr USING qual_all_Op opt_nulls_order
+sortby_2: a_expr opt_asc_desc opt_nulls_order
+
+select_limit  :
+     select_limit_1
+   | select_limit_2
+   | select_limit_3
+   | select_limit_4
+
+select_limit_1: limit_clause offset_clause
+select_limit_2: offset_clause limit_clause
+select_limit_3: limit_clause
+select_limit_4: offset_clause
+
+opt_select_limit: select_limit?
+
+limit_clause  :
+     limit_clause_1
+   | limit_clause_2
+   | limit_clause_3
+
+limit_clause_1: LIMIT select_limit_value
+limit_clause_2: LIMIT select_limit_value <COMMA> select_offset_value 
+# Disabled because it was too confusing, bjm 2002-02-18
+    
+## SQLite supports this format, so we'll go ahead and re-enable this.
+## This would be 'LimitYX' in SQL::Abstract::Limit.
+limit_clause_3: FETCH first_or_next opt_select_fetch_first_value row_or_rows ONLY
+
+offset_clause  :
+     offset_clause_1
+   | offset_clause_2
+
+offset_clause_1: OFFSET select_offset_value
+offset_clause_2: OFFSET select_offset_value2 row_or_rows
+
+select_limit_value  :
+     select_limit_value_1
+   | select_limit_value_2
+
+select_limit_value_1: a_expr
+select_limit_value_2: ALL
+
+select_offset_value: a_expr
+
+# Allowing full expressions without parentheses causes various parsing
+# problems with the trailing ROW/ROWS key words.  SQL only calls for
+# constants, so we allow the rest only with parentheses.  If omitted,
+# default to 1.
+opt_select_fetch_first_value  : (
+     opt_select_fetch_first_value_1
+   | opt_select_fetch_first_value_2
+)?
+opt_select_fetch_first_value_1: SignedIconst
+opt_select_fetch_first_value_2: <LPAREN> a_expr <RPAREN>
+
+# Again, the trailing ROW/ROWS in this case prevent the full expression
+# syntax.  c_expr is the best we can do.
+select_offset_value2: c_expr
+
+# noise words
+row_or_rows  :
+     row_or_rows_1
+   | row_or_rows_2
+
+row_or_rows_1: ROW
+row_or_rows_2: ROWS
+
+first_or_next  :
+     first_or_next_1
+   | first_or_next_2
+
+first_or_next_1: FIRST
+first_or_next_2: NEXT
+
+group_clause: ( GROUP BY expr_list )?
+
+having_clause: ( HAVING a_expr )?
+
+for_locking_clause  :
+     for_locking_clause_1
+   | for_locking_clause_2
+
+for_locking_clause_1: for_locking_items
+for_locking_clause_2: FOR READ ONLY
+
+opt_for_locking_clause: for_locking_clause?
+
+for_locking_items: for_locking_item+ % ~
+
+for_locking_item  :
+     for_locking_item_1
+   | for_locking_item_2
+
+for_locking_item_1: FOR UPDATE locked_rels_list opt_nowait
+for_locking_item_2: FOR SHARE locked_rels_list opt_nowait
+
+locked_rels_list: ( OF qualified_name_list )?
+
+values_clause  :
+     values_clause_1
+   | values_clause_2
+
+values_clause_1: VALUES ctext_row
+values_clause_2: <ctext_row>2+ % / ~ <COMMA> ~ /
+
+#############################################################################
+#
+#   clauses common to all Optimizable Stmts:
+#      from_clause    - allow list of both JOIN expressions and table names
+#      where_clause   - qualifications for joins or restrictions
+#
+#############################################################################
+from_clause: ( FROM from_list )?
+
+from_list: table_ref+ % / ~ <COMMA> ~ /
+
+# table_ref is where an alias clause can be attached.
+table_ref  :
+     table_ref_1
+   | table_ref_2
+   | table_ref_3
+   | table_ref_4
+   | table_ref_5
+   | table_ref_6
+   | table_ref_7
+   | table_ref_8
+   | table_ref_9
+
+table_ref_1: relation_expr opt_alias_clause
+table_ref_2: func_table func_alias_clause
+table_ref_3: LATERAL_P func_table func_alias_clause
+table_ref_4: func_table func_alias_clause
+table_ref_5: LATERAL func_table func_alias_clause
+table_ref_6: select_with_parens opt_alias_clause
+table_ref_7: LATERAL select_with_parens opt_alias_clause
+table_ref_8: joined_table
+table_ref_9: <LPAREN> joined_table <RPAREN> alias_clause
+
+# It may seem silly to separate joined_table from table_ref, but there is
+# method in SQL92's madness: if you don't do it this way you get reduce-
+# reduce conflicts, because it's not clear to the parser generator whether
+# to expect alias_clause after ')' or not.  For the same reason we must
+# treat 'JOIN' and 'join_type JOIN' separately, rather than allowing
+# join_type to expand to empty; if we try it, the parser generator can't
+# figure out when to reduce an empty join_type right after table_ref.
+#
+# Note that a CROSS JOIN is the same as an unqualified
+# INNER JOIN, and an INNER JOIN/ON has the same shape
+# but a qualification expression to limit membership.
+# A NATURAL JOIN implicitly matches column names between
+# tables and the shape is determined by which columns are
+# in common. We'll collect columns during the later transformations.
+
+### WARNING: Recursion; needs refactoring! ###
+joined_table  :
+     joined_table_1
+   | joined_table_2
+   | joined_table_3
+   | joined_table_4
+   | joined_table_5
+   | joined_table_6
+
+joined_table_1: <LPAREN> joined_table <RPAREN>
+joined_table_2: table_ref CROSS JOIN table_ref
+joined_table_3: table_ref join_type JOIN table_ref join_qual
+joined_table_4: table_ref JOIN table_ref join_qual
+joined_table_5: table_ref NATURAL join_type JOIN table_ref
+joined_table_6: table_ref NATURAL JOIN table_ref
+
+alias_clause  :
+     alias_clause_1
+   | alias_clause_2
+   | alias_clause_3
+   | alias_clause_4
+
+alias_clause_1: AS ColId <LPAREN> name_list <RPAREN>
+alias_clause_2: AS ColId
+alias_clause_3: ColId <LPAREN> name_list <RPAREN>
+alias_clause_4: ColId
+
+opt_alias_clause: alias_clause?
+
+# func_alias_clause can include both an Alias and a coldeflist, so we make it
+# return a 2-element list that gets disassembled by calling production.
+func_alias_clause  : (
+     func_alias_clause_1
+   | func_alias_clause_2
+   | func_alias_clause_3
+   | func_alias_clause_4
+)?
+func_alias_clause_1: alias_clause
+func_alias_clause_2: AS <LPAREN> TableFuncElementList <RPAREN>
+func_alias_clause_3: AS ColId <LPAREN> TableFuncElementList <RPAREN>
+func_alias_clause_4: ColId <LPAREN> TableFuncElementList <RPAREN>
+
+join_type  :
+     join_type_1
+   | join_type_2
+   | join_type_3
+   | join_type_4
+
+join_type_1: FULL join_outer
+join_type_2: LEFT join_outer
+join_type_3: RIGHT join_outer
+join_type_4: INNER
+
+# OUTER is just noise...
+join_outer: OUTER?
+
+# JOIN qualification clauses
+# Possibilities are:
+#   USING ( column list ) allows only unqualified column names,
+#                    which must match between tables.
+#   ON expr allows more general qualifications.
+#
+# We return USING as a List node, while an ON-expr will not be a List.
+join_qual  :
+     join_qual_1
+   | join_qual_2
+
+join_qual_1: USING <LPAREN> name_list <RPAREN>
+join_qual_2: ON a_expr
+
+relation_expr  :
+     relation_expr_1
+   | relation_expr_2
+   | relation_expr_3
+   | relation_expr_4
+
+relation_expr_1: qualified_name
+relation_expr_2: qualified_name <STAR>
+relation_expr_3: ONLY qualified_name
+relation_expr_4: ONLY <LPAREN> qualified_name <RPAREN>
+
+relation_expr_list: relation_expr+ % / ~ <COMMA> ~ /
+
+# Given "UPDATE foo set set ...", we have to decide without looking any
+# further ahead whether the first "set" is an alias or the UPDATE's SET
+# keyword.  Since "set" is allowed as a column name both interpretations
+# are feasible.  We resolve the shift/reduce conflict by giving the first
+# relation_expr_opt_alias production a higher precedence than the SET token
+# has, causing the parser to prefer to reduce, in effect assuming that the
+# SET is not an alias.
+relation_expr_opt_alias  :
+     relation_expr_opt_alias_1
+   | relation_expr_opt_alias_2
+   | relation_expr_opt_alias_3
+
+relation_expr_opt_alias_1: relation_expr
+relation_expr_opt_alias_2: relation_expr ColId
+relation_expr_opt_alias_3: relation_expr AS ColId
+
+func_table: func_expr
+
+where_clause: ( WHERE a_expr )?
+
+# variant for UPDATE and DELETE
+where_or_current_clause  : (
+     where_or_current_clause_1
+   | where_or_current_clause_2
+)?
+where_or_current_clause_1: WHERE a_expr
+where_or_current_clause_2: WHERE CURRENT OF cursor_name
+
+OptTableFuncElementList: TableFuncElementList?
+
+TableFuncElementList: TableFuncElement+ % / ~ <COMMA> ~ /
+
+TableFuncElement: ColId Typename opt_collate_clause
+
+#############################################################################
+#
+#   Type syntax
+#      SQL92 introduces a large amount of type-specific syntax.
+#      Define individual clauses to handle these cases, and use
+#       the generic case to handle regular type-extensible Postgres syntax.
+#      - thomas 1997-10-10
+#
+#############################################################################
+Typename  :
+     Typename_1
+   | Typename_2
+   | Typename_3
+   | Typename_4
+   | Typename_5
+   | Typename_6
+
+Typename_1: SimpleTypename opt_array_bounds
+Typename_2: SETOF SimpleTypename opt_array_bounds
+Typename_3: SimpleTypename ARRAY <LSQUARE> Iconst <RSQUARE>
+Typename_4: SETOF SimpleTypename ARRAY <LSQUARE> Iconst <RSQUARE>
+Typename_5: SimpleTypename ARRAY
+Typename_6: SETOF SimpleTypename ARRAY
+
+opt_array_bounds  :
+     opt_array_bounds_1
+   | opt_array_bounds_2
+
+opt_array_bounds_1: <RSQUARE>* % / ~ <LSQUARE> ~ /
+opt_array_bounds_2: <RSQUARE>2+ % / ~ <LSQUARE> Iconst ~ /
+
+SimpleTypename  :
+     SimpleTypename_1
+   | SimpleTypename_2
+   | SimpleTypename_3
+   | SimpleTypename_4
+   | SimpleTypename_5
+   | SimpleTypename_6
+   | SimpleTypename_7
+
+SimpleTypename_1: GenericType
+SimpleTypename_2: Numeric
+SimpleTypename_3: Bit
+SimpleTypename_4: Character
+SimpleTypename_5: ConstDatetime
+SimpleTypename_6: ConstInterval opt_interval
+SimpleTypename_7: ConstInterval <LPAREN> Iconst <RPAREN> opt_interval
+
+# We have a separate ConstTypename to allow defaulting fixed-length
+# types such as CHAR() and BIT() to an unspecified length.
+# SQL9x requires that these default to a length of one, but this
+# makes no sense for constructs like CHAR 'hi' and BIT '0101',
+# where there is an obvious better choice to make.
+# Note that ConstInterval is not included here since it must
+# be pushed up higher in the rules to accomodate the postfix
+# options (e.g. INTERVAL '1' YEAR). Likewise, we have to handle
+# the generic-type-name case in AExprConst to avoid premature
+# reduce/reduce conflicts against function names.
+ConstTypename  :
+     ConstTypename_1
+   | ConstTypename_2
+   | ConstTypename_3
+   | ConstTypename_4
+
+ConstTypename_1: Numeric
+ConstTypename_2: ConstBit
+ConstTypename_3: ConstCharacter
+ConstTypename_4: ConstDatetime
+
+# GenericType covers all type names that don't have special syntax mandated
+# by the standard, including qualified names.  We also allow type modifiers.
+# To avoid parsing conflicts against function invocations, the modifiers
+# have to be shown as expr_list here, but parse analysis will only accept
+# constants for them.
+GenericType  :
+     GenericType_1
+   | GenericType_2
+
+GenericType_1: type_function_name opt_type_modifiers
+GenericType_2: type_function_name attrs opt_type_modifiers
+
+opt_type_modifiers: ( <LPAREN> expr_list <RPAREN> )?
+
+# SQL92 numeric data types
+Numeric   :
+     Numeric_1
+   | Numeric_2
+   | Numeric_3
+   | Numeric_4
+   | Numeric_5
+   | Numeric_6
+   | Numeric_7
+   | Numeric_8
+   | Numeric_9
+   | Numeric_10
+   | Numeric_11
+
+Numeric_1 : INT
+Numeric_2 : INTEGER
+Numeric_3 : SMALLINT
+Numeric_4 : BIGINT
+Numeric_5 : REAL
+Numeric_6 : FLOAT opt_float
+Numeric_7 : DOUBLE PRECISION
+Numeric_8 : DECIMAL opt_type_modifiers
+Numeric_9 : DEC opt_type_modifiers
+Numeric_10: NUMERIC opt_type_modifiers
+Numeric_11: BOOLEAN
+
+# Check FLOAT() precision limits assuming IEEE floating
+# types - thomas 1997-09-18
+opt_float: ( <LPAREN> Iconst <RPAREN> )?
+
+# SQL92 bit-field data types
+# The following implements BIT() and BIT VARYING().
+Bit  :
+     Bit_1
+   | Bit_2
+
+Bit_1: BitWithLength
+Bit_2: BitWithoutLength
+
+# ConstBit is like Bit except "BIT" defaults to unspecified length
+
+# See notes for ConstCharacter, which addresses same issue for "CHAR"
+ConstBit  :
+     ConstBit_1
+   | ConstBit_2
+
+ConstBit_1: BitWithLength
+ConstBit_2: BitWithoutLength
+
+BitWithLength: BIT opt_varying <LPAREN> expr_list <RPAREN>
+
+BitWithoutLength: BIT opt_varying
+
+# SQL92 character data types
+# The following implements CHAR() and VARCHAR().
+Character  :
+     Character_1
+   | Character_2
+
+Character_1: CharacterWithLength
+Character_2: CharacterWithoutLength
+
+ConstCharacter  :
+     ConstCharacter_1
+   | ConstCharacter_2
+
+ConstCharacter_1: CharacterWithLength
+ConstCharacter_2: CharacterWithoutLength
+
+CharacterWithLength: character <LPAREN> Iconst <RPAREN> opt_charset
+
+CharacterWithoutLength: character opt_charset
+
+character  :
+     character_1
+   | character_2
+   | character_3
+   | character_4
+   | character_5
+   | character_6
+
+character_1: CHARACTER opt_varying
+character_2: CHAR opt_varying
+character_3: VARCHAR
+character_4: NATIONAL CHARACTER opt_varying
+character_5: NATIONAL CHAR opt_varying
+character_6: NCHAR opt_varying
+
+opt_varying: VARYING?
+
+opt_charset: ( CHARACTER SET ColId )?
+
+# SQL92 date/time types
+ConstDatetime  :
+     ConstDatetime_1
+   | ConstDatetime_2
+   | ConstDatetime_3
+   | ConstDatetime_4
+
+ConstDatetime_1: TIMESTAMP <LPAREN> Iconst <RPAREN> opt_timezone
+ConstDatetime_2: TIMESTAMP opt_timezone
+ConstDatetime_3: TIME <LPAREN> Iconst <RPAREN> opt_timezone
+ConstDatetime_4: TIME opt_timezone
+
+ConstInterval: INTERVAL
+
+opt_timezone  : (
+     opt_timezone_1
+   | opt_timezone_2
+)?
+opt_timezone_1: WITH_TIME ZONE
+opt_timezone_2: WITHOUT TIME ZONE
+
+opt_interval   : (
+     opt_interval_1
+   | opt_interval_2
+   | opt_interval_3
+   | opt_interval_4
+   | opt_interval_5
+   | opt_interval_6
+   | opt_interval_7
+   | opt_interval_8
+   | opt_interval_9
+   | opt_interval_10
+   | opt_interval_11
+   | opt_interval_12
+   | opt_interval_13
+)?
+opt_interval_1 : YEAR
+opt_interval_2 : MONTH
+opt_interval_3 : DAY
+opt_interval_4 : HOUR
+opt_interval_5 : MINUTE
+opt_interval_6 : interval_second
+opt_interval_7 : YEAR TO MONTH
+opt_interval_8 : DAY TO HOUR
+opt_interval_9 : DAY TO MINUTE
+opt_interval_10: DAY TO interval_second
+opt_interval_11: HOUR TO MINUTE
+opt_interval_12: HOUR TO interval_second
+opt_interval_13: MINUTE TO interval_second
+
+interval_second  :
+     interval_second_1
+   | interval_second_2
+
+interval_second_1: SECOND
+interval_second_2: SECOND <LPAREN> Iconst <RPAREN>
+
+#############################################################################
+#
+#   expression grammar
+#
+#############################################################################
+
+# General expressions
+# This is the heart of the expression syntax.
+#
+# We have two expression types: a_expr is the unrestricted kind, and
+# b_expr is a subset that must be used in some places to avoid shift/reduce
+# conflicts.  For example, we can't do BETWEEN as "BETWEEN a_expr AND a_expr"
+# because that use of AND conflicts with AND as a boolean operator.  So,
+# b_expr is used in BETWEEN and we remove boolean keywords from b_expr.
+#
+# Note that '(' a_expr ')' is a b_expr, so an unrestricted expression can
+# always be used by surrounding it with parens.
+#
+# c_expr is all the productions that are common to a_expr and b_expr;
+# it's factored out just to eliminate redundant coding.
+
+### WARNING: Recursion; needs refactoring! ###
+a_expr   :
+     a_expr_1
+   | a_expr_2
+   | a_expr_3
+   | a_expr_4
+   | a_expr_5
+   | a_expr_6
+   | a_expr_7
+   | a_expr_8
+   | a_expr_9
+   | a_expr_10
+   | a_expr_11
+   | a_expr_12
+   | a_expr_13
+   | a_expr_14
+   | a_expr_15
+   | a_expr_16
+   | a_expr_17
+   | a_expr_18
+   | a_expr_19
+   | a_expr_20
+   | a_expr_21
+   | a_expr_22
+   | a_expr_23
+   | a_expr_24
+   | a_expr_25
+   | a_expr_26
+   | a_expr_27
+   | a_expr_28
+   | a_expr_29
+   | a_expr_30
+   | a_expr_31
+   | a_expr_32
+   | a_expr_33
+   | a_expr_34
+   | a_expr_35
+   | a_expr_36
+   | a_expr_37
+   | a_expr_38
+   | a_expr_39
+   | a_expr_40
+   | a_expr_41
+   | a_expr_42
+   | a_expr_43
+   | a_expr_44
+   | a_expr_45
+   | a_expr_46
+   | a_expr_47
+   | a_expr_48
+   | a_expr_49
+   | a_expr_50
+   | a_expr_51
+   | a_expr_52
+   | a_expr_53
+   | a_expr_54
+   | a_expr_55
+   | a_expr_56
+   | a_expr_57
+   | a_expr_58
+   | a_expr_59
+
+a_expr_1 : c_expr
+a_expr_2 : a_expr TYPECAST Typename
+a_expr_3 : a_expr COLLATE any_name
+a_expr_4 : a_expr AT TIME ZONE a_expr
+a_expr_5 : <PLUS> a_expr
+a_expr_6 : <DASH> a_expr
+a_expr_7 : a_expr <PLUS> a_expr
+a_expr_8 : a_expr <DASH> a_expr
+a_expr_9 : a_expr <STAR> a_expr
+a_expr_10: a_expr <SLASH> a_expr
+a_expr_11: a_expr <PERCENT> a_expr
+a_expr_12: a_expr <CARET> a_expr
+a_expr_13: a_expr <LANGLE> a_expr
+a_expr_14: a_expr <RANGLE> a_expr
+a_expr_15: a_expr <EQUAL> a_expr
+a_expr_16: a_expr qual_Op a_expr
+a_expr_17: qual_Op a_expr
+a_expr_18: a_expr qual_Op
+a_expr_19: a_expr AND a_expr
+a_expr_20: a_expr OR a_expr
+a_expr_21: NOT a_expr
+a_expr_22: a_expr LIKE a_expr
+a_expr_23: a_expr LIKE a_expr ESCAPE a_expr
+a_expr_24: a_expr NOT LIKE a_expr
+a_expr_25: a_expr NOT LIKE a_expr ESCAPE a_expr
+a_expr_26: a_expr ILIKE a_expr
+a_expr_27: a_expr ILIKE a_expr ESCAPE a_expr
+a_expr_28: a_expr NOT ILIKE a_expr
+a_expr_29: a_expr NOT ILIKE a_expr ESCAPE a_expr
+a_expr_30: a_expr SIMILAR TO a_expr
+a_expr_31: a_expr SIMILAR TO a_expr ESCAPE a_expr
+a_expr_32: a_expr NOT SIMILAR TO a_expr
+a_expr_33: a_expr NOT SIMILAR TO a_expr ESCAPE a_expr
+a_expr_34: a_expr IS NULL
+a_expr_35: a_expr ISNULL
+a_expr_36: a_expr IS NOT NULL
+a_expr_37: a_expr NOTNULL
+a_expr_38: row OVERLAPS row
+a_expr_39: a_expr IS TRUE
+a_expr_40: a_expr IS NOT TRUE
+a_expr_41: a_expr IS FALSE
+a_expr_42: a_expr IS NOT FALSE
+a_expr_43: a_expr IS UNKNOWN
+a_expr_44: a_expr IS NOT UNKNOWN
+a_expr_45: a_expr IS DISTINCT FROM a_expr
+a_expr_46: a_expr IS NOT DISTINCT FROM a_expr
+a_expr_47: a_expr IS OF <LPAREN> type_list <RPAREN>
+a_expr_48: a_expr IS NOT OF <LPAREN> type_list <RPAREN>
+a_expr_49: a_expr BETWEEN opt_asymmetric b_expr AND b_expr
+a_expr_50: a_expr NOT BETWEEN opt_asymmetric b_expr AND b_expr
+a_expr_51: a_expr BETWEEN SYMMETRIC b_expr AND b_expr
+a_expr_52: a_expr NOT BETWEEN SYMMETRIC b_expr AND b_expr
+a_expr_53: a_expr IN in_expr
+a_expr_54: a_expr NOT IN in_expr
+a_expr_55: a_expr subquery_Op sub_type select_with_parens
+a_expr_56: a_expr subquery_Op sub_type <LPAREN> a_expr <RPAREN>
+a_expr_57: UNIQUE select_with_parens
+a_expr_58: a_expr IS DOCUMENT
+a_expr_59: a_expr IS NOT DOCUMENT
+
+# Restricted expressions
+#
+# b_expr is a subset of the complete expression syntax defined by a_expr.
+#
+# Presently, AND, NOT, IS, and IN are the a_expr keywords that would
+# cause trouble in the places where b_expr is used.  For simplicity, we
+# just eliminate all the boolean-keyword-operator productions from b_expr.
+
+### WARNING: Recursion; needs refactoring! ###
+b_expr   :
+     b_expr_1
+   | b_expr_2
+   | b_expr_3
+   | b_expr_4
+   | b_expr_5
+   | b_expr_6
+   | b_expr_7
+   | b_expr_8
+   | b_expr_9
+   | b_expr_10
+   | b_expr_11
+   | b_expr_12
+   | b_expr_13
+   | b_expr_14
+   | b_expr_15
+   | b_expr_16
+   | b_expr_17
+   | b_expr_18
+   | b_expr_19
+   | b_expr_20
+   | b_expr_21
+   | b_expr_22
+
+b_expr_1 : c_expr
+b_expr_2 : b_expr TYPECAST Typename
+b_expr_3 : <PLUS> b_expr
+b_expr_4 : <DASH> b_expr
+b_expr_5 : b_expr <PLUS> b_expr
+b_expr_6 : b_expr <DASH> b_expr
+b_expr_7 : b_expr <STAR> b_expr
+b_expr_8 : b_expr <SLASH> b_expr
+b_expr_9 : b_expr <PERCENT> b_expr
+b_expr_10: b_expr <CARET> b_expr
+b_expr_11: b_expr <LANGLE> b_expr
+b_expr_12: b_expr <RANGLE> b_expr
+b_expr_13: b_expr <EQUAL> b_expr
+b_expr_14: b_expr qual_Op b_expr
+b_expr_15: qual_Op b_expr
+b_expr_16: b_expr qual_Op
+b_expr_17: b_expr IS DISTINCT FROM b_expr
+b_expr_18: b_expr IS NOT DISTINCT FROM b_expr
+b_expr_19: b_expr IS OF <LPAREN> type_list <RPAREN>
+b_expr_20: b_expr IS NOT OF <LPAREN> type_list <RPAREN>
+b_expr_21: b_expr IS DOCUMENT
+b_expr_22: b_expr IS NOT DOCUMENT
+
+# Productions that can be used in both a_expr and b_expr.
+#
+# Note: productions that refer recursively to a_expr or b_expr mostly
+# cannot appear here.   However, it's OK to refer to a_exprs that occur
+# inside parentheses, such as function arguments; that cannot introduce
+# ambiguity to the b_expr syntax.
+c_expr   :
+     c_expr_1
+   | c_expr_2
+   | c_expr_3
+   | c_expr_4
+   | c_expr_5
+   | c_expr_6
+   | c_expr_7
+   | c_expr_8
+   | c_expr_9
+   | c_expr_10
+   | c_expr_11
+
+c_expr_1 : columnref
+c_expr_2 : AexprConst
+c_expr_3 : PARAM opt_indirection
+c_expr_4 : <LPAREN> a_expr <RPAREN> opt_indirection
+c_expr_5 : case_expr
+c_expr_6 : func_expr
+c_expr_7 : select_with_parens
+c_expr_8 : EXISTS select_with_parens
+c_expr_9 : ARRAY select_with_parens
+c_expr_10: ARRAY array_expr
+c_expr_11: row
+
+# func_expr is split out from c_expr just so that we have a classification
+# for "everything that is a function call or looks like one".  This isn't
+# very important, but it saves us having to document which variants are
+# legal in the backwards-compatible functional-index syntax for CREATE INDEX.
+# (Note that many of the special SQL functions wouldn't actually make any
+# sense as functional index entries, but we ignore that consideration here.)
+func_expr   :
+     func_expr_1
+   | func_expr_2
+   | func_expr_3
+   | func_expr_4
+   | func_expr_5
+   | func_expr_6
+   | func_expr_7
+   | func_expr_8
+   | func_expr_9
+   | func_expr_10
+   | func_expr_11
+   | func_expr_12
+   | func_expr_13
+   | func_expr_14
+   | func_expr_15
+   | func_expr_16
+   | func_expr_17
+   | func_expr_18
+   | func_expr_19
+   | func_expr_20
+   | func_expr_21
+   | func_expr_22
+   | func_expr_23
+   | func_expr_24
+   | func_expr_25
+   | func_expr_26
+   | func_expr_27
+   | func_expr_28
+   | func_expr_29
+   | func_expr_30
+   | func_expr_31
+   | func_expr_32
+   | func_expr_33
+   | func_expr_34
+   | func_expr_35
+   | func_expr_36
+   | func_expr_37
+   | func_expr_38
+   | func_expr_39
+   | func_expr_40
+   | func_expr_41
+   | func_expr_42
+   | func_expr_43
+   | func_expr_44
+   | func_expr_45
+   | func_expr_46
+   | func_expr_47
+   | func_expr_48
+   | func_expr_49
+   | func_expr_50
+
+func_expr_1 : func_name <LPAREN> <RPAREN> over_clause
+func_expr_2 : func_name <LPAREN> func_arg_list <RPAREN> over_clause
+func_expr_3 : func_name <LPAREN> VARIADIC func_arg_expr <RPAREN> over_clause
+func_expr_4 : func_name <LPAREN> func_arg_list <COMMA> VARIADIC func_arg_expr <RPAREN> over_clause
+func_expr_5 : func_name <LPAREN> func_arg_list sort_clause <RPAREN> over_clause
+func_expr_6 : func_name <LPAREN> ALL func_arg_list opt_sort_clause <RPAREN> over_clause
+func_expr_7 : func_name <LPAREN> DISTINCT func_arg_list opt_sort_clause <RPAREN> over_clause
+func_expr_8 : func_name <LPAREN> <STAR> <RPAREN> over_clause
+func_expr_9 : COLLATION FOR <LPAREN> a_expr <RPAREN>
+func_expr_10: CURRENT_DATE
+func_expr_11: CURRENT_TIME
+func_expr_12: CURRENT_TIME <LPAREN> Iconst <RPAREN>
+func_expr_13: CURRENT_TIMESTAMP
+func_expr_14: CURRENT_TIMESTAMP <LPAREN> Iconst <RPAREN>
+func_expr_15: LOCALTIME
+func_expr_16: LOCALTIME <LPAREN> Iconst <RPAREN>
+func_expr_17: LOCALTIMESTAMP
+func_expr_18: LOCALTIMESTAMP <LPAREN> Iconst <RPAREN>
+func_expr_19: CURRENT_ROLE
+func_expr_20: CURRENT_USER
+func_expr_21: SESSION_USER
+func_expr_22: USER
+func_expr_23: CURRENT_CATALOG
+func_expr_24: CURRENT_SCHEMA
+func_expr_25: CAST <LPAREN> a_expr AS Typename <RPAREN>
+func_expr_26: EXTRACT <LPAREN> extract_list <RPAREN>
+func_expr_27: OVERLAY <LPAREN> overlay_list <RPAREN>
+func_expr_28: POSITION <LPAREN> position_list <RPAREN>
+func_expr_29: SUBSTRING <LPAREN> substr_list <RPAREN>
+func_expr_30: TREAT <LPAREN> a_expr AS Typename <RPAREN>
+func_expr_31: TRIM <LPAREN> BOTH trim_list <RPAREN>
+func_expr_32: TRIM <LPAREN> LEADING trim_list <RPAREN>
+func_expr_33: TRIM <LPAREN> TRAILING trim_list <RPAREN>
+func_expr_34: TRIM <LPAREN> trim_list <RPAREN>
+func_expr_35: NULLIF <LPAREN> a_expr <COMMA> a_expr <RPAREN>
+func_expr_36: COALESCE <LPAREN> expr_list <RPAREN>
+func_expr_37: GREATEST <LPAREN> expr_list <RPAREN>
+func_expr_38: LEAST <LPAREN> expr_list <RPAREN>
+func_expr_39: XMLCONCAT <LPAREN> expr_list <RPAREN>
+func_expr_40: XMLELEMENT <LPAREN> NAME ColLabel <RPAREN>
+func_expr_41: XMLELEMENT <LPAREN> NAME ColLabel <COMMA> xml_attributes <RPAREN>
+func_expr_42: XMLELEMENT <LPAREN> NAME ColLabel <COMMA> expr_list <RPAREN>
+func_expr_43: XMLELEMENT <LPAREN> NAME ColLabel <COMMA> xml_attributes <COMMA> expr_list <RPAREN>
+func_expr_44: XMLEXISTS <LPAREN> c_expr xmlexists_argument <RPAREN>
+func_expr_45: XMLFOREST <LPAREN> xml_attribute_list <RPAREN>
+func_expr_46: XMLPARSE <LPAREN> document_or_content a_expr xml_whitespace_option <RPAREN>
+func_expr_47: XMLPI <LPAREN> NAME ColLabel <RPAREN>
+func_expr_48: XMLPI <LPAREN> NAME ColLabel <COMMA> a_expr <RPAREN>
+func_expr_49: XMLROOT <LPAREN> a_expr <COMMA> xml_root_version opt_xml_root_standalone <RPAREN>
+func_expr_50: XMLSERIALIZE <LPAREN> document_or_content a_expr AS SimpleTypename <RPAREN>
+
+# SQL/XML support
+xml_root_version  :
+     xml_root_version_1
+   | xml_root_version_2
+
+xml_root_version_1: VERSION a_expr
+xml_root_version_2: VERSION NO VALUE
+
+opt_xml_root_standalone  : (
+     opt_xml_root_standalone_1
+   | opt_xml_root_standalone_2
+   | opt_xml_root_standalone_3
+)?
+opt_xml_root_standalone_1: <COMMA> STANDALONE YES
+opt_xml_root_standalone_2: <COMMA> STANDALONE NO
+opt_xml_root_standalone_3: <COMMA> STANDALONE NO VALUE
+
+xml_attributes: XMLATTRIBUTES <LPAREN> xml_attribute_list <RPAREN>
+
+xml_attribute_list: xml_attribute_el+ % / ~ <COMMA> ~ /
+
+xml_attribute_el  :
+     xml_attribute_el_1
+   | xml_attribute_el_2
+
+xml_attribute_el_1: a_expr AS ColLabel
+xml_attribute_el_2: a_expr
+
+document_or_content  :
+     document_or_content_1
+   | document_or_content_2
+
+document_or_content_1: DOCUMENT
+document_or_content_2: CONTENT
+
+xml_whitespace_option  : (
+     xml_whitespace_option_1
+   | xml_whitespace_option_2
+)?
+xml_whitespace_option_1: PRESERVE WHITESPACE
+xml_whitespace_option_2: STRIP WHITESPACE
+
+# We allow several variants for SQL and other compatibility.
+xmlexists_argument  :
+     xmlexists_argument_1
+   | xmlexists_argument_2
+   | xmlexists_argument_3
+   | xmlexists_argument_4
+
+xmlexists_argument_1: PASSING c_expr
+xmlexists_argument_2: PASSING c_expr BY REF
+xmlexists_argument_3: PASSING BY REF c_expr
+xmlexists_argument_4: PASSING BY REF c_expr BY REF
+
+# Window Definitions
+window_clause: ( WINDOW window_definition_list )?
+
+window_definition_list: window_definition+ % / ~ <COMMA> ~ /
+
+window_definition: ColId AS window_specification
+
+over_clause  : (
+     over_clause_1
+   | over_clause_2
+)?
+over_clause_1: OVER window_specification
+over_clause_2: OVER ColId
+
+window_specification: <LPAREN> opt_existing_window_name opt_partition_clause opt_sort_clause opt_frame_clause <RPAREN>
+
+# If we see PARTITION, RANGE, or ROWS as the first token after the '('
+# of a window_specification, we want the assumption to be that there is
+# no existing_window_name; but those keywords are unreserved and so could
+# be ColIds.  We fix this by making them have the same precedence as IDENT
+# and giving the empty production here a slightly higher precedence, so
+# that the shift/reduce conflict is resolved in favor of reducing the rule.
+# These keywords are thus precluded from being an existing_window_name but
+# are not reserved for any other purpose.
+opt_existing_window_name: ColId?
+
+opt_partition_clause: ( PARTITION BY expr_list )?
+
+# For frame clauses, we return a WindowDef, but only some fields are used:
+# frameOptions, startOffset, and endOffset.
+#
+# This is only a subset of the full SQL:2008 frame_clause grammar.
+# We don't support <window frame exclusion> yet.
+opt_frame_clause  : (
+     opt_frame_clause_1
+   | opt_frame_clause_2
+)?
+opt_frame_clause_1: RANGE frame_extent
+opt_frame_clause_2: ROWS frame_extent
+
+frame_extent  :
+     frame_extent_1
+   | frame_extent_2
+
+frame_extent_1: frame_bound
+frame_extent_2: BETWEEN frame_bound AND frame_bound
+
+# This is used for both frame start and frame end, with output set up on
+# the assumption it's frame start; the frame_extent productions must reject
+# invalid cases.
+frame_bound  :
+     frame_bound_1
+   | frame_bound_2
+   | frame_bound_3
+   | frame_bound_4
+   | frame_bound_5
+
+frame_bound_1: UNBOUNDED PRECEDING
+frame_bound_2: UNBOUNDED FOLLOWING
+frame_bound_3: CURRENT ROW
+frame_bound_4: a_expr PRECEDING
+frame_bound_5: a_expr FOLLOWING
+
+# Supporting nonterminals for expressions.
+
+# Explicit row production.
+#
+# SQL99 allows an optional ROW keyword, so we can now do single-element rows
+# without conflicting with the parenthesized a_expr production.  Without the
+# ROW keyword, there must be more than one a_expr inside the parens.
+row  :
+     row_1
+   | row_2
+   | row_3
+
+row_1: ROW <LPAREN> expr_list <RPAREN>
+row_2: ROW <LPAREN> <RPAREN>
+row_3: <LPAREN> expr_list <COMMA> a_expr <RPAREN>
+
+sub_type  :
+     sub_type_1
+   | sub_type_2
+   | sub_type_3
+
+sub_type_1: ANY
+sub_type_2: SOME
+sub_type_3: ALL
+
+all_Op  :
+     all_Op_1
+   | all_Op_2
+
+all_Op_1: Op
+all_Op_2: MathOp
+
+MathOp  :
+     MathOp_1
+   | MathOp_2
+   | MathOp_3
+   | MathOp_4
+   | MathOp_5
+   | MathOp_6
+   | MathOp_7
+   | MathOp_8
+   | MathOp_9
+
+MathOp_1: <PLUS>
+MathOp_2: <DASH>
+MathOp_3: <STAR>
+MathOp_4: <SLASH>
+MathOp_5: <PERCENT>
+MathOp_6: <CARET>
+MathOp_7: <LANGLE>
+MathOp_8: <RANGLE>
+MathOp_9: <EQUAL>
+
+qual_Op  :
+     qual_Op_1
+   | qual_Op_2
+
+qual_Op_1: Op
+qual_Op_2: OPERATOR <LPAREN> any_operator <RPAREN>
+
+qual_all_Op  :
+     qual_all_Op_1
+   | qual_all_Op_2
+
+qual_all_Op_1: all_Op
+qual_all_Op_2: OPERATOR <LPAREN> any_operator <RPAREN>
+
+subquery_Op  :
+     subquery_Op_1
+   | subquery_Op_2
+   | subquery_Op_3
+   | subquery_Op_4
+   | subquery_Op_5
+   | subquery_Op_6
+
+subquery_Op_1: all_Op
+subquery_Op_2: OPERATOR <LPAREN> any_operator <RPAREN>
+subquery_Op_3: LIKE
+subquery_Op_4: NOT LIKE
+subquery_Op_5: ILIKE
+subquery_Op_6: NOT ILIKE
+
+expr_list: a_expr+ % / ~ <COMMA> ~ /
+
+# function arguments can have names
+func_arg_list: func_arg_expr+ % / ~ <COMMA> ~ /
+
+func_arg_expr  :
+     func_arg_expr_1
+   | func_arg_expr_2
+
+func_arg_expr_1: a_expr
+func_arg_expr_2: param_name COLON_EQUALS a_expr
+
+type_list: Typename+ % / ~ <COMMA> ~ /
+
+array_expr  :
+     array_expr_1
+   | array_expr_2
+   | array_expr_3
+
+array_expr_1: <LSQUARE> expr_list <RSQUARE>
+array_expr_2: <LSQUARE> array_expr_list <RSQUARE>
+array_expr_3: <LSQUARE> <RSQUARE>
+
+array_expr_list: array_expr+ % / ~ <COMMA> ~ /
+
+extract_list: ( extract_arg FROM a_expr )?
+
+# Allow delimited string Sconst in extract_arg as an SQL extension.
+# - thomas 2001-04-12
+extract_arg  :
+     extract_arg_1
+   | extract_arg_2
+   | extract_arg_3
+   | extract_arg_4
+   | extract_arg_5
+   | extract_arg_6
+   | extract_arg_7
+   | extract_arg_8
+
+extract_arg_1: IDENT
+extract_arg_2: YEAR
+extract_arg_3: MONTH
+extract_arg_4: DAY
+extract_arg_5: HOUR
+extract_arg_6: MINUTE
+extract_arg_7: SECOND
+extract_arg_8: Sconst
+
+# OVERLAY() arguments
+# SQL99 defines the OVERLAY() function:
+# o overlay(text placing text from int for int)
+# o overlay(text placing text from int)
+# and similarly for binary strings
+overlay_list  :
+     overlay_list_1
+   | overlay_list_2
+
+overlay_list_1: a_expr overlay_placing substr_from substr_for
+overlay_list_2: a_expr overlay_placing substr_from
+
+overlay_placing: PLACING a_expr
+
+# position_list uses b_expr not a_expr to avoid conflict with general IN
+position_list: ( b_expr IN b_expr )?
+
+# SUBSTRING() arguments
+# SQL9x defines a specific syntax for arguments to SUBSTRING():
+# o substring(text from int for int)
+# o substring(text from int) get entire string from starting point "int"
+# o substring(text for int) get first "int" characters of string
+# o substring(text from pattern) get entire string matching pattern
+# o substring(text from pattern for escape) same with specified escape char
+# We also want to support generic substring functions which accept
+# the usual generic list of arguments. So we will accept both styles
+# here, and convert the SQL9x style to the generic list for further
+# processing. - thomas 2000-11-28
+substr_list  : (
+     substr_list_1
+   | substr_list_2
+   | substr_list_3
+   | substr_list_4
+   | substr_list_5
+)?
+substr_list_1: a_expr substr_from substr_for
+substr_list_2: a_expr substr_for substr_from
+substr_list_3: a_expr substr_from
+substr_list_4: a_expr substr_for
+substr_list_5: expr_list
+
+substr_from: FROM a_expr
+
+substr_for: FOR a_expr
+
+trim_list  :
+     trim_list_1
+   | trim_list_2
+   | trim_list_3
+
+trim_list_1: a_expr FROM expr_list
+trim_list_2: FROM expr_list
+trim_list_3: expr_list
+
+in_expr  :
+     in_expr_1
+   | in_expr_2
+
+in_expr_1: select_with_parens
+in_expr_2: <LPAREN> expr_list <RPAREN>
+
+# Define SQL92-style case clause.
+# - Full specification
+#   CASE WHEN a = b THEN c ... ELSE d END
+# - Implicit argument
+#   CASE a WHEN b THEN c ... ELSE d END
+case_expr: CASE case_arg when_clause_list case_default END
+
+when_clause_list: when_clause+ % ~
+
+when_clause: WHEN a_expr THEN a_expr
+
+case_default: ( ELSE a_expr )?
+
+case_arg: a_expr?
+
+columnref  :
+     columnref_1
+   | columnref_2
+
+columnref_1: ColId
+columnref_2: ColId indirection
+
+indirection_el  :
+     indirection_el_1
+   | indirection_el_2
+   | indirection_el_3
+   | indirection_el_4
+
+indirection_el_1: <DOT> attr_name
+indirection_el_2: <DOT> <STAR>
+indirection_el_3: <LSQUARE> a_expr <RSQUARE>
+indirection_el_4: <LSQUARE> a_expr <COLON> a_expr <RSQUARE>
+
+indirection: indirection_el+ % ~
+
+opt_indirection: indirection_el* % ~
+
+opt_asymmetric: ASYMMETRIC?
+
+# The SQL spec defines "contextually typed value expressions" and
+# "contextually typed row value constructors", which for our purposes
+# are the same as "a_expr" and "row" except that DEFAULT can appear at
+# the top level.
+ctext_expr  :
+     ctext_expr_1
+   | ctext_expr_2
+
+ctext_expr_1: a_expr
+ctext_expr_2: DEFAULT
+
+ctext_expr_list: ctext_expr+ % / ~ <COMMA> ~ /
+
+# We should allow ROW '(' ctext_expr_list ')' too, but that seems to require
+# making VALUES a fully reserved word, which will probably break more apps
+# than allowing the noise-word is worth.
+ctext_row: <LPAREN> ctext_expr_list <RPAREN>
+
+#############################################################################
+#
+#   target list for SELECT
+#
+#############################################################################
+target_list: target_el+ % / ~ <COMMA> ~ /
+
+target_el  :
+     target_el_1
+   | target_el_2
+   | target_el_3
+   | target_el_4
+
+target_el_1: a_expr AS ColLabel
+target_el_2: a_expr IDENT
+target_el_3: a_expr
+target_el_4: <STAR>
+
+#############################################################################
+#
+#   Names and constants
+#
+#############################################################################
+qualified_name_list: qualified_name+ % / ~ <COMMA> ~ /
+
+# The production for a qualified relation name has to exactly match the
+# production for a qualified func_name, because in a FROM clause we cannot
+# tell which we are parsing until we see what comes after it ('(' for a
+# func_name, something else for a relation). Therefore we allow 'indirection'
+# which may contain subscripts, and reject that case in the C code.
+qualified_name  :
+     qualified_name_1
+   | qualified_name_2
+
+qualified_name_1: ColId
+qualified_name_2: ColId indirection
+
+name_list: name+ % / ~ <COMMA> ~ /
+
+name: ColId
+
+database_name: ColId
+
+access_method: ColId
+
+attr_name: ColLabel
+
+index_name: ColId
+
+file_name: Sconst
+
+# The production for a qualified func_name has to exactly match the
+# production for a qualified columnref, because we cannot tell which we
+# are parsing until we see what comes after it ('(' or Sconst for a func_name,
+# anything else for a columnref).  Therefore we allow 'indirection' which
+# may contain subscripts, and reject that case in the C code.  (If we
+# ever implement SQL99-like methods, such syntax may actually become legal!)
+func_name  :
+     func_name_1
+   | func_name_2
+
+func_name_1: type_function_name
+func_name_2: ColId indirection
+
+# Constants
+AexprConst   :
+     AexprConst_1
+   | AexprConst_2
+   | AexprConst_3
+   | AexprConst_4
+   | AexprConst_5
+   | AexprConst_6
+   | AexprConst_7
+   | AexprConst_8
+   | AexprConst_9
+   | AexprConst_10
+   | AexprConst_11
+   | AexprConst_12
+   | AexprConst_13
+
+AexprConst_1 : Iconst
+AexprConst_2 : FCONST
+AexprConst_3 : Sconst
+AexprConst_4 : BCONST
+AexprConst_5 : XCONST
+AexprConst_6 : func_name Sconst
+AexprConst_7 : func_name <LPAREN> func_arg_list <RPAREN> Sconst
+AexprConst_8 : ConstTypename Sconst
+AexprConst_9 : ConstInterval Sconst opt_interval
+AexprConst_10: ConstInterval <LPAREN> Iconst <RPAREN> Sconst opt_interval
+AexprConst_11: TRUE
+AexprConst_12: FALSE
+AexprConst_13: NULL
+
+Iconst: ICONST
+
+Sconst: SCONST
+
+RoleId: ColId
+
+SignedIconst  :
+     SignedIconst_1
+   | SignedIconst_2
+   | SignedIconst_3
+
+SignedIconst_1: Iconst
+SignedIconst_2: <PLUS> Iconst
+SignedIconst_3: <DASH> Iconst
+
+# Name classification hierarchy.
+#
+# IDENT is the lexeme returned by the lexer for identifiers that match
+# no known keyword.  In most cases, we can accept certain keywords as
+# names, not only IDENTs.   We prefer to accept as many such keywords
+# as possible to minimize the impact of "reserved words" on programmers.
+# So, we divide names into several possible classes.  The classification
+# is chosen in part to make keywords acceptable as names wherever possible.
+
+# Column identifier --- names that can be column, table, etc names.
+ColId  :
+     ColId_1
+   | ColId_2
+   | ColId_3
+
+ColId_1: IDENT
+ColId_2: unreserved_keyword
+ColId_3: col_name_keyword
+
+# Type/function identifier --- names that can be type or function names.
+type_function_name  :
+     type_function_name_1
+   | type_function_name_2
+   | type_function_name_3
+
+type_function_name_1: IDENT
+type_function_name_2: unreserved_keyword
+type_function_name_3: type_func_name_keyword
+
+# Column label --- allowed labels in "AS" clauses.
+# This presently includes *all* Postgres keywords.
+ColLabel  :
+     ColLabel_1
+   | ColLabel_2
+   | ColLabel_3
+   | ColLabel_4
+   | ColLabel_5
+
+ColLabel_1: IDENT
+ColLabel_2: unreserved_keyword
+ColLabel_3: col_name_keyword
+ColLabel_4: type_func_name_keyword
+ColLabel_5: reserved_keyword
+
+# Keyword category lists.  Generally, every keyword present in
+# the Postgres grammar should appear in exactly one of these lists.
+#
+# Put a new keyword into the first list that it can go into without causing
+# shift or reduce conflicts.  The earlier lists define "less reserved"
+# categories of keywords.
+#
+# Make sure that each keyword's category in kwlist.h matches where
+# it is listed here.  (Someday we may be able to generate these lists and
+# kwlist.h's table from a common master list.)
+
+# "Unreserved" keywords --- available for use as any kind of name.
+unreserved_keyword:
+     ABORT
+   | ABSOLUTE
+   | ACCESS
+   | ACTION
+   | ADD
+   | ADMIN
+   | AFTER
+   | AGGREGATE
+   | ALSO
+   | ALTER
+   | ALWAYS
+   | ASSERTION
+   | ASSIGNMENT
+   | AT
+   | ATTRIBUTE
+   | BACKWARD
+   | BEFORE
+   | BEGIN
+   | BY
+   | CACHE
+   | CALLED
+   | CASCADE
+   | CASCADED
+   | CATALOG
+   | CHAIN
+   | CHARACTERISTICS
+   | CHECKPOINT
+   | CLASS
+   | CLOSE
+   | CLUSTER
+   | COMMENT
+   | COMMENTS
+   | COMMIT
+   | COMMITTED
+   | CONFIGURATION
+   | CONNECTION
+   | CONSTRAINTS
+   | CONTENT
+   | CONTINUE
+   | CONVERSION
+   | COPY
+   | COST
+   | CSV
+   | CURRENT
+   | CURSOR
+   | CYCLE
+   | DATA
+   | DATABASE
+   | DAY
+   | DEALLOCATE
+   | DECLARE
+   | DEFAULTS
+   | DEFERRED
+   | DEFINER
+   | DELETE
+   | DELIMITER
+   | DELIMITERS
+   | DICTIONARY
+   | DISABLE
+   | DISCARD
+   | DOCUMENT
+   | DOMAIN
+   | DOUBLE
+   | DROP
+   | EACH
+   | ENABLE
+   | ENCODING
+   | ENCRYPTED
+   | ENUM
+   | ESCAPE
+   | EXCLUDE
+   | EXCLUDING
+   | EXCLUSIVE
+   | EXECUTE
+   | EXPLAIN
+   | EXTENSION
+   | EXTERNAL
+   | FAMILY
+   | FIRST
+   | FOLLOWING
+   | FORCE
+   | FORWARD
+   | FUNCTION
+   | FUNCTIONS
+   | GLOBAL
+   | GRANTED
+   | HANDLER
+   | HEADER
+   | HOLD
+   | HOUR
+   | IDENTITY
+   | IF
+   | IMMEDIATE
+   | IMMUTABLE
+   | IMPLICIT
+   | INCLUDING
+   | INCREMENT
+   | INDEX
+   | INDEXES
+   | INHERIT
+   | INHERITS
+   | INLINE
+   | INPUT
+   | INSENSITIVE
+   | INSERT
+   | INSTEAD
+   | INVOKER
+   | ISOLATION
+   | KEY
+   | LABEL
+   | LANGUAGE
+   | LARGE
+   | LAST
+   | LC_COLLATE
+   | LC_CTYPE
+   | LEAKPROOF
+   | LEVEL
+   | LISTEN
+   | LOAD
+   | LOCAL
+   | LOCATION
+   | LOCK
+   | MAPPING
+   | MATCH
+   | MAXVALUE
+   | MINUTE
+   | MINVALUE
+   | MODE
+   | MONTH
+   | MOVE
+   | NAME
+   | NAMES
+   | NEXT
+   | NO
+   | NOTHING
+   | NOTIFY
+   | NOWAIT
+   | NULLS
+   | OBJECT
+   | OF
+   | OFF
+   | OIDS
+   | OPERATOR
+   | OPTION
+   | OPTIONS
+   | OWNED
+   | OWNER
+   | PARSER
+   | PARTIAL
+   | PARTITION
+   | PASSING
+   | PASSWORD
+   | PLANS
+   | PRECEDING
+   | PREPARE
+   | PREPARED
+   | PRESERVE
+   | PRIOR
+   | PRIVILEGES
+   | PROCEDURAL
+   | PROCEDURE
+   | QUOTE
+   | RANGE
+   | READ
+   | REASSIGN
+   | RECHECK
+   | RECURSIVE
+   | REF
+   | REINDEX
+   | RELATIVE
+   | RELEASE
+   | RENAME
+   | REPEATABLE
+   | REPLACE
+   | REPLICA
+   | RESET
+   | RESTART
+   | RESTRICT
+   | RETURNS
+   | REVOKE
+   | ROLE
+   | ROLLBACK
+   | ROWS
+   | RULE
+   | SAVEPOINT
+   | SCHEMA
+   | SCROLL
+   | SEARCH
+   | SECOND
+   | SECURITY
+   | SEQUENCE
+   | SEQUENCES
+   | SERIALIZABLE
+   | SERVER
+   | SESSION
+   | SET
+   | SHARE
+   | SHOW
+   | SIMPLE
+   | SNAPSHOT
+   | STABLE
+   | STANDALONE
+   | START
+   | STATEMENT
+   | STATISTICS
+   | STDIN
+   | STDOUT
+   | STORAGE
+   | STRICT
+   | STRIP
+   | SYSID
+   | SYSTEM
+   | TABLES
+   | TABLESPACE
+   | TEMP
+   | TEMPLATE
+   | TEMPORARY
+   | TEXT
+   | TRANSACTION
+   | TRIGGER
+   | TRUNCATE
+   | TRUSTED
+   | TYPE
+   | TYPES
+   | UNBOUNDED
+   | UNCOMMITTED
+   | UNENCRYPTED
+   | UNKNOWN
+   | UNLISTEN
+   | UNLOGGED
+   | UNTIL
+   | UPDATE
+   | VACUUM
+   | VALID
+   | VALIDATE
+   | VALIDATOR
+   | VALUE
+   | VARYING
+   | VERSION
+   | VIEW
+   | VOLATILE
+   | WHITESPACE
+   | WITHOUT
+   | WORK
+   | WRAPPER
+   | WRITE
+   | XML
+   | YEAR
+   | YES
+   | ZONE
+
+
+# Column identifier --- keywords that can be column, table, etc names.
+#
+# Many of these keywords will in fact be recognized as type or function
+# names too; but they have special productions for the purpose, and so
+# can't be treated as "generic" type or function names.
+#
+# The type names appearing here are not usable as function names
+# because they can be followed by '(' in typename productions, which
+# looks too much like a function call for an LR(1) parser.
+col_name_keyword:
+     BETWEEN
+   | BIGINT
+   | BIT
+   | BOOLEAN
+   | CHAR
+   | CHARACTER
+   | COALESCE
+   | DEC
+   | DECIMAL
+   | EXISTS
+   | EXTRACT
+   | FLOAT
+   | GREATEST
+   | INOUT
+   | INT
+   | INTEGER
+   | INTERVAL
+   | LEAST
+   | NATIONAL
+   | NCHAR
+   | NONE
+   | NULLIF
+   | NUMERIC
+   | OUT
+   | OVERLAY
+   | POSITION
+   | PRECISION
+   | REAL
+   | ROW
+   | SETOF
+   | SMALLINT
+   | SUBSTRING
+   | TIME
+   | TIMESTAMP
+   | TREAT
+   | TRIM
+   | VALUES
+   | VARCHAR
+   | XMLATTRIBUTES
+   | XMLCONCAT
+   | XMLELEMENT
+   | XMLEXISTS
+   | XMLFOREST
+   | XMLPARSE
+   | XMLPI
+   | XMLROOT
+   | XMLSERIALIZE
+
+
+# Type/function identifier --- keywords that can be type or function names.
+#
+# Most of these are keywords that are used as operators in expressions;
+# in general such keywords can't be column names because they would be
+# ambiguous with variables, but they are unambiguous as function identifiers.
+#
+# Do not include POSITION, SUBSTRING, etc here since they have explicit
+# productions in a_expr to support the goofy SQL9x argument syntax.
+# - thomas 2000-11-28
+type_func_name_keyword:
+     AUTHORIZATION
+   | BINARY
+   | COLLATION
+   | CONCURRENTLY
+   | CROSS
+   | CURRENT_SCHEMA
+   | FREEZE
+   | FULL
+   | ILIKE
+   | INNER
+   | IS
+   | ISNULL
+   | JOIN
+   | LEFT
+   | LIKE
+   | NATURAL
+   | NOTNULL
+   | OUTER
+   | OVER
+   | OVERLAPS
+   | RIGHT
+   | SIMILAR
+   | VERBOSE
+
+
+# Reserved keyword --- these keywords are usable only as a ColLabel.
+#
+# Keywords appear here if they could not be distinguished from variable,
+# type, or function names in some contexts.  Don't put things here unless
+# forced to.
+reserved_keyword:
+     ALL
+   | ANALYSE
+   | ANALYZE
+   | AND
+   | ANY
+   | ARRAY
+   | AS
+   | ASC
+   | ASYMMETRIC
+   | BOTH
+   | CASE
+   | CAST
+   | CHECK
+   | COLLATE
+   | COLUMN
+   | CONSTRAINT
+   | CREATE
+   | CURRENT_CATALOG
+   | CURRENT_DATE
+   | CURRENT_ROLE
+   | CURRENT_TIME
+   | CURRENT_TIMESTAMP
+   | CURRENT_USER
+   | DEFAULT
+   | DEFERRABLE
+   | DESC
+   | DISTINCT
+   | DO
+   | ELSE
+   | END
+   | EXCEPT
+   | FALSE
+   | FETCH
+   | FOR
+   | FOREIGN
+   | FROM
+   | GRANT
+   | GROUP
+   | HAVING
+   | IN
+   | INITIALLY
+   | INTERSECT
+   | INTO
+   | LATERAL
+   | LEADING
+   | LIMIT
+   | LOCALTIME
+   | LOCALTIMESTAMP
+   | NOT
+   | NULL
+   | OFFSET
+   | ON
+   | ONLY
+   | OR
+   | ORDER
+   | PLACING
+   | PRIMARY
+   | REFERENCES
+   | RETURNING
+   | SELECT
+   | SESSION_USER
+   | SOME
+   | SYMMETRIC
+   | TABLE
+   | THEN
+   | TO
+   | TRAILING
+   | TRUE
+   | UNION
+   | UNIQUE
+   | USER
+   | USING
+   | VARIADIC
+   | WHEN
+   | WHERE
+   | WINDOW
+   | WITH
+
+

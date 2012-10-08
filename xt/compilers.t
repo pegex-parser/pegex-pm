@@ -2,49 +2,22 @@
 # BEGIN { $Pegex::Parser::Debug = 1 }
 # BEGIN { $Pegex::Bootstrap = 1 }
 
-use TestML -run,
-    -require_or_skip => 'YAML::XS';
-
-use Pegex::Compiler;
+use Test::More;
+use strict; use warnings;
+use xt::Test;
 use Pegex::Bootstrap;
-use IO::All;
+use Pegex::Compiler;
 use YAML::XS;
 
-sub pegex_compile {
-    my $grammar_text = io((shift)->value)->all;
-    Pegex::Compiler->new->parse($grammar_text)->tree;
+for my $grammar (test_grammar_paths) {
+    my $expected = eval {
+        Dump(Pegex::Bootstrap->new->parse(slurp($grammar))->tree);
+    } or next;
+    my $got = eval {
+        Dump(Pegex::Bootstrap->new->parse(slurp($grammar))->tree);
+    } or die "$grammar failed to compile: $@";
+    is $got, $expected,
+        "Bootstrap compile matches normal compile for $grammar";
 }
 
-sub bootstrap_compile {
-    my $grammar_text = io((shift)->value)->all;
-    Pegex::Bootstrap->new->parse($grammar_text)->tree;
-}
-
-sub yaml {
-    return YAML::XS::Dump((shift)->value);
-}
-
-__DATA__
-%TestML 1.0
-
-Plan = 4;
-
-test = (grammar) {
-    Label = '$BlockLabel - Does the compiler output match the bootstrap?';
-    grammar.pegex_compile.yaml == grammar.bootstrap_compile.yaml;
-};
-
-test(*grammar);
-
-
-=== Pegex Grammar
---- grammar: ../pegex-pgx/pegex.pgx
-
-=== TestML Grammar
---- grammar: ../testml-pgx/testml.pgx
-
-=== YAML Grammar
---- grammar: ../yaml-pgx/yaml.pgx
-
-=== JSON Grammar
---- grammar: ../json-pgx/json.pgx
+done_testing;
