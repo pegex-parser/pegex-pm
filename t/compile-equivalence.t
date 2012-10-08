@@ -19,7 +19,7 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 5;
+Plan = 3;
 
 *grammar1.compile.yaml == *grammar2.compile.yaml;
 
@@ -31,6 +31,8 @@ a:
     /x/
 
 === And over Or Precedence
+--- SKIP
+XXX reverting this for now
 --- grammar1
 a: b c | d
 --- grammar2
@@ -43,6 +45,8 @@ a: b % c | d %% e
 a: ( b % c ) | ( d %% e )
 
 === And/Or Precedence with grouping
+--- SKIP
+XXX reverting this for now
 --- grammar1
 a:
      b c
