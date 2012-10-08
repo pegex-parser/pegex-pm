@@ -23,7 +23,10 @@ rule_group: any_group | all_group
 
 all_group: rule_part+ % ~
 
-any_group: <all_group>2+ % / ~ <PIPE> ~ /
+# XXX SineSwiper's hack to support 'a b | c', unfortunately cuts performance
+# in half.
+# any_group: <all_group>2+ % / ~ <PIPE> ~ /
+any_group: <rule_part>2+ % / ~ <PIPE> ~ /
 
 rule_part: <rule_item>1-2 % / ~~ ( <PERCENT>{1,2} ) ~~ /
 
@@ -199,8 +202,12 @@ ERROR_error_message:
 
 # Errors - separation
 ERROR_separation:
+(
     /(= ~ <PERCENT>{3} )/
     `Leading separator form (BOK) no longer supported`
+)
 |
+(
     /(= ~ <PERCENT>{1,2} [^ <WS> ] )/
     `Illegal characters in separator indicator`
+)
