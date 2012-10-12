@@ -218,18 +218,40 @@ sub make_tree {
       ]
     },
     'all_group' => {
-      '+min' => 1,
-      '.ref' => 'rule_part',
-      '.sep' => {
-        '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*)/
-      }
+      '.all' => [
+        {
+          '.ref' => 'rule_part'
+        },
+        {
+          '+min' => 0,
+          '.all' => [
+            {
+              '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*)/
+            },
+            {
+              '.ref' => 'rule_part'
+            }
+          ]
+        }
+      ]
     },
     'any_group' => {
-      '+min' => '2',
-      '.ref' => 'rule_part',
-      '.sep' => {
-        '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*)/
-      }
+      '.all' => [
+        {
+          '.ref' => 'all_group'
+        },
+        {
+          '+min' => 0,
+          '.all' => [
+            {
+              '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*)/
+            },
+            {
+              '.ref' => 'all_group'
+            }
+          ]
+        }
+      ]
     },
     'bracketed_group' => {
       '.all' => [
@@ -315,14 +337,7 @@ sub make_tree {
       ]
     },
     'rule_group' => {
-      '.any' => [
-        {
-          '.ref' => 'any_group'
-        },
-        {
-          '.ref' => 'all_group'
-        }
-      ]
+      '.ref' => 'any_group'
     },
     'rule_item' => {
       '.any' => [
