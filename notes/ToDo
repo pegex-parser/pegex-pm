@@ -4,6 +4,8 @@
   - Pegex::AST subclass of Pegex::Receiver
 - Fix 'a b | c' in bootstrap parser
   - Test precedence parsing
+- Make pegex->parse repeatable (currently messes up)
+- Add $_ support
 
 # New features
 - Support EXPR precedence parsing grammar
@@ -24,6 +26,7 @@
   - -- ++ -2 +3 -x +x
 
 # Error Reporting
+- Detailed error reporting
 - Add `error` msgs to pegex.pgx
 - Report grammar class name
 - Report the grammar name if present
@@ -33,6 +36,7 @@
 
 # Documentation
 - Document each module
+- doc subdir make docs
 
 #------------------------------------------
 - Support subparser using Input object and certain pos
@@ -59,21 +63,34 @@
 - Add a TIMER option
 - Add benchmarks
 
-# Nice to have
-- Backtracking control
-  - Implement a backtracking parser subclass
-  - Parse Name: First Middle? Last
-- Detailed error reporting
-
 # Research
 - Look at Perl6::Rules on CPAN
 - Look at Regex::Grammars
 - Look at Parse::RecDescent tests
 
-# Other Parser Grammar and Receiver subclasses:
-- Indentation parser/grammar
-- AST receiver
+# Other Parsers to write
+- Indentation parser
+  - Maybe indentation rules can be grammar methods
+- Tracing Parser
+  - Move debug stuff out of Pegex::Parser
+  - Count calls
+  - NYTProf
+- Backtracking parser subclass
+  - Parse Name: First Middle? Last
+
+# Other Receivers to write:
+- AST receiver (most common base class) Pegex::Receiver::AST
+- Streaming receiver (does about nothing) Pegex::Receiver
+- TreeDump receiver (instead of wrap)
+- Pegex::Receiver::Marpa
 
 # Parser/Compilers to Write
 - irssi.log parser
 - arithmetic precedence
+- Perl 5
+- Perl 6
+- CoffeeScript
+- UniScript
+- Kwim
+- MarPeg
+
