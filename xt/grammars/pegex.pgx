@@ -19,25 +19,21 @@ rule_definition: rule_start rule_group ( ending | ERROR_rule_ending )
 
 rule_start: / ( <rule_name> ) <BLANK>* <COLON> ~ / | ERROR_rule_start
 
-rule_group: any_group | all_group
 
-all_group: rule_part+ % ~
+rule_group: any_group
 
-# XXX SineSwiper's hack to support 'a b | c', unfortunately cuts performance
-# in half.
-# any_group: <all_group>2+ % / ~ <PIPE> ~ /
-any_group: <rule_part>2+ % / ~ <PIPE> ~ /
+any_group: all_group ( / ~ <PIPE> ~ / all_group )*
+
+all_group: rule_part (~ rule_part)*
 
 rule_part: <rule_item>1-2 % / ~~ ( <PERCENT>{1,2} ) ~~ /
 
 rule_item:
-    ERROR_pre_rule_item |
     rule_reference |
     regular_expression |
     bracketed_group |
     whitespace_token |
-    error_message |
-    ERROR_post_rule_item
+    error_message
 
 rule_reference:
     /

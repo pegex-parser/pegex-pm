@@ -16,30 +16,6 @@ sub make_tree {
     '+grammar' => 'pegex',
     '+toprule' => 'grammar',
     '+version' => '0.2.0',
-    'ERROR_error_message' => {
-      '.any' => [
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G(?=`[^`\r\n]*[\r\n][^`]*`))/
-            },
-            {
-              '.err' => 'Multi-line error messages not allowed!'
-            }
-          ]
-        },
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G(?=`[^`]*(?:\s|\#.*(?:\n|\z))*\z))/
-            },
-            {
-              '.err' => 'Runaway error message. No ending grave at EOF'
-            }
-          ]
-        }
-      ]
-    },
     'ERROR_inner_bracketed_group' => {
       '.any' => [
         {
@@ -75,110 +51,6 @@ sub make_tree {
         }
       ]
     },
-    'ERROR_post_rule_item' => {
-      '.any' => [
-        {
-          '.ref' => 'ERROR_post_rule_reference'
-        },
-        {
-          '.ref' => 'ERROR_regular_expression'
-        },
-        {
-          '.ref' => 'ERROR_error_message'
-        },
-        {
-          '.ref' => 'ERROR_separation'
-        }
-      ]
-    },
-    'ERROR_post_rule_reference' => {
-      '.all' => [
-        {
-          '+asr' => -1,
-          '.ref' => 'rule_modifier'
-        },
-        {
-          '.rgx' => qr/(?-xism:\G(?=[^\w\(\)<\/\~\|`\s](?:[a-zA-Z]\w*\b|<[a-zA-Z]\w*\b>)(?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?(?![\ \t]*:)))/
-        },
-        {
-          '.err' => 'Illegal rule modifier (must be [=!.-+]?)'
-        }
-      ]
-    },
-    'ERROR_pre_bracketed_group' => {
-      '.all' => [
-        {
-          '.rgx' => qr/(?-xism:\G(?!\.)(?=[^\w\(\)<\/\~\|`\s]\())/
-        },
-        {
-          '.err' => 'Illegal group rule modifier (can only use .)'
-        }
-      ]
-    },
-    'ERROR_pre_rule_item' => {
-      '.any' => [
-        {
-          '.ref' => 'ERROR_pre_rule_reference'
-        },
-        {
-          '.ref' => 'ERROR_pre_bracketed_group'
-        }
-      ]
-    },
-    'ERROR_pre_rule_reference' => {
-      '.any' => [
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G(?=[!=\+\-\.]?<[a-zA-Z]\w*\b(?!>)))/
-            },
-            {
-              '.err' => 'Missing > in rule reference'
-            }
-          ]
-        },
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G(?=[!=\+\-\.]?[a-zA-Z]\w*\b>))/
-            },
-            {
-              '.err' => 'Missing < in rule reference'
-            }
-          ]
-        },
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G(?=[!=\+\-\.]?(?:[a-zA-Z]\w*\b|<[a-zA-Z]\w*\b>)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;]))/
-            },
-            {
-              '.err' => 'Illegal character in rule quantifier'
-            }
-          ]
-        },
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G(?=[!=\+\-\.]?[a-zA-Z]\w*\b\-))/
-            },
-            {
-              '.err' => 'Unprotected rule name with numeric quantifier. Please use <rule>#-# syntax!'
-            }
-          ]
-        }
-      ]
-    },
-    'ERROR_regular_expression' => {
-      '.all' => [
-        {
-          '.rgx' => qr/(?-xism:\G(?=\/([^\/]*)(?:\s|\#.*(?:\n|\z))*\z))/
-        },
-        {
-          '.err' => 'Runaway regular expression. No ending slash at EOF'
-        }
-      ]
-    },
     'ERROR_rule_ending' => {
       '.err' => 'Rule ending syntax error'
     },
@@ -190,30 +62,6 @@ sub make_tree {
         },
         {
           '.err' => 'Rule header syntax error'
-        }
-      ]
-    },
-    'ERROR_separation' => {
-      '.any' => [
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G(?=(?:\s|\#.*(?:\n|\z))*%{3}))/
-            },
-            {
-              '.err' => 'Leading separator form (BOK) no longer supported'
-            }
-          ]
-        },
-        {
-          '.all' => [
-            {
-              '.rgx' => qr/(?-xism:\G(?=(?:\s|\#.*(?:\n|\z))*%{1,2}[^\s]))/
-            },
-            {
-              '.err' => 'Illegal characters in separator indicator'
-            }
-          ]
         }
       ]
     },
@@ -342,9 +190,6 @@ sub make_tree {
     'rule_item' => {
       '.any' => [
         {
-          '.ref' => 'ERROR_pre_rule_item'
-        },
-        {
           '.ref' => 'rule_reference'
         },
         {
@@ -358,14 +203,8 @@ sub make_tree {
         },
         {
           '.ref' => 'error_message'
-        },
-        {
-          '.ref' => 'ERROR_post_rule_item'
         }
       ]
-    },
-    'rule_modifier' => {
-      '.rgx' => qr/(?-xism:\G[!=\+\-\.])/
     },
     'rule_part' => {
       '+max' => '2',
