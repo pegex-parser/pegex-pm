@@ -1,0 +1,8 @@
+# Bad perf. Not sure what changed.
+ok 1 - ./xt/grammars/pegex.pgx parses in 0.32976 seconds
+ok 2 - ./xt/grammars/testml.pgx parses in 0.370833 seconds
+ok 3 - ./xt/grammars/json.pgx parses in 0.069458 seconds
+ok 4 - ./xt/grammars/yaml.pgx parses in 0.158591 seconds
+ok 5 - ./xt/grammars/pg-lexer.pgx parses in 2.593473 seconds
+ok 6 - ./xt/grammars/Pg.pgx parses in 15.432362 seconds
+# badness went away after reboot!

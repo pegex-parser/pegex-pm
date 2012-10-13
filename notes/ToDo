@@ -1,6 +1,43 @@
+# 0.21 release
+- Flesh out documentation
+- Move AST primatives to Pegex::AST
+  - Pegex::AST subclass of Pegex::Receiver
+- Fix 'a b | c' in bootstrap parser
+  - Test precedence parsing
+
+# New features
+- Support EXPR precedence parsing grammar
+- Support grammar class methods as rules
+  - sub rule_indent { ... }
+- Make atoms be an actual grammar
+  - Subclassable, Includable
+- Multiple rule definitions per statement
+  - Allow multiline
+- Support special <RULE> reference (literal rule name)
+- Support single quoted token 'a + b = ...'
+  - defines a literal regex with YAML single quote semantics
+- Support include and inherit
+  - Class/object resolution
+- '::' commit syntax
+- Combinate adjacent regexes
+- Support position moving syntax
+  - -- ++ -2 +3 -x +x
+
+# Error Reporting
+- Add `error` msgs to pegex.pgx
+- Report grammar class name
+- Report the grammar name if present
+- Report the current rule stack
+- Report info from the Input object
+- Report 'End Of Input' message instead of '><'
+
+# Documentation
+- Document each module
+
 #------------------------------------------
-- Input object should track position
-  - This way it can be handed off to another parse
+- Support subparser using Input object and certain pos
+  - Input object should track position
+    - This way it can be handed off to another parse
 - parse() method can be partial, rather than full
 - parse() method can be passed an ending rule. EOS is default.
 - grammar object can have code rules
@@ -8,12 +45,6 @@
   - Move default actions from parser to receiver
 
 #------------------------------------------
-+ Generate Pegex::Pegex::Grammar with -M trick
-+ Change tree_ to make_tree
-+ Change +top to +toprule
-
-#------------------------------------------
-+ Die at furthest point parsed
 - Add match stack to the error message
 - Add common errors to the Pegex grammar
 
@@ -22,86 +53,27 @@
   - s/\n/;/g *is* a goal
 
 #------------------------------------------
-+ Find modules that dep on Pegex
-+ Remove %%% support
-  a* %%% b* == b* a* %% b* == ( a | b )*
-+ Make ~ mean /~/
-+ Make <> brackets optional outside a regex
-+ Swap [] for ()
-+ Remove whitespace from inside regexps (emulate 'x' flag)
-+ / (: xxx ) / means / (?: xxx ) /
-+ / (= xxx ) / means / (?= xxx ) /
-
-+ Allow comments in regexes
-+ Test comments after rules...
-
-#------------------------------------------
-== Fix xt failure:
-+ bootstrap compile barfs on yaml.pgx
-
-#------------------------------------------
-+ Implement %%%
-
-#------------------------------------------
-+ Switch to Mo
-+ Support .<rule>
-  + Compare to Rx:G
-+ Skip empty regex matches
-
-#------------------------------------------
-
-+ Stabilize TestML with Bootstrap Grammar
-+ Split Grammar into Parser
-  + Look for all instances of build_tree (tree_)
-+ Make Pegex and TestML work
-+ Split parse into smaller methods
-
-+ Pegex::AST - Receiver to generate an AST
-  + Write AST tests
-  + Write Pegex::AST module
-  + Migrate parser to new AST model
-  + Test/Compare to Rx:G
-
-+ Pegex::Regex - =~ sugar from Rx::G
-  + $string =~ qr{pegex grammar string}
-  + $ast = \%/;
-  + $ast = \%MATCH
-
-#------------------------------------------
-
-+ Change compile api:
-  + compile => parse->combinate->grammar
-+ Redo compile api
-  all,any,rgx,rul,err
-  +,*,?,!,&
-    []+*?, !&[|], <>+*?, !=<>
-    //, ``
-+ Make Pegex self-hosting!!
-  + Test against bootstrap compiler against:
-    + pegex-pgx
-    + testml-pgx
-
-#------------------------------------------
-
-+ Support .<rule>
-  + Match but don't save in AST
-+ Support <rule> % <rule>
-  + And <rule> %% <rule>
-- Support <+DEBUG> and <-DEBUG>
-+ Smart whitespace
-  + name: normal rule
-  + name:: smart <ws> rule
-  + name:ws1: special user-defined ws rule
 - Pegex ->optimize (after combinate)
   - Combine consecutive .rgx
   - .all or .any of 1 elem => .rul
 - Add a TIMER option
+- Add benchmarks
 
-#------------------------------------------
-
+# Nice to have
 - Backtracking control
+  - Implement a backtracking parser subclass
+  - Parse Name: First Middle? Last
 - Detailed error reporting
-- Parse Name: First Middle? Last
+
+# Research
 - Look at Perl6::Rules on CPAN
 - Look at Regex::Grammars
 - Look at Parse::RecDescent tests
+
+# Other Parser Grammar and Receiver subclasses:
+- Indentation parser/grammar
+- AST receiver
+
+# Parser/Compilers to Write
+- irssi.log parser
+- arithmetic precedence

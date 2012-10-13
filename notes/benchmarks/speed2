@@ -1,0 +1,7 @@
+# precedence climbing
+ok 1 - ./xt/grammars/pegex.pgx parses in 0.138859 seconds
+ok 2 - ./xt/grammars/testml.pgx parses in 0.144854 seconds
+ok 3 - ./xt/grammars/json.pgx parses in 0.03387 seconds
+ok 4 - ./xt/grammars/yaml.pgx parses in 0.073876 seconds
+ok 5 - ./xt/grammars/pg-lexer.pgx parses in 0.792355 seconds
+ok 6 - ./xt/grammars/Pg.pgx parses in 6.706572 seconds

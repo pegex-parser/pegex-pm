@@ -1,0 +1,83 @@
++ Rework atoms
++ Grammar auto compile PERL_PEGEX_AUTO_COMPILE
++ Merge grammar changes
++ Fix 'a b | c' breakage in bootstrap
++ Apply pull requests
++ Review grammar performance
+  + Write an xt test to check the time to parser pegex.pgx
+
++ Support .<rule>
+  + Match but don't save in AST
++ Support <rule> % <rule>
+  + And <rule> %% <rule>
+- Support <+DEBUG> and <-DEBUG>
++ Smart whitespace
+  + name: normal rule
+  + name:: smart <ws> rule
+  + name:ws1: special user-defined ws rule
+
++ Change compile api:
+  + compile => parse->combinate->grammar
++ Redo compile api
+  all,any,rgx,rul,err
+  +,*,?,!,&
+    []+*?, !&[|], <>+*?, !=<>
+    //, ``
++ Make Pegex self-hosting!!
+  + Test against bootstrap compiler against:
+    + pegex-pgx
+    + testml-pgx
+
+#------------------------------------------
+
++ Stabilize TestML with Bootstrap Grammar
++ Split Grammar into Parser
+  + Look for all instances of build_tree (tree_)
++ Make Pegex and TestML work
++ Split parse into smaller methods
+
++ Pegex::AST - Receiver to generate an AST
+  + Write AST tests
+  + Write Pegex::AST module
+  + Migrate parser to new AST model
+  + Test/Compare to Rx:G
+
++ Pegex::Regex - =~ sugar from Rx::G
+  + $string =~ qr{pegex grammar string}
+  + $ast = \%/;
+  + $ast = \%MATCH
+
+#------------------------------------------
+
++ Switch to Mo
++ Support .<rule>
+  + Compare to Rx:G
++ Skip empty regex matches
+
+#------------------------------------------
++ Generate Pegex::Pegex::Grammar with -M trick
++ Change tree_ to make_tree
++ Change +top to +toprule
++ Die at furthest point parsed
+
+#------------------------------------------
++ Find modules that dep on Pegex
++ Remove %%% support
+  a* %%% b* == b* a* %% b* == ( a | b )*
++ Make ~ mean /~/
++ Make <> brackets optional outside a regex
++ Swap [] for ()
++ Remove whitespace from inside regexps (emulate 'x' flag)
++ / (: xxx ) / means / (?: xxx ) /
++ / (= xxx ) / means / (?= xxx ) /
+
++ Allow comments in regexes
++ Test comments after rules...
+
+#------------------------------------------
+== Fix xt failure:
++ bootstrap compile barfs on yaml.pgx
+
+#------------------------------------------
++ Implement %%%
+
