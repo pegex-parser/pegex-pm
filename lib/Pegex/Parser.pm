@@ -9,15 +9,22 @@
 # - Pegex::Receiver
 
 package Pegex::Parser;
-use Pegex::Mo;
+# In order of performance:
+use Mouse;
+# use Moose;
+# use Pegex::Mo;
+# use Mo qw(default build);
+# use Moo;    # XXX Doesn't work.
 
 use Scalar::Util;
 use Pegex::Input;
 
 # Grammar object or class
-has 'grammar';
+has grammar => (is => 'ro');
 # Receiver object or class
-has 'receiver' => (
+has receiver => (
+    is => 'ro',
+    lazy => 1,
     default => sub {
         require Pegex::Receiver;
         Pegex::Receiver->new();
@@ -29,30 +36,47 @@ has 'receiver' => (
 #
 
 # Allow errors to not be thrown
-has 'throw_on_error' => ( default => sub {1} );
+has throw_on_error => (
+    is => 'ro',
+    lazy => 1,
+    default => sub {1},
+);
 
 # Wrap results in hash with rule name for key
-has 'wrap' => ( default => sub { $_[0]->receiver->wrap } );
+has wrap => (
+    is => 'ro',
+    lazy => 1,
+    default => sub { $_[0]->receiver->wrap },
+);
 
 # # Allow a partial parse
 # has 'partial' => default => sub {0};
 
 # Internal properties.
-has 'input';                # Input object to read from
-has 'buffer';               # Input buffer to parse
-has 'error';                # Error message goes here
-has 'position' => (         # Current position in buffer
+has input => (is => 'rw');  # Input object to read from
+has buffer => (is => 'rw'); # Input buffer to parse
+has error => (is => 'rw');  # Error message goes here
+has position => (           # Current position in buffer
+    is => 'ro',
+    lazy => 1,
     default => sub {0},
 );
-has 'farthest' => (         # Farthest point matched in buffer
+has farthest => (           # Farthest point matched in buffer
+    is => 'ro',
+    lazy => 1,
     default => sub {0},
 );
-has 're_count' => (         # Loop counter for RE non-terminating spin prevention
+# Loop counter for RE non-terminating spin prevention
+has re_count => (
+    is => 'rw',
+    lazy => 1,
     default => sub {0},
 );
 
 # Debug the parsing of input.
 has 'debug' => (
+    is => 'ro',
+    lazy => 1,
     default => sub {
         exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
         defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
