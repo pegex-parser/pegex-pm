@@ -113,6 +113,8 @@ sub parse {
     my $grammar = $self->grammar
         or die "No 'grammar'. Can't parse";
 
+    $self->position(0);
+    $self->{tree} = $grammar->tree;
     $start_rule ||=
         $grammar->tree->{'+toprule'} ||
         ($grammar->tree->{'TOP'} ? 'TOP' : undef)
@@ -175,14 +177,17 @@ sub match_next {
 
     my ($min, $max) = $self->get_min_max($next);
     my $assertion = $next->{'+asr'} || 0;
-    my ($rule, $kind) = map {($next->{".$_"}, $_)}
-        grep {$next->{".$_"}} qw(ref rgx all any err code) or die $next;
+    my ($rule, $kind);
+    for (qw(ref rgx all any err code)) {
+        $kind = $_, last if $rule = $next->{".$_"};
+    }
+
 
     my ($match, $position, $count, $method) =
-        ([], $self->position, 0, "match_$kind");
+        ([], $self->{position}, 0, "match_$kind");
 
     while (my $return = $self->$method($rule, $next)) {
-        $position = $self->position unless $assertion;
+        $position = $self->{position} unless $assertion;
         $count++;
         push @$match, @$return;
         last if $max == 1;
@@ -209,10 +214,10 @@ sub match_next_with_sep {
     my $separator = $next->{'.sep'};
 
     my ($match, $position, $count, $method, $scount, $smin, $smax) =
-        ([], $self->position, 0, "match_$kind", 0,
+        ([], $self->{position}, 0, "match_$kind", 0,
             $self->get_min_max($separator));
     while (my $return = $self->$method($rule, $next)) {
-        $position = $self->position;
+        $position = $self->{position};
         $count++;
         push @$match, @$return;
         $return = $self->match_next($separator) or last;
@@ -236,7 +241,7 @@ sub match_next_with_sep {
 
 sub match_ref {
     my ($self, $ref, $parent) = @_;
-    my $rule = $self->grammar->tree->{$ref};
+    my $rule = $self->{tree}{$ref};
     $rule ||= $self->can("match_rule_$ref")
             ? { '.code' => $ref }
             : die "\n\n*** No grammar support for '$ref'\n\n";
@@ -273,18 +278,19 @@ my $terminator_max = 1000;
 sub match_rgx {
     my ($self, $regexp, $parent) = @_;
 
-    # my $start = $self->position;
-    my $start = pos($self->{buffer}) = $self->position;
+    # XXX Commented out code for switch from \G to ^. Use later.
+    # my $start = $self->{position};
+    my $start = pos($self->{buffer}) = $self->{position};
 
-    my $terminator_iterator = $self->re_count($self->re_count + 1);
+    my $terminator_iterator = ++$self->{re_count};
     if ($start >= length $self->{buffer} and $terminator_iterator > $terminator_max) {
         $self->throw_on_error(1);
         $self->throw_error("Your grammar seems to not terminate at end of stream");
     }
 
     # substr($self->{buffer}, $start) =~ $regexp or return 0;
-    $self->{buffer} =~ /$regexp/g or return 0;
     # my $finish = $start + length(${^MATCH});
+    $self->{buffer} =~ /$regexp/g or return 0;
     my $finish = pos($self->{buffer});
 
     no strict 'refs';
@@ -298,7 +304,7 @@ sub match_rgx {
 
 sub match_all {
     my ($self, $list, $parent) = @_;
-    my $pos = $self->position;
+    my $pos = $self->{position};
     my $set = [];
     my $len = 0;
     for my $elem (@$list) {

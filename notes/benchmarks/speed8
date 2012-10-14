@@ -1,0 +1,7 @@
+# more perf tweaks from nytprof
+ok 1 - ./xt/grammars/pegex.pgx parses in 0.036308 seconds
+ok 2 - ./xt/grammars/testml.pgx parses in 0.037651 seconds
+ok 3 - ./xt/grammars/json.pgx parses in 0.008734 seconds
+ok 4 - ./xt/grammars/yaml.pgx parses in 0.01873 seconds
+ok 5 - ./xt/grammars/pg-lexer.pgx parses in 0.213778 seconds
+ok 6 - ./xt/grammars/Pg.pgx parses in 1.630133 seconds
