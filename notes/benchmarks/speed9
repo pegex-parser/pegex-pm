@@ -1,0 +1,7 @@
+# after min/max hotspot cured
+ok 1 - ./xt/grammars/pegex.pgx parses in 0.032467 seconds
+ok 2 - ./xt/grammars/testml.pgx parses in 0.033689 seconds
+ok 3 - ./xt/grammars/json.pgx parses in 0.007937 seconds
+ok 4 - ./xt/grammars/yaml.pgx parses in 0.016929 seconds
+ok 5 - ./xt/grammars/pg-lexer.pgx parses in 0.191812 seconds
+ok 6 - ./xt/grammars/Pg.pgx parses in 1.454743 seconds

@@ -159,14 +159,11 @@ sub match {
 }
 
 sub get_min_max {
-    my ($self, $next) = @_;
-    defined($next->{'+min'})
-    ? defined($next->{'+max'})
-        ? (@{$next}{qw'+min +max'})
-        : ($next->{'+min'}, 0)
-    : defined($next->{'+max'})
-        ? (0, $next->{'+max'})
-        : (1, 1);
+    my ($min, $max) = delete @{$_[1]}{qw(+min +max)};
+    $_[1]->{'+mm'} = [
+        ($min // (defined($max) ? 0 : 1)),
+        ($max // (defined($min) ? 0 : 1)),
+    ];
 }
 
 sub match_next {
@@ -175,7 +172,7 @@ sub match_next {
     return $self->match_next_with_sep($next)
         if $next->{'.sep'};
 
-    my ($min, $max) = $self->get_min_max($next);
+    my ($min, $max) = @{$next->{'+mm'} || $self->get_min_max($next)};
     my $assertion = $next->{'+asr'} || 0;
     my ($rule, $kind);
     for (qw(ref rgx all any err code)) {
@@ -207,7 +204,7 @@ sub match_next {
 sub match_next_with_sep {
     my ($self, $next) = @_;
 
-    my ($min, $max) = $self->get_min_max($next);
+    my ($min, $max) = @{$next->{'+mm'} || $self->get_min_max($next)};
     my ($rule, $kind);
     for (qw(ref rgx all any err code)) {
         $kind = $_, last if $rule = $next->{".$_"};
@@ -216,7 +213,7 @@ sub match_next_with_sep {
 
     my ($match, $position, $count, $method, $scount, $smin, $smax) =
         ([], $self->{position}, 0, "match_$kind", 0,
-            $self->get_min_max($sep));
+            @{$sep->{'+mm'} || $self->get_min_max($sep)});
     while (my $return = $self->$method($rule, $next)) {
         $position = $self->{position};
         $count++;
