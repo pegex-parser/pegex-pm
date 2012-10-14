@@ -6,13 +6,17 @@
 # copyright: 2011, 2012
 
 package Pegex::Pegex::AST;
-use Pegex::Mo;
+use Mouse;
 extends 'Pegex::Receiver';
 
 use Pegex::Grammar::Atoms;
 
-has 'toprule';
-has 'extra_rules' => default => sub {+{}};
+has toprule => (is => 'ro');
+has extra_rules => (
+    is => 'ro',
+    lazy => 1,
+    default => sub {+{}},
+);
 
 my %prefixes = (
     '!' => ['+asr', -1],

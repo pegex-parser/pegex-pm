@@ -6,16 +6,32 @@
 # copyright: 2011, 2012
 
 package Pegex::Input;
-use Pegex::Mo;
+use Mouse;
 
-has 'string';
-has 'stringref';
-has 'file';
-has 'handle';
-has '_buffer' => default => sub { my $x; \$x };
-has '_is_eof' => default => sub { 0 };
-has '_is_open' => default => sub { 0 };
-has '_is_close' => default => sub { 0 };
+has string => (is => 'rw');
+has stringref => (is => 'rw');
+has file => (is => 'rw');
+has handle => (is => 'rw');
+has _buffer => (
+    is => 'rw',
+    lazy => 1,
+    default => sub { my $x; \$x },
+);
+has _is_eof => (
+    is => 'rw',
+    lazy => 1,
+    default => sub { 0 },
+);
+has _is_open => (
+    is => 'rw',
+    lazy => 1,
+    default => sub { 0 },
+);
+has _is_close => (
+    is => 'rw',
+    lazy => 1,
+    default => sub { 0 },
+);
 
 # NOTE: Current implementation reads entire input into _buffer on open().
 sub read {

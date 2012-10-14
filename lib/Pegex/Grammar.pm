@@ -6,13 +6,21 @@
 # copyright: 2010, 2011, 2012
 
 package Pegex::Grammar;
-use Pegex::Mo;
+use Mouse;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
 # Grammar can also be stored in a file.
-has file => ();
-has text => (builder => 'make_text');
-has tree => (builder => 'make_tree');
+has file => (is => 'ro');
+has text => (
+    is => 'ro',
+    lazy => 1,
+    builder => 'make_text',
+);
+has tree => (
+    is => 'ro',
+    lazy => 1,
+    builder => 'make_tree',
+);
 
 sub make_text {
     my ($self) = @_;
@@ -58,7 +66,6 @@ sub import {
             }
         }
     }
-    goto &Pegex::Mo::import
 }
 
 sub compile_into_module {

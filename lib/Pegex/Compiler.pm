@@ -6,14 +6,14 @@
 # copyright: 2011, 2012
 
 package Pegex::Compiler;
-use Pegex::Mo;
+use Mouse;
 
 use Pegex::Parser;
 use Pegex::Pegex::Grammar;
 use Pegex::Pegex::AST;
 use Pegex::Grammar::Atoms;
 
-has 'tree';
+has tree => (is => 'rw');
 
 sub compile {
     my ($self, $grammar) = @_;
@@ -47,7 +47,7 @@ sub parse {
 #------------------------------------------------------------------------------#
 # Combination
 #------------------------------------------------------------------------------#
-has '_tree';
+has _tree => (is => 'rw');
 
 sub combinate {
     my ($self, $rule) = @_;

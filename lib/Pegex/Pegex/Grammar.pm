@@ -6,7 +6,7 @@
 # copyright: 2010, 2011, 2012
 
 package Pegex::Pegex::Grammar;
-use Pegex::Mo;
+use Mouse;
 extends 'Pegex::Grammar';
 use re::engine::PCRE;
 

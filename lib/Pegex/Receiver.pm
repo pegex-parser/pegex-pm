@@ -6,11 +6,15 @@
 # copyright: 2011, 2012
 
 package Pegex::Receiver;
-use Pegex::Mo;
+use Mouse;
 
-has parser => ();
-has data => ();
-has wrap => ( default => sub { 0 } );
+has parser => (is => 'rw');
+has data => (is => 'rw');
+has wrap => (
+    is => 'rw',
+    lazy => 1,
+    default => sub { 0 },
+);
 
 # Flatten a structure of nested arrays into a single array.
 sub flatten {
