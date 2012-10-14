@@ -1,0 +1,7 @@
+# After switching parser to Mouse
+ok 1 - ./xt/grammars/pegex.pgx parses in 0.043994 seconds
+ok 2 - ./xt/grammars/testml.pgx parses in 0.047124 seconds
+ok 3 - ./xt/grammars/json.pgx parses in 0.011501 seconds
+ok 4 - ./xt/grammars/yaml.pgx parses in 0.023455 seconds
+ok 5 - ./xt/grammars/pg-lexer.pgx parses in 0.275073 seconds
+ok 6 - ./xt/grammars/Pg.pgx parses in 2.323067 seconds
