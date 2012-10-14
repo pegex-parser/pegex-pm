@@ -24,6 +24,7 @@ use constant TEST_GRAMMARS => [
     '../testml-pgx/testml.pgx',
     '../json-pgx/json.pgx',
     '../yaml-pgx/yaml.pgx',
+    '../drinkup/share/drinkup.pgx',
     '../SQL-Parser-Neo/pegex/pg-lexer.pgx',
     '../SQL-Parser-Neo/pegex/Pg.pgx',
 ];
