@@ -70,6 +70,7 @@ sub BUILD {
     if ($receiver and not ref $receiver) {
         $self->receiver($receiver->new);
     }
+    $self->{farthest} = 0;
 }
 
 sub parse {
@@ -249,15 +250,15 @@ my $terminator_max = 1000;
 sub match_rgx {
     my ($self, $regexp, $parent) = @_;
 
-    my $start = pos($self->{buffer}) = $self->position;
+    my $start = $self->position;
     my $terminator_iterator = $self->re_count($self->re_count + 1);
     if ($start >= length $self->{buffer} and $terminator_iterator > $terminator_max) {
         $self->throw_on_error(1);
         $self->throw_error("Your grammar seems to not terminate at end of stream");
     }
 
-    $self->{buffer} =~ /$regexp/g or return 0;
-    my $finish = pos($self->{buffer});
+    substr($self->{buffer}, $start) =~ $regexp or return 0;
+    my $finish = $start + length(${^MATCH});
     no strict 'refs';
     my $match = [ map $$_, 1..$#+ ];
     $match = [ $match ] if $#+ > 1;
@@ -310,10 +311,10 @@ sub match_code {
 
 sub set_position {
     my ($self, $position) = @_;
-    $self->position($position);
-    if ($position > $self->farthest) {
-        $self->farthest($position);
-        $self->re_count(0);
+    $self->{position} = $position;
+    if ($position > $self->{farthest}) {
+        $self->{farthest} = $position;
+        $self->{re_count} = 0;
     }
 }
 

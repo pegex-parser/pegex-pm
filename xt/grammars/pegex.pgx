@@ -10,8 +10,6 @@ meta_section: ( meta_definition | ~~ )*
 
 rule_section: ( rule_definition | ~~ )*
 
-# TODO With a commit prefix sigil, we can make these ERROR_rules more implicit
-# and elegant.
 meta_definition:
     / <PERCENT> <meta_name> <BLANK>+ <meta_value> / | ERROR_meta_definition
 
