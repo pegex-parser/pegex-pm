@@ -12,9 +12,8 @@ package Pegex::Parser;
 # In order of performance:
 use Mouse;
 # use Moose;
-# use Pegex::Mo;
+# use Moo;
 # use Mo qw(default build);
-# use Moo;    # XXX Doesn't work.
 
 use Scalar::Util;
 use Pegex::Input;
@@ -177,7 +176,7 @@ sub match_next {
     my ($min, $max) = $self->get_min_max($next);
     my $assertion = $next->{'+asr'} || 0;
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
-        grep {$next->{".$_"}} qw(ref rgx all any err code) or XXX $next;
+        grep {$next->{".$_"}} qw(ref rgx all any err code) or die $next;
 
     my ($match, $position, $count, $method) =
         ([], $self->position, 0, "match_$kind");
@@ -206,7 +205,7 @@ sub match_next_with_sep {
 
     my ($min, $max) = $self->get_min_max($next);
     my ($rule, $kind) = map {($next->{".$_"}, $_)}
-        grep {$next->{".$_"}} qw(ref rgx all any err) or XXX $next;
+        grep {$next->{".$_"}} qw(ref rgx all any err) or die $next;
     my $separator = $next->{'.sep'};
 
     my ($match, $position, $count, $method, $scount, $smin, $smax) =
