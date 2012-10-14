@@ -182,7 +182,6 @@ sub match_next {
         $kind = $_, last if $rule = $next->{".$_"};
     }
 
-
     my ($match, $position, $count, $method) =
         ([], $self->{position}, 0, "match_$kind");
 
@@ -209,18 +208,20 @@ sub match_next_with_sep {
     my ($self, $next) = @_;
 
     my ($min, $max) = $self->get_min_max($next);
-    my ($rule, $kind) = map {($next->{".$_"}, $_)}
-        grep {$next->{".$_"}} qw(ref rgx all any err) or die $next;
-    my $separator = $next->{'.sep'};
+    my ($rule, $kind);
+    for (qw(ref rgx all any err code)) {
+        $kind = $_, last if $rule = $next->{".$_"};
+    }
+    my $sep = $next->{'.sep'};
 
     my ($match, $position, $count, $method, $scount, $smin, $smax) =
         ([], $self->{position}, 0, "match_$kind", 0,
-            $self->get_min_max($separator));
+            $self->get_min_max($sep));
     while (my $return = $self->$method($rule, $next)) {
         $position = $self->{position};
         $count++;
         push @$match, @$return;
-        $return = $self->match_next($separator) or last;
+        $return = $self->match_next($sep) or last;
         my @return = @$return;
         if (@return) {
             @return = @{$return[0]} if $smax != 1;
@@ -233,7 +234,7 @@ sub match_next_with_sep {
     }
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0);
     $self->set_position($position)
-        if $count == $scount and not $separator->{'+eok'};
+        if $count == $scount and not $sep->{'+eok'};
 
     $match = [] if $next->{'-skip'};
     return ($result ? $match : 0);
@@ -246,7 +247,7 @@ sub match_ref {
             ? { '.code' => $ref }
             : die "\n\n*** No grammar support for '$ref'\n\n";
 
-    my $trace = (not $rule->{'+asr'} and $self->debug);
+    my $trace = (not $rule->{'+asr'} and $self->{debug});
     $self->trace("try_$ref") if $trace;
 
     my $match = (ref($rule) eq 'CODE')
@@ -255,8 +256,8 @@ sub match_ref {
     if ($match) {
         $self->trace("got_$ref") if $trace;
         if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
-            if (my $sub = $self->receiver->can("got_$ref")) {
-                $match = [ $sub->($self->receiver, $match->[0]) ];
+            if (my $sub = $self->{receiver}->can("got_$ref")) {
+                $match = [ $sub->($self->{receiver}, $match->[0]) ];
             }
             elsif (
                 $self->wrap ? not($parent->{'-pass'}) : $parent->{'-wrap'}
