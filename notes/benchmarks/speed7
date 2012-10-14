@@ -1,0 +1,7 @@
+# revert back to \G for now.
+ok 1 - ./xt/grammars/pegex.pgx parses in 0.041532 seconds
+ok 2 - ./xt/grammars/testml.pgx parses in 0.043401 seconds
+ok 3 - ./xt/grammars/json.pgx parses in 0.010055 seconds
+ok 4 - ./xt/grammars/yaml.pgx parses in 0.021585 seconds
+ok 5 - ./xt/grammars/pg-lexer.pgx parses in 0.245446 seconds
+ok 6 - ./xt/grammars/Pg.pgx parses in 1.856379 seconds

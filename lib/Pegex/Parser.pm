@@ -56,7 +56,7 @@ has input => (is => 'rw');  # Input object to read from
 has buffer => (is => 'rw'); # Input buffer to parse
 has error => (is => 'rw');  # Error message goes here
 has position => (           # Current position in buffer
-    is => 'ro',
+    is => 'rw',
     lazy => 1,
     default => sub {0},
 );
@@ -273,15 +273,20 @@ my $terminator_max = 1000;
 sub match_rgx {
     my ($self, $regexp, $parent) = @_;
 
-    my $start = $self->position;
+    # my $start = $self->position;
+    my $start = pos($self->{buffer}) = $self->position;
+
     my $terminator_iterator = $self->re_count($self->re_count + 1);
     if ($start >= length $self->{buffer} and $terminator_iterator > $terminator_max) {
         $self->throw_on_error(1);
         $self->throw_error("Your grammar seems to not terminate at end of stream");
     }
 
-    substr($self->{buffer}, $start) =~ $regexp or return 0;
-    my $finish = $start + length(${^MATCH});
+    # substr($self->{buffer}, $start) =~ $regexp or return 0;
+    $self->{buffer} =~ /$regexp/g or return 0;
+    # my $finish = $start + length(${^MATCH});
+    my $finish = pos($self->{buffer});
+
     no strict 'refs';
     my $match = [ map $$_, 1..$#+ ];
     $match = [ $match ] if $#+ > 1;
