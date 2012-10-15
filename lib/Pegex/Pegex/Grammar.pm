@@ -21,14 +21,14 @@ sub make_tree {
       '+min' => 1,
       '.ref' => 'ERROR_rule_part',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*)/
+        '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*/
       }
     },
     'ERROR_any_group' => {
       '+min' => '2',
       '.ref' => 'ERROR_all_group',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*)/
+        '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*/
       }
     },
     'ERROR_bracketed_group' => {
@@ -36,7 +36,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(?!\.)(?=[^\w\(\)<\/\~\|`\s]\())/
+              '.rgx' => qr/\G(?!\.)(?=[^\w\(\)<\/\~\|`\s]\()/
             },
             {
               '.err' => 'Illegal group rule modifier (can only use .)'
@@ -46,7 +46,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(\.?)\((?:\s|\#.*(?:\n|\z))*)/
+              '.rgx' => qr/\G(\.?)\((?:\s|\#.*(?:\n|\z))*/
             },
             {
               '.ref' => 'rule_group'
@@ -67,7 +67,7 @@ sub make_tree {
                 {
                   '.all' => [
                     {
-                      '.rgx' => qr/(?-xism:\G(?=(?:\s|\#.*(?:\n|\z))*\)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;]))/
+                      '.rgx' => qr/\G(?=(?:\s|\#.*(?:\n|\z))*\)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
                     },
                     {
                       '.err' => 'Illegal character in group rule quantifier'
@@ -85,7 +85,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(?=`[^`\r\n]*[\r\n][^`]*`))/
+              '.rgx' => qr/\G(?=`[^`\r\n]*[\r\n][^`]*`)/
             },
             {
               '.err' => 'Multi-line error messages not allowed!'
@@ -95,7 +95,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(?=`[^`]*(?:\s|\#.*(?:\n|\z))*\z))/
+              '.rgx' => qr/\G(?=`[^`]*(?:\s|\#.*(?:\n|\z))*\z)/
             },
             {
               '.err' => 'Runaway error message; no ending grave at EOF'
@@ -107,7 +107,7 @@ sub make_tree {
     'ERROR_meta_definition' => {
       '.all' => [
         {
-          '.rgx' => qr/(?-xism:\G(?=%\w+))/
+          '.rgx' => qr/\G(?=%\w+)/
         },
         {
           '.err' => 'Illegal meta rule'
@@ -117,7 +117,7 @@ sub make_tree {
     'ERROR_regular_expression' => {
       '.all' => [
         {
-          '.rgx' => qr/(?-xism:\G(?=\/([^\/]*)(?:\s|\#.*(?:\n|\z))*\z))/
+          '.rgx' => qr/\G(?=\/([^\/]*)(?:\s|\#.*(?:\n|\z))*\z)/
         },
         {
           '.err' => 'Runaway regular expression; no ending slash at EOF'
@@ -178,7 +178,7 @@ sub make_tree {
       '+min' => '1',
       '.ref' => 'ERROR_rule_item',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+)/
+        '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+/
       }
     },
     'ERROR_rule_reference' => {
@@ -186,7 +186,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(?=[!=\+\-\.]?<[a-zA-Z]\w*\b(?!>)))/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?<[a-zA-Z]\w*\b(?!>))/
             },
             {
               '.err' => 'Missing > in rule reference'
@@ -196,7 +196,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(?=[!=\+\-\.]?[a-zA-Z]\w*\b>))/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?[a-zA-Z]\w*\b>)/
             },
             {
               '.err' => 'Missing < in rule reference'
@@ -206,7 +206,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(?=[!=\+\-\.]?(?:[a-zA-Z]\w*\b|<[a-zA-Z]\w*\b>)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;]))/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:[a-zA-Z]\w*\b|<[a-zA-Z]\w*\b>)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
             },
             {
               '.err' => 'Illegal character in rule quantifier'
@@ -216,7 +216,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(?=[!=\+\-\.]?[a-zA-Z]\w*\b\-))/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?[a-zA-Z]\w*\b\-)/
             },
             {
               '.err' => 'Unprotected rule name with numeric quantifier; please use <rule>#-# syntax!'
@@ -230,7 +230,7 @@ sub make_tree {
               '.ref' => 'rule_modifier'
             },
             {
-              '.rgx' => qr/(?-xism:\G(?=[^\w\(\)<\/\~\|`\s](?:[a-zA-Z]\w*\b|<[a-zA-Z]\w*\b>)(?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?(?![\ \t]*:)))/
+              '.rgx' => qr/\G(?=[^\w\(\)<\/\~\|`\s](?:[a-zA-Z]\w*\b|<[a-zA-Z]\w*\b>)(?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?(?![\ \t]*:))/
             },
             {
               '.err' => 'Illegal rule modifier (must be [=!.-+]?)'
@@ -242,7 +242,7 @@ sub make_tree {
     'ERROR_rule_start' => {
       '.any' => [
         {
-          '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*\b)[\ \t]*:(?:\s|\#.*(?:\n|\z))*)/
+          '.rgx' => qr/\G([a-zA-Z]\w*\b)[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
         },
         {
           '.err' => 'Rule header syntax error'
@@ -258,7 +258,7 @@ sub make_tree {
           '+min' => 0,
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*)/
+              '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*/
             },
             {
               '.ref' => 'rule_part'
@@ -276,7 +276,7 @@ sub make_tree {
           '+min' => 0,
           '.all' => [
             {
-              '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*)/
+              '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*/
             },
             {
               '.ref' => 'all_group'
@@ -288,24 +288,24 @@ sub make_tree {
     'bracketed_group' => {
       '.all' => [
         {
-          '.rgx' => qr/(?-xism:\G(\.?)\((?:\s|\#.*(?:\n|\z))*)/
+          '.rgx' => qr/\G(\.?)\((?:\s|\#.*(?:\n|\z))*/
         },
         {
           '.ref' => 'rule_group'
         },
         {
-          '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?))/
+          '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)/
         }
       ]
     },
     'doc_ending' => {
-      '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*\z)/
+      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\z/
     },
     'ending' => {
-      '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z))/
+      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
     },
     'error_message' => {
-      '.rgx' => qr/(?-xism:\G`([^`\r\n]*)`)/
+      '.rgx' => qr/\G`([^`\r\n]*)`/
     },
     'grammar' => {
       '.all' => [
@@ -328,7 +328,7 @@ sub make_tree {
       ]
     },
     'meta_definition' => {
-      '.rgx' => qr/(?-xism:\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z))/
+      '.rgx' => qr/\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
     },
     'meta_section' => {
       '+min' => 0,
@@ -337,7 +337,7 @@ sub make_tree {
           '.ref' => 'meta_definition'
         },
         {
-          '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))+)/
+          '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+/
         },
         {
           '.ref' => 'ERROR_meta_definition'
@@ -345,7 +345,7 @@ sub make_tree {
       ]
     },
     'regular_expression' => {
-      '.rgx' => qr/(?-xism:\G\/([^\/]*)\/)/
+      '.rgx' => qr/\G\/([^\/]*)\//
     },
     'rule_definition' => {
       '.all' => [
@@ -383,18 +383,18 @@ sub make_tree {
       ]
     },
     'rule_modifier' => {
-      '.rgx' => qr/(?-xism:\G[!=\+\-\.])/
+      '.rgx' => qr/\G[!=\+\-\.]/
     },
     'rule_part' => {
       '+max' => '2',
       '+min' => '1',
       '.ref' => 'rule_item',
       '.sep' => {
-        '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+)/
+        '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+/
       }
     },
     'rule_reference' => {
-      '.rgx' => qr/(?-xism:\G([!=\+\-\.]?)(?:([a-zA-Z]\w*\b)|(?:<([a-zA-Z]\w*\b)>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?![\ \t]*:))/
+      '.rgx' => qr/\G([!=\+\-\.]?)(?:([a-zA-Z]\w*\b)|(?:<([a-zA-Z]\w*\b)>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?![\ \t]*:)/
     },
     'rule_section' => {
       '+min' => 0,
@@ -403,15 +403,15 @@ sub make_tree {
           '.ref' => 'rule_definition'
         },
         {
-          '.rgx' => qr/(?-xism:\G(?:\s|\#.*(?:\n|\z))+)/
+          '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+/
         }
       ]
     },
     'rule_start' => {
-      '.rgx' => qr/(?-xism:\G([a-zA-Z]\w*\b)[\ \t]*:(?:\s|\#.*(?:\n|\z))*)/
+      '.rgx' => qr/\G([a-zA-Z]\w*\b)[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
     },
     'whitespace_token' => {
-      '.rgx' => qr/(?-xism:\G(\~+))/
+      '.rgx' => qr/\G(\~+)/
     }
   }
 }

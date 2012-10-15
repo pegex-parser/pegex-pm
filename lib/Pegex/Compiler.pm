@@ -173,7 +173,7 @@ sub to_perl {
     $Data::Dumper::Sortkeys = 1;
     my $perl = Data::Dumper::Dumper($self->tree);
     $perl =~ s/\?\^:/?-xism:/g;
-#     $perl =~ s!(\.rgx.*?qr/)\(\?-xism:(.*)\)(?=/)!$1$2!g;
+    $perl =~ s!(\.rgx.*?qr/)\(\?-xism:(.*)\)(?=/)!$1$2!g;
     die "to_perl failed with non compatible regex in:\n$perl"
         if $perl =~ /\?\^/;
     return $perl;
