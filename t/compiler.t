@@ -25,6 +25,10 @@ sub compress {
     chomp($grammar_text);
     $grammar_text =~ s/(?<!;)\n(\w+\s*:)/;$1/g;
     $grammar_text =~ s/\s//g;
+
+    # XXX mod/quant ERROR rules are too prtective here:
+    $grammar_text =~ s/>%</> % </g;
+
     return "$grammar_text\n";
 }
 
@@ -35,7 +39,7 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 60;
+Plan = 63;
 
 test = (grammar) {
     Label = '$BlockLabel - Does the compiler output match the bootstrap?';
@@ -86,6 +90,10 @@ a: ( <b> | /c/ | `d` )
 === Bracketed Group in Unbracketed Group
 --- grammar
 a: <b> ( <c> | <d> )
+
+=== And over Or Precedence
+--- grammar
+a: <b> <c> | <d> <e> | <f> % <g>
 
 === Multiple Rules
 --- grammar
@@ -148,11 +156,11 @@ a: /w/ ( <x>+ | <y>* ) <z>?
 a: <b>
 c: !<d>
 
-=== Failing Test
+=== Regex and Rule
 --- grammar
 a_b: /c/ <d>
 
-=== Failures to test later
+=== Quantified group
 --- grammar
 a: <b> ( <c>* | <d>+ )+
 e: ( <f> !<g> )?

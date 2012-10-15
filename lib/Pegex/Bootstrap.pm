@@ -5,6 +5,10 @@
 # license:   perl
 # copyright: 2010, 2011, 2012
 
+# NOTE:
+# This algorithm should be rewritten as a proper token -> infix ->
+# shunting-yard -> RPN -> evaluate to AST... parser.
+# It should treat % as a proper infix operator with right precedence.
 package Pegex::Bootstrap;
 use Mouse;
 extends 'Pegex::Compiler';
@@ -14,6 +18,13 @@ use Pegex::Grammar::Atoms;
 my $modifier = qr{[\!\=\-\+\.]};
 my $group_modifier = qr{[\.]};
 my $quantifier = qr{(?:[\?\*\+]|\d+(?:\+|\-\d+)?)};
+my %prefixes = (
+    '!' => ['+asr', -1],
+    '=' => ['+asr', 1],
+    '.' => '-skip',
+    '-' => '-pass',
+    '+' => '-wrap',
+);
 
 sub parse {
     my ($self, $grammar_text) = @_;
@@ -133,6 +144,25 @@ sub wilt {
             ? [$branch->[$i], pop(@$wilted), $branch->[++$i]]
             : $branch->[$i];
     }
+    if (grep {$_ eq '|'} @$wilted) {
+        my @group;
+        my @grouped = shift @$wilted;   # '('
+        for (@$wilted) {
+            if (/^(?:\||\)$quantifier?)$/) {
+                push @grouped, (
+                    (@group == 1
+                        ? $group[0]
+                        : ['(', @group, ')']
+                    ), $_
+                );
+                @group = ();
+            }
+            else {
+                push @group, $_;
+            }
+        }
+        $wilted = \@grouped;
+    }
     return $wilted;
 }
 
@@ -151,34 +181,12 @@ sub compile_next {
         $node =~ m!<! ? $self->compile_rule($node) :
         $node =~ m!^$modifier?\w+$quantifier?$!
             ? $self->compile_rule($node) :
-            XXX $node;
+            die $node;
 
     while (defined $unit->{'.all'} and @{$unit->{'.all'}} == 1) {
         $unit = $unit->{'.all'}->[0];
     }
     return $unit;
-}
-
-my %prefixes = (
-    '!' => ['+asr', -1],
-    '=' => ['+asr', 1],
-    '.' => '-skip',
-    '-' => '-pass',
-    '+' => '-wrap',
-);
-
-sub compile_ws {
-    my ($self, $node) = @_;
-    my $regex = '<ws' . length($node) . '>';
-    return { '.rgx' => $regex };
-}
-
-sub compile_sep {
-    my ($self, $node) = @_;
-    my $object = $self->compile_next($node->[1]);
-    $object->{'.sep'} = $self->compile_next($node->[2]);
-    $object->{'.sep'}{'+eok'} = 1 if $node->[0] eq '%%';
-    return $object;
 }
 
 sub compile_group {
@@ -206,31 +214,6 @@ sub compile_group {
         ];
     }
     return $object;
-}
-
-sub set_quantity {
-    my ($self, $object, $quantifier) = @_;
-    if ($quantifier eq '*') {
-        $object->{'+min'} = 0;
-    }
-    elsif ($quantifier eq '+') {
-        $object->{'+min'} = 1;
-    }
-    elsif ($quantifier eq '?') {
-        $object->{'+max'} = 1;
-    }
-    elsif ($quantifier =~ /^(\d+)\+$/) {
-        $object->{'+min'} = $1;
-    }
-    elsif ($quantifier =~ /^(\d+)\-(\d+)+$/) {
-        $object->{'+min'} = $1;
-        $object->{'+max'} = $2;
-    }
-    elsif ($quantifier =~ /^(\d+)$/) {
-        $object->{'+min'} = $1;
-        $object->{'+max'} = $1;
-    }
-    else { die "Invalid quantifier: '$quantifier'" }
 }
 
 sub compile_re {
@@ -268,6 +251,45 @@ sub compile_error {
     $node =~ s!^`(.*)`$!$1! or die $node;
     $object->{'.err'} = $node;
     return $object;
+}
+
+sub compile_sep {
+    my ($self, $node) = @_;
+    my $object = $self->compile_next($node->[1]);
+    $object->{'.sep'} = $self->compile_next($node->[2]);
+    $object->{'.sep'}{'+eok'} = 1 if $node->[0] eq '%%';
+    return $object;
+}
+
+sub compile_ws {
+    my ($self, $node) = @_;
+    my $regex = '<ws' . length($node) . '>';
+    return { '.rgx' => $regex };
+}
+
+sub set_quantity {
+    my ($self, $object, $quantifier) = @_;
+    if ($quantifier eq '*') {
+        $object->{'+min'} = 0;
+    }
+    elsif ($quantifier eq '+') {
+        $object->{'+min'} = 1;
+    }
+    elsif ($quantifier eq '?') {
+        $object->{'+max'} = 1;
+    }
+    elsif ($quantifier =~ /^(\d+)\+$/) {
+        $object->{'+min'} = $1;
+    }
+    elsif ($quantifier =~ /^(\d+)\-(\d+)+$/) {
+        $object->{'+min'} = $1;
+        $object->{'+max'} = $2;
+    }
+    elsif ($quantifier =~ /^(\d+)$/) {
+        $object->{'+min'} = $1;
+        $object->{'+max'} = $1;
+    }
+    else { die "Invalid quantifier: '$quantifier'" }
 }
 
 1;
