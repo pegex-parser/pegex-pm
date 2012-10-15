@@ -11,8 +11,9 @@
 package Pegex::Regex;
 use Mouse;
 
-use Pegex::Grammar;
 use Pegex::Parser;
+use Pegex::Grammar;
+use Pegex::Receiver;
 
 my @parsers;
 my $PASS = '';
@@ -21,7 +22,7 @@ my $FAIL = '(*FAIL)';
 sub generate_regex {
     push @parsers, Pegex::Parser->new(
         grammar => Pegex::Grammar->new( text => shift ),
-        receiver => 'Pegex::Receiver',
+        receiver => Pegex::Receiver->new,
         throw_on_error => 0,
     );
     my $index = $#parsers;
