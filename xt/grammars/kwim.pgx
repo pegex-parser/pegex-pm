@@ -1,0 +1,148 @@
+%grammar kwim
+%version 0.0.1
+
+# A document is a set of top level blocks of lines (think html DIVs)
+document: top_level_block*
+
+# These are the top level blocks
+top_level_block:
+    comment_line |
+    foreign_block |
+    plugin_block |
+    header |
+    unordered_list |
+    ordered_list |
+    table |
+    quote_block |
+    horizontal_rule |
+    preformatted |
+    blank_line |
+    paragraph |
+    other_line
+
+### Helper rules
+ws: / [<SPACE><TAB>] /      # For ~ and ~~
+
+# Plugin function names
+identifier: / [<WORD><DASH>]+ /
+
+# An alias for readability
+blank: / <blank_line> /
+
+# Line containing at least one non-blank
+non_blank_line: / <ANY>*? <NS> <ANY>* <EOL> /
+
+### Top level blocks start here:
+
+# A throwaway comment line
+comment_line: /
+    <HASH> <ANY>* <EOL>
+    <blank>?
+/
+
+# This is a foreign markup inside a Kwim document
+foreign_block: /
+    <DOT> (<identifier>) ~ <EOL>
+    (
+        (:<ANY>*<EOL>)*?
+    )
+    # XXX \1 should be <BACKREF1>. Need to add to Pegex.
+    <DOT> \1 ~ <EOL>
+    <blank>?
+/
+
+plugin_block: /
+    <LCURLY> (<ANY>*) <RCURLY> ~~ <EOL>
+    <blank>?
+/
+
+header: /
+    (<EQUAL>{1,6}) ~~ (<ANY>+) <EOL>
+    <blank>?
+/
+
+unordered_list: /
+    (
+        <STAR>+ <SPACE> <ANY>* <EOL>
+        (:
+            [<STAR><DASH>]+ <SPACE> <ANY>* <EOL>
+        )*
+    )
+    <blank>?
+/
+
+ordered_list: /
+    (
+        <DASH>+ <SPACE> <ANY>* <EOL>
+        (:
+            [<STAR><DASH>]+ <SPACE> <ANY>* <EOL>
+        )*
+    )
+    <blank>?
+/
+
+table: /
+    (
+        (:
+            <PIPE><ANY>*<PIPE><SPACE><EOL>(=<PIPE>)
+        |
+            <PIPE><ALL>*?<PIPE><EOL>
+        )+
+    )
+    <blank>?
+/
+
+quote_block: /
+    (
+        (: <RANGLE> <ANY>* EOL)+
+    )
+    <blank>?
+/
+
+horizontal_rule: / <DASH>{3,} <EOL> /
+
+preformatted: /
+    (
+        # A single line
+        <preformatted_line> |
+        # Or multiple lines
+        (:
+            <preformatted_line>
+                (:
+                    <blank_line> |
+                    <preformatted_line>
+                )*
+            <preformatted_line>
+        )
+    )
+    # All so we can avoid capturing final blank line
+    <blank>?
+/
+
+preformatted_line: /
+    <SPACE>{4} <non_blank_line>
+/
+
+blank_line: / ~ <EOL> /
+
+paragraph: /
+    (
+        (:
+            (!<starter>)    # not another block starter
+            <non_blank_line>
+        )+
+    )
+    <blank>?
+/
+
+# Something that shouldn't start a paragraph line because it starts something
+# else
+starter: /(:
+    [<HASH><DASH>STAR><EQUAL>]+ <SPACE> |
+    [<PIPE><RANGLE>] |
+    <DOT> <identifier> |
+    <LCURLY> [^<RCURLY>] <RCURLY> ~ <EOL>
+)/
+
+other_line: / (<ANY>+) <EOL> /
+
