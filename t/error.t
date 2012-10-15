@@ -76,7 +76,8 @@ a: /a+/
 b: !a>1-2
 --- input
 aaa
---- error: Missing < in rule reference
+--- error: Rule ending syntax error
+# --- error: Missing < in rule reference
 
 === Pegex: Illegal character in rule quantifier
 --- grammar
@@ -84,7 +85,8 @@ a: /a+/
 b: !a^1-2
 --- input
 aaa
---- error: Illegal character in rule quantifier
+--- error: Rule ending syntax error
+# --- error: Illegal character in rule quantifier
 
 === Pegex: Unprotected rule name with numeric quantifier
 --- grammar
@@ -92,7 +94,8 @@ a: /a+/
 b: !a1-2
 --- input
 aaa
---- error: Unprotected rule name with numeric quantifier
+--- error: Rule ending syntax error
+# --- error: Unprotected rule name with numeric quantifier
 
 === Pegex: Runaway regular expression
 --- grammar
@@ -123,7 +126,8 @@ a: /a+/
 b: .(a =<a>)^2
 --- input
 aaa
---- error: Illegal character in group rule quantifier
+--- error: Rule ending syntax error
+# --- error: Illegal character in group rule quantifier
 
 === Pegex: Multi-line error messages not allowed
 --- grammar
@@ -152,11 +156,13 @@ aaa
 a: /a+/ %%% ~
 --- input
 aaa
---- error: Leading separator form (BOK) no longer supported
+--- error: Rule ending syntax error
+# --- error: Leading separator form (BOK) no longer supported
 
 === Pegex: Illegal characters in separator indicator
 --- grammar
 a: /a+/ %%~%%^%% ~
 --- input
 aaa
---- error: Illegal characters in separator indicator
+--- error: Rule ending syntax error
+# --- error: Illegal characters in separator indicator
