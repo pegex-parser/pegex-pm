@@ -268,7 +268,7 @@ into Perl so that it has no load penalty. Pegex::Grammar provides a special
 mechanism for this. Say you have a class like this:
 
     package MyThing::Grammar;
-    use Pegex::Mo;
+    use Mouse;
     extends 'Pegex::Grammar';
 
     use constant text => '../mything-grammar-repo/mything.pgx';
