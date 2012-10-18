@@ -109,6 +109,7 @@ sub parse {
 
     $self->input->open unless $self->input->_is_open;
     $self->buffer($self->input->read);
+    $self->debug;
 
     my $grammar = $self->grammar
         or die "No 'grammar'. Can't parse";
