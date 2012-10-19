@@ -1,0 +1,139 @@
+=head1 How to write a JSON Parser in Pegex
+
+This document will detail teh creation of the CPAN module: L<Pegex::JSON>
+which is a JSON parser/decoder written in Perl using the Pegex parsing
+framework. The code lives on github here:
+L<https://github.com/ingydotnet/pegex-json-pm>.
+
+=head1 Test First
+
+Have a look at L<https://github.com/ingydotnet/pegex-json-pm/blob/master/t/test.t>.
+This simple test has a bunch of small pieces of JSON and their YAML
+equivalents. It asserts that when the JSON is decoded, it will match the YAML.
+
+The test is written in a testing language known as TestML, which just happens
+to also use Pegex in its compiler. Both TestML and Pegex are B<Acmeist>
+frameworks, meaning that they are intended to work in multiple languages.
+
+You can run the test like normal:
+
+    > prove -lv t/test.t
+
+=head1 The Pegex JSON Grammar
+
+The next thing to do is write the JSON grammar in the Pegex grammar language.
+Writing grammars is the heart and soul of using Pegex. A grammar is simply a
+definition of a language that specifies what is what, and how it must be
+structured.
+
+Since Pegex is Acmeist, I put the JSON grammar in its own repo so that it
+could be shared by many different projects in different programming languages.
+The grammar file is here:
+L<https://github.com/ingydotnet/json-pgx/blob/master/json.pgx>.
+
+Let's look at this small but complete language definition in detail.
+
+The file starts with some comments. Comments can be used liberally in Pegex
+and go from a '#' to the end of a line. Just as you would expect.
+
+    # A simple grammar for the simple JSON data language.
+    # For parser implementations that use this grammar, see:
+    # * https://github.com/ingydotnet/pegex-json-pm
+
+Next we have what is called the Meta section of the grammar.
+
+    %grammar json
+    %version 0.0.1
+
+Meta section line are of the form:
+
+    %key value
+
+Your grammar should have at least a name and a version.
+
+Everything else in the grammar is a set of things called "rules". A rule has a
+name and a definition. The first rule in a grammar is special. When a parser
+starts parsing it defaults to using the first rule as the starting rule
+(although this can be overridden).
+
+We start the JSON grammar with this rule:
+
+    json: map | seq
+
+The name of this rule is 'json'. When we start parsing JSON we say that the
+entire text must match the rule 'json'. This makes a lot of sense.
+
+This style of parsing is known as Top Down and Recursive Descent. Pegex is
+both of these. It should be noted that Pegex does not tokenize a text before
+parsing it. The rules themselves form a kind of tokenizer, pulling out data as
+needed.
+
+In this rule, we are saying that a 'json' document is either a 'map' (aka
+mapping or hash) OR it is a 'seq' (aka sequence or array), which assuming you
+know JSON (almost everybody does), is the only thing allowed at the top level.
+
+In this rule, 'map' and 'seq' are called 'rule references'. They point to
+other named rules that are expected to be in the grammar. References are
+usually just the name of the subrule itself, but can also be enclosed in angle
+brackets (which are sometimes required). ie the rule above could also be
+written like this:
+
+    json: <map> | <seq>
+
+We are also introduced to the OR operator which is a single PIPE character. It
+should also be noted that a COLON simply separates a rule name and its
+definition.
+
+The line defines a new rule called 'node':
+
+    node: map | seq | scalar
+
+We are calling 'node' the list of general structures that any given point in
+the JSON data graph can be. This is simply a mapping, sequence or scalar.
+
+Moving on we need rules describing 'map', 'seq' 'scalar'. A grammar is
+complete when all of its rule references are defined.
+
+Let's start with map:
+
+    map:
+        / ~ <LCURLY> ~ /
+        pair* % / ~ <COMMA> ~ /
+        / ~ <RCURLY> ~ /
+
+This seems a lot more complicated, but let's break things down, one at a time.
+What we will find this rule to mean, is that a map is a '{' followed by zero
+or more (key/value) pairs separated by a comma, then ending with a '}'. Along
+the way there may also be intermittent whitespace. The '~' character indicates
+whitespace, but we'll cover that more later.
+
+The first thing we notice is that a rule definition can span multiple lines. A
+rule definition ends when the next rule begins. Pegex actually allows for
+multiple rules on one line, but they must terminate with a semicolon, like so:
+
+    rule1: a|b; rule2: c|d;
+
+The next see are forward slash characters. Like in Perl and JavaScript, a pair
+of slashes indicate a regular expression. In this rule we have 3 regular
+expressions.
+
+It is a good time to note that Pegex grammars get compiled into a simple data
+structure that you can express as JSON or YAML. In fact the repository
+containing the Pegex grammar that we are discussing also contains the matching
+compiled forms. See:
+L<https://github.com/ingydotnet/json-pgx/blob/master/json.pgx.yaml>. A quick
+glance at this file shows all the same rule definitions, but the regexes look
+much different.
+
+That's because Pegex tries to make regexes readable and composable. That means
+that complex regexes can be defined as small parts that get composed into
+bigger parts. By the time they get compiled, they can be quite hard to
+understand.
+
+For example if we had this Pegex grammar:
+
+    greeting: / <hello> <COMMA> ~ <world> /
+    hello: / (:O HAI | Hey there) /
+    world: / (:Earth | Mars | Venus) /
+
+

@@ -39,17 +39,17 @@ are optional (in most cases; see below).
 
     <sub_rule_name>
     sub_rule_name
-    
+
 It can have a number of prefix modifiers:
-    
+
     =<rule>  # Zero-width positive assertion (look-ahead)
     !<rule>  # Zero-width negative assertion (look-ahead)
     .<rule>  # Skip (ie: parse but don't capture a subpattern)
     -<rule>  # Pass (never wrap)
     +<rule>  # Always wrap
-    
+
 (The latter two options and wrapping are discussed L<below|/Return_Values>.)
-    
+
 As well as suffixed quantifiers (similar to REs):
 
     <rule>?    # optional
@@ -79,9 +79,9 @@ and allow for characters that normally cannot be used (like slash or hash):
     <WORD>    # \w
     <WS>      # \s
     <ws>      # <WS>*
-    
-The full list can be found in the L<Atoms source code|https://metacpan.org/source/Pegex::Grammar::Atoms>. 
-    
+
+The full list can be found in the L<Atoms source code|https://metacpan.org/source/Pegex::Grammar::Atoms>.
+
 =item Regular Expression
 
 A regular expression is a string inside forward slashes.
@@ -89,19 +89,19 @@ A regular expression is a string inside forward slashes.
     /regular expression/
 
 The RE syntax mostly follows Perl, with the following exceptions:
-    
+
     # Any rules in angle brackets are referenced in the RE
     / ( <rule1> | non_rule ) /  # "non_rule" is interpreted literally
-    
+
     # The syntax implies a /x modifier, so whitespace is ignored.
     / ( <rule1> | <rule2> ) /
-    
+
     # Whitespace is declared with tildes.
     / ~ <rule3> ~~ /  # ~ = <ws1>, ~~ = <ws2>, etc.
-    
+
     # Any (?XX ) syntax can have the question mark removed
     / (: <this> | <that> ) /  # just like (?: ) syntax
-    
+
 =item Error Message
 
 An error message is a string inside backticks.
@@ -131,22 +131,22 @@ Rule tokens can be arranged in various ways:
     <token1> | <token2>     # either or (ANY group)
     ( <token> | ~~ )*       # use parens to group up tokens and apply quantifiers
     .( <token> | ~~ )*      # Skip (just like the rule modifier)
-    
+
     <token>+ %  <DOT>       # one or more tokens are separated by <DOT>
     <token>+ %% <DOT>       # with %%, a trailing <DOT> is okay
-    
+
     a+ %  b                 # same as: a (b a)*
     a+ %% b                 # same as: a (b a)* b?
-    
+
     # This is perfectly legal
-    rule_name_1: 
+    rule_name_1:
         / ( <token1>? ) <DOT> ~ /
         rule_name_2
         / ~ <DOT> ( <token2>? ) /
         ( =<token3> | <token4>1-6 )2
 
 C<Any> pipes take precedence over everything else, similar to other parsers:
-    
+
     # (these are the same)
     a b c    | d %% e
     (a b c ) | (d %% e)
@@ -173,11 +173,11 @@ Note that this behavior can be "hard set" with the C<+/-> rule modifiers:
     +<rule>  # Always wrap (even if wrap is off)
 
 Any C<got_*> Receiver subs will override even these settings, though, choosing
-to pass the match as-is.  In this case, the C<got_*> sub return value dictates 
+to pass the match as-is.  In this case, the C<got_*> sub return value dictates
 what ultimately gets put into the tree object:
 
     +rule_A   # in this case, the + is useless here
-    
+
     sub got_rule_A {
        my ($self, $matches_arrayref) = @_;
        return { foobar => $matches_arrayref };

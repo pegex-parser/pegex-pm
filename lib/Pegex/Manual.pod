@@ -8,10 +8,14 @@ This manual is basically an index to other useful Pegex documents.
 
 =item L<Pegex::Syntax>
 
-This document describes all the components of the Pegex syntax.
+Describes all the components of the Pegex syntax.
 
 =item L<Pegex::API>
 
-This document describes the various Pegex classes and interfaces.
+Documents the various Pegex classes and interfaces.
+
+=item L<Pegex::Example::JSON>
+
+A complete example of writing a JSON parser with Pegex.
 
 =back

@@ -1,0 +1,11 @@
+=encoding utf8
+
+I<
+
+=head1 The Pegex API
+
+Pegex has a fairly simple API. At the highest level it's just this:
+
+    result = parser.parse(input)
+
+
