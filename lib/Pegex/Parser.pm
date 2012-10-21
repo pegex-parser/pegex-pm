@@ -38,7 +38,6 @@ has throw_on_error => (
 
 # Wrap results in hash with rule name for key
 has wrap => (
-    is => 'rw',
     lazy => 1,
     default => sub {
         $_[0]->receiver->{wrap};
