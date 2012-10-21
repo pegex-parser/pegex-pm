@@ -13,7 +13,7 @@ sub run {
         grammar => $grammar,
         receiver => $receiver,
     );
-    $receiver->wrap(1) if $block->{wrap};
+    $parser->wrap($block->{wrap});
     my $out = fixup(yaml($parser->parse($input)));
     is $out, $ast, $block->{title};
 }

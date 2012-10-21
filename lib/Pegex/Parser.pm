@@ -10,10 +10,11 @@
 
 package Pegex::Parser;
 # In order of performance:
-use Mouse;
+# use Mouse;
 # use Moose;
 # use Moo;
 # use Mo qw(default build);
+use Pegex::Base;
 
 use Scalar::Util;
 use Pegex::Input;
@@ -45,7 +46,7 @@ has throw_on_error => (
 has wrap => (
     is => 'ro',
     lazy => 1,
-    default => sub { $_[0]->receiver->wrap },
+    default => sub { $_[0]->{receiver}->wrap },
 );
 
 # # Allow a partial parse
@@ -84,20 +85,20 @@ has 'debug' => (
 );
 
 sub BUILD {
-    my ($self) = @_;
-    my $grammar = $self->grammar;
-    my $receiver = $self->receiver;
+    my $self = shift;
+    my $grammar = $self->{grammar};
+    my $receiver = $self->{receiver};
     if ($grammar and not ref $grammar) {
-        $self->grammar($grammar->new);
+        $self->{grammar} = $grammar->new;
     }
     if ($receiver and not ref $receiver) {
         $self->receiver($receiver->new);
     }
-    $self->{farthest} = 0;
 }
 
 sub parse {
     my ($self, $input, $start_rule) = @_;
+    $self->{position} = 0;
 
     die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
         unless 2 <= @_ and @_ <= 3;
@@ -105,52 +106,50 @@ sub parse {
     $input = Pegex::Input->new(string => $input)
         unless ref $input and UNIVERSAL::isa($input, 'Pegex::Input');
 
-    $self->input($input);
+    $self->{input} = $input;
 
-    $self->input->open unless $self->input->_is_open;
-    $self->buffer($self->input->read);
-    $self->debug;
+    $self->{input}->open unless $self->{input}->_is_open;
+    $self->{buffer} = $self->{input}->read;
 
-    my $grammar = $self->grammar
+    my $grammar = $self->{grammar}
         or die "No 'grammar'. Can't parse";
 
-    $self->position(0);
-    $self->{tree} = $grammar->tree;
+    my $tree = $self->{tree} = $grammar->{tree} //= $grammar->make_tree;
     $start_rule ||=
-        $grammar->tree->{'+toprule'} ||
-        ($grammar->tree->{'TOP'} ? 'TOP' : undef)
+        $tree->{'+toprule'} ||
+        ($tree->{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
 
-    my $receiver = $self->receiver
+    my $receiver = $self->{receiver}
         or die "No 'receiver'. Can't parse";
 
     # Add circular ref and weaken it.
-    $self->receiver->parser($self);
-    Scalar::Util::weaken($self->receiver->{parser});
+    $self->{receiver}->parser($self);
+    Scalar::Util::weaken($self->{receiver}->{parser});
 
     # Do the parse
     my $match = $self->match($start_rule) or return;
 
     # Parse was successful!
-    $self->input->close;
-    return ($self->receiver->data || $match);
+    $self->{input}->close;
+    return ($self->{receiver}->data || $match);
 }
 
 sub match {
     my ($self, $rule) = @_;
 
-    $self->receiver->initial($rule)
-        if $self->receiver->can("initial");
+    $self->{receiver}->initial($rule)
+        if $self->{receiver}->can("initial");
 
     my $match = $self->match_next({'.ref' => $rule});
-    if (not $match or $self->position < length($self->buffer)) {
+    if (not $match or $self->{position} < length($self->{buffer})) {
         $self->throw_error("Parse document failed for some reason");
         return;  # In case $self->throw_on_error is off
     }
     $match = $match->[0];
 
-    $match = $self->receiver->final($match, $rule)
-        if $self->receiver->can("final");
+    $match = $self->{receiver}->final($match, $rule)
+        if $self->{receiver}->can("final");
 
     $match = {$rule => []} unless $match;
 
@@ -258,7 +257,7 @@ sub match_ref {
                 $match = [ $sub->($self->{receiver}, $match->[0]) ];
             }
             elsif (
-                $self->wrap ? not($parent->{'-pass'}) : $parent->{'-wrap'}
+                $self->{wrap} ? not($parent->{'-pass'}) : $parent->{'-wrap'}
             ) {
                 $match = [ @$match ? { $ref => $match->[0] } : () ];
             }
@@ -368,29 +367,29 @@ sub trace {
 sub throw_error {
     my ($self, $msg) = @_;
     $self->format_error($msg);
-    return 0 unless $self->throw_on_error;
+    return 0 unless $self->{throw_on_error};
     require Carp;
-    Carp::croak($self->error);
+    Carp::croak($self->{error});
 }
 
 sub format_error {
     my ($self, $msg) = @_;
-    my $position = $self->farthest;
-    my $real_pos = $self->position;
+    my $position = $self->{farthest};
+    my $real_pos = $self->{position};
 
-    my $line = @{[substr($self->buffer, 0, $position) =~ /(\n)/g]} + 1;
-    my $column = $position - rindex($self->buffer, "\n", $position);
+    my $line = @{[substr($self->{buffer}, 0, $position) =~ /(\n)/g]} + 1;
+    my $column = $position - rindex($self->{buffer}, "\n", $position);
 
     my $pretext = substr(
-        $self->buffer,
+        $self->{buffer},
         $position < 50 ? 0 : $position - 50,
         $position < 50 ? $position : 50
     );
-    my $context = substr($self->buffer, $position, 50);
+    my $context = substr($self->{buffer}, $position, 50);
     $pretext =~ s/.*\n//gs;
     $context =~ s/\n/\\n/g;
 
-    $self->error(<<"...");
+    $@ = $self->{error} = <<"...";
 Error parsing Pegex document:
   msg:      $msg
   line:     $line
@@ -398,7 +397,6 @@ Error parsing Pegex document:
   context:  $pretext"$context"
   position: $position ($real_pos pre-lookahead)
 ...
-    $@ = $self->error;
 }
 
 1;

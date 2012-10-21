@@ -6,7 +6,7 @@
 # copyright: 2010, 2011, 2012
 
 package Pegex::Grammar;
-use Mouse;
+use Pegex::Base;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
 # Grammar can also be stored in a file.
@@ -33,7 +33,7 @@ sub make_text {
 
 sub make_tree {
     my ($self) = @_;
-    my $text = $self->text
+    my $text = $self->{text}
         or die "Can't create a '" . ref($self) .
             "' grammar. No tree or text or file.";
     require Pegex::Compiler;

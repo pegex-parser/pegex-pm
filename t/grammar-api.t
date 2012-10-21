@@ -4,7 +4,8 @@ package MyGrammar1;
 use Mouse;
 extends 'Pegex::Grammar';
 
-use constant text => <<'...';
+# use constant text => <<'...';
+has text => (is => 'ro' => default => sub {<<'...'});
 foo: /xyz/ <bar>
 bar:
     /abc/ |
