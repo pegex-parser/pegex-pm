@@ -1,11 +1,10 @@
 use Test::More tests => 1;
 
 package MyGrammar1;
-use Mouse;
+use Pegex::Base;
 extends 'Pegex::Grammar';
 
-# use constant text => <<'...';
-has text => (is => 'ro' => default => sub {<<'...'});
+use constant text => <<'...';
 foo: /xyz/ <bar>
 bar:
     /abc/ |

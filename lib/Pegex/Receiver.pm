@@ -12,7 +12,6 @@ has parser => (is => 'rw');
 has data => (is => 'rw');
 has wrap => (
     is => 'rw',
-    lazy => 1,
     default => sub { 0 },
 );
 

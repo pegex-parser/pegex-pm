@@ -33,7 +33,7 @@ sub make_text {
 
 sub make_tree {
     my ($self) = @_;
-    my $text = $self->{text}
+    my $text = $self->text
         or die "Can't create a '" . ref($self) .
             "' grammar. No tree or text or file.";
     require Pegex::Compiler;

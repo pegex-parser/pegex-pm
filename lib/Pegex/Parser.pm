@@ -9,11 +9,6 @@
 # - Pegex::Receiver
 
 package Pegex::Parser;
-# In order of performance:
-# use Mouse;
-# use Moose;
-# use Moo;
-# use Mo qw(default build);
 use Pegex::Base;
 
 use Scalar::Util;
@@ -38,15 +33,16 @@ has receiver => (
 # Allow errors to not be thrown
 has throw_on_error => (
     is => 'ro',
-    lazy => 1,
     default => sub {1},
 );
 
 # Wrap results in hash with rule name for key
 has wrap => (
-    is => 'ro',
+    is => 'rw',
     lazy => 1,
-    default => sub { $_[0]->{receiver}->wrap },
+    default => sub {
+        $_[0]->receiver->{wrap};
+    },
 );
 
 # # Allow a partial parse
@@ -58,18 +54,15 @@ has buffer => (is => 'rw'); # Input buffer to parse
 has error => (is => 'rw');  # Error message goes here
 has position => (           # Current position in buffer
     is => 'rw',
-    lazy => 1,
     default => sub {0},
 );
 has farthest => (           # Farthest point matched in buffer
     is => 'ro',
-    lazy => 1,
     default => sub {0},
 );
 # Loop counter for RE non-terminating spin prevention
 has re_count => (
     is => 'rw',
-    lazy => 1,
     default => sub {0},
 );
 
@@ -98,6 +91,7 @@ sub BUILD {
 
 sub parse {
     my ($self, $input, $start_rule) = @_;
+    $self->wrap;
     $self->{position} = 0;
 
     die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
