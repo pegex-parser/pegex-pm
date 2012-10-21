@@ -1,5 +1,5 @@
 package Pegex::Mo;
 
-die 'Pegex::Mo has been removed from Pegex. Use Mouse for best results.';
+die 'Pegex::Mo has been removed from Pegex. Use Pegex::Base instead.';
 
 1;

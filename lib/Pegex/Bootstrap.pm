@@ -10,7 +10,7 @@
 # shunting-yard -> RPN -> evaluate to AST... parser.
 # It should treat % as a proper infix operator with right precedence.
 package Pegex::Bootstrap;
-use Mouse;
+use Pegex::Base;
 extends 'Pegex::Compiler';
 
 use Pegex::Grammar::Atoms;
@@ -38,7 +38,7 @@ sub parse {
         $grammar_text = do {local $/; <IN>};
         close IN;
     }
-    $self->tree({});
+    $self->{tree} = {};
 
     # Remove comment lines
     $grammar_text =~ s/^#.*\n+//gm;
@@ -61,7 +61,7 @@ sub parse {
     if ($grammar_text =~ s/\A((%\w+ +.*\n)+)//) {
         my $section = $1;
         my (@directives) = ($section =~ /%(\w+) +(.*?) *\n/g);
-        my $tree = $self->tree;
+        my $tree = $self->{tree};
         while (@directives) {
             my ($key, $val) = splice(@directives, 0, 2);
             die "'$key' is an invalid Pegex directive"
@@ -87,14 +87,14 @@ sub parse {
         my $key = $1;
         $value =~ s/\s+/ /g;
         $value =~ s/^\s*(.*?)\s*$/$1/;
-        $self->tree->{$key} = $value;
-        $self->tree->{'+toprule'} ||= $key;
-        $self->tree->{'+toprule'} = $key if $key eq 'TOP';
+        $self->{tree}->{$key} = $value;
+        $self->{tree}->{'+toprule'} ||= $key;
+        $self->{tree}->{'+toprule'} = $key if $key eq 'TOP';
     }
 
-    for my $rule (sort keys %{$self->tree}) {
+    for my $rule (sort keys %{$self->{tree}}) {
         next if $rule =~ /^\+/;
-        my $text = $self->tree->{$rule};
+        my $text = $self->{tree}->{$rule};
         my @tokens = grep $_,
         ($text =~ m{(
             `[^`\n]*` |
@@ -112,7 +112,7 @@ sub parse {
         unshift @tokens, '(';
         push @tokens, ')';
         my $tree = $self->make_tree(\@tokens);
-        $self->tree->{$rule} = $self->compile_next($tree);
+        $self->{tree}->{$rule} = $self->compile_next($tree);
     }
     return $self;
 }

@@ -15,15 +15,14 @@ use Scalar::Util;
 use Pegex::Input;
 
 # Grammar object or class
-has grammar => (is => 'ro');
+has grammar => ();
 # Receiver object or class
 has receiver => (
-    is => 'ro',
-    lazy => 1,
     default => sub {
         require Pegex::Receiver;
         Pegex::Receiver->new();
     },
+    lazy => 1,
 );
 
 #
@@ -32,13 +31,11 @@ has receiver => (
 
 # Allow errors to not be thrown
 has throw_on_error => (
-    is => 'ro',
     default => sub {1},
 );
 
 # Wrap results in hash with rule name for key
 has wrap => (
-    lazy => 1,
     default => sub {
         $_[0]->receiver->{wrap};
     },
@@ -48,32 +45,28 @@ has wrap => (
 # has 'partial' => default => sub {0};
 
 # Internal properties.
-has input => (is => 'rw');  # Input object to read from
-has buffer => (is => 'rw'); # Input buffer to parse
-has error => (is => 'rw');  # Error message goes here
+has input => ();            # Input object to read from
+has buffer => ();           # Input buffer to parse
+has error => ();            # Error message goes here
 has position => (           # Current position in buffer
-    is => 'rw',
     default => sub {0},
 );
 has farthest => (           # Farthest point matched in buffer
-    is => 'ro',
     default => sub {0},
 );
 # Loop counter for RE non-terminating spin prevention
 has re_count => (
-    is => 'rw',
     default => sub {0},
 );
 
 # Debug the parsing of input.
 has 'debug' => (
-    is => 'ro',
-    lazy => 1,
     default => sub {
         exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
         defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
         0;
     },
+    lazy => 1,
 );
 
 sub BUILD {
@@ -90,7 +83,6 @@ sub BUILD {
 
 sub parse {
     my ($self, $input, $start_rule) = @_;
-    $self->wrap;
     $self->{position} = 0;
 
     die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
@@ -101,7 +93,7 @@ sub parse {
 
     $self->{input} = $input;
 
-    $self->{input}->open unless $self->{input}->_is_open;
+    $self->{input}->open unless $self->{input}->{_is_open};
     $self->{buffer} = $self->{input}->read;
 
     my $grammar = $self->{grammar}
@@ -117,7 +109,7 @@ sub parse {
         or die "No 'receiver'. Can't parse";
 
     # Add circular ref and weaken it.
-    $self->{receiver}->parser($self);
+    $self->{receiver}->{parser} = $self;
     Scalar::Util::weaken($self->{receiver}->{parser});
 
     # Do the parse
@@ -125,7 +117,7 @@ sub parse {
 
     # Parse was successful!
     $self->{input}->close;
-    return ($self->{receiver}->data || $match);
+    return ($self->{receiver}->{data} || $match);
 }
 
 sub match {

@@ -6,15 +6,13 @@
 # copyright: 2011, 2012
 
 package Pegex::Pegex::AST;
-use Mouse;
+use Pegex::Base;
 extends 'Pegex::Receiver';
 
 use Pegex::Grammar::Atoms;
 
-has toprule => (is => 'ro');
+has toprule => ();
 has extra_rules => (
-    is => 'ro',
-    lazy => 1,
     default => sub {+{}},
 );
 
@@ -39,8 +37,8 @@ sub got_grammar {
     my ($self, $rules) = @_;
     my ($meta_section, $rule_section) = @$rules;
     my $grammar = {
-        '+toprule' => $self->toprule,
-        %{$self->extra_rules},
+        '+toprule' => $self->{toprule},
+        %{$self->{extra_rules}},
         %$meta_section,
     };
     for (@$rule_section) {
@@ -144,7 +142,7 @@ sub got_rule_reference {
     my $ref = $ref1 || $ref2;
     my $node = +{ '.ref' => $ref };
     if (my $regex = Pegex::Grammar::Atoms->atoms->{$ref}) {
-        $self->extra_rules->{$ref} = +{ '.rgx' => $regex };
+        $self->{extra_rules}{$ref} = +{ '.rgx' => $regex };
     }
     if ($suffix) {
         $self->set_quantity($node, $suffix);

@@ -6,8 +6,10 @@
 # copyright: 2010, 2011, 2012
 
 package Pegex::Pegex::Grammar;
-use Mouse;
+use Pegex::Base;
 extends 'Pegex::Grammar';
+
+# TODO:
 # use re::engine::PCRE;
 
 use constant file => '../pegex-pgx/pegex.pgx';

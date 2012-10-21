@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+
 package Pegex::Base;
 
 sub import {
@@ -7,16 +8,14 @@ sub import {
     no strict 'refs';
     ${"$caller\::__meta"} = {
         has => [],
-        default => {},
-        builder => {},
     };
     *{"$caller\::has"} = sub {
         my ($name, %args) = @_;
         my $meta = ${"$caller\::__meta"};
         push @{$meta->{has}}, [$name, \%args];
-        use XXX;
         my ($builder, $default) = @args{qw(builder default)};
 
+        no warnings 'once';
         my $method =
             $builder ? sub {
                 $#_ ? $_[0]{$name} = $_[1] :
@@ -32,16 +31,10 @@ sub import {
                 $#_ ? $_[0]{$name} = $_[1] :
                 $_[0]{$name};
             };
-        my $accessor = $method;
-        if ($ENV{PERL_PEGEX_ACCESSOR_CALLS}) {
-            $method = sub {
-                use Time::HiRes;
-                my ($pkg, $file, $line, $sub) = caller(0);
-                warn "$pkg $name $line\n";
-                Time::HiRes::usleep(100000);
-                goto &$accessor;
-            }
-        }
+
+        $method = trace_accessor_calls($name, $method)
+            if $ENV{PERL_PEGEX_ACCESSOR_CALLS};
+
         *{"$caller\::$name"} = $method;
     };
     *{"$caller\::extends"} = sub {
@@ -61,6 +54,27 @@ sub export_xxx {
     *{"$caller\::XXX"} = \&{__PACKAGE__ . '::XXX'};
     *{"$caller\::YYY"} = \&{__PACKAGE__ . '::YYY'};
     *{"$caller\::ZZZ"} = \&{__PACKAGE__ . '::ZZZ'};
+}
+
+my $trace_exclude = +{
+    map {($_, 1)} (
+#         'Pegex::Parser receiver',
+#         'Pegex::Grammar text',
+#         'Pegex::Grammar tree',
+#         'main tree',
+    )
+};
+sub trace_accessor_calls {
+    require Time::HiRes;
+    my ($name, $accessor) = @_;
+    sub {
+        my ($pkg, $file, $line, $sub) = caller(0);
+        unless ($trace_exclude->{"$pkg $name"}) {
+            warn "$pkg $name $line\n";
+#             Time::HiRes::usleep(100000);
+        }
+        goto &$accessor;
+    };
 }
 
 package Pegex::Object;

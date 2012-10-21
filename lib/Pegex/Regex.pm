@@ -9,7 +9,6 @@
 # - Regexp::Grammars
 
 package Pegex::Regex;
-use Mouse;
 
 use Pegex::Parser;
 use Pegex::Grammar;

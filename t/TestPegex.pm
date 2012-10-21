@@ -40,7 +40,7 @@ sub run {
 }
 
 package t::TestPegex::AST;
-use Mouse;
+use Pegex::Base;
 extends 'Pegex::Receiver';
 
 sub got_zero { return 0 };
