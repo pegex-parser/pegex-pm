@@ -1,21 +1,25 @@
+# Pegex::Base generated from Moos.pm
+
 use strict;
 use warnings;
 
 package Pegex::Base;
 
+# our $VERSION = '0.03';
+
 sub import {
     my $caller = caller;
     no strict 'refs';
-    ${"$caller\::__meta"} = {
-        has => [],
-    };
+    no warnings 'once';
+    strict->import;
+    warnings->import;
+    ${"$caller\::__meta"} = { has => [] };
     *{"$caller\::has"} = sub {
         my ($name, %args) = @_;
         my $meta = ${"$caller\::__meta"};
         push @{$meta->{has}}, [$name, \%args];
         my ($builder, $default) = @args{qw(builder default)};
 
-        no warnings 'once';
         my $method =
             $builder ? sub {
                 $#_ ? $_[0]{$name} = $_[1] :
@@ -58,10 +62,8 @@ sub export_xxx {
 
 my $trace_exclude = +{
     map {($_, 1)} (
-#         'Pegex::Parser receiver',
-#         'Pegex::Grammar text',
-#         'Pegex::Grammar tree',
-#         'main tree',
+#         'Some::Module some_accessor',
+#         'Some::Module some_other_accessor',
     )
 };
 sub trace_accessor_calls {
@@ -107,3 +109,4 @@ sub BUILD {
 }
 
 1;
+
