@@ -1,6 +1,6 @@
 =head1 How to write a JSON Parser in Pegex
 
-This document will detail teh creation of the CPAN module: L<Pegex::JSON>
+This document details the creation of the CPAN module: L<Pegex::JSON>
 which is a JSON parser/decoder written in Perl using the Pegex parsing
 framework. The code lives on github here:
 L<https://github.com/ingydotnet/pegex-json-pm>.
@@ -11,9 +11,10 @@ Have a look at L<https://github.com/ingydotnet/pegex-json-pm/blob/master/t/test.
 This simple test has a bunch of small pieces of JSON and their YAML
 equivalents. It asserts that when the JSON is decoded, it will match the YAML.
 
-The test is written in a testing language known as TestML, which just happens
+The test is written in a testing language known as TestML. TestML just happens
 to also use Pegex in its compiler. Both TestML and Pegex are B<Acmeist>
-frameworks, meaning that they are intended to work in multiple languages.
+frameworks, meaning that they are intended to work in multiple programming
+languages.
 
 You can run the test like normal:
 
@@ -45,7 +46,7 @@ Next we have what is called the Meta section of the grammar.
     %grammar json
     %version 0.0.1
 
-Meta section line are of the form:
+Meta section lines are of the form:
 
     %key value
 
@@ -65,14 +66,14 @@ entire text must match the rule 'json'. This makes a lot of sense.
 
 This style of parsing is known as Top Down and Recursive Descent. Pegex is
 both of these. It should be noted that Pegex does not tokenize a text before
-parsing it. The rules themselves form a kind of tokenizer, pulling out data as
-needed.
+parsing it. The rules themselves form a kind of tokenizer, pulling out the
+desired data segments as needed.
 
 In this rule, we are saying that a 'json' document is either a 'map' (aka
 mapping or hash) OR it is a 'seq' (aka sequence or array), which assuming you
 know JSON (almost everybody does), is the only thing allowed at the top level.
 
-In this rule, 'map' and 'seq' are called 'rule references'. They point to
+In this rule, 'map' and 'seq' are called 'rule I<references>'. They point to
 other named rules that are expected to be in the grammar. References are
 usually just the name of the subrule itself, but can also be enclosed in angle
 brackets (which are sometimes required). ie the rule above could also be
@@ -84,14 +85,14 @@ We are also introduced to the OR operator which is a single PIPE character. It
 should also be noted that a COLON simply separates a rule name and its
 definition.
 
-The line defines a new rule called 'node':
+The next line defines a new rule called 'node':
 
     node: map | seq | scalar
 
 We are calling 'node' the list of general structures that any given point in
 the JSON data graph can be. This is simply a mapping, sequence or scalar.
 
-Moving on we need rules describing 'map', 'seq' 'scalar'. A grammar is
+Moving on, we need rules describing 'map', 'seq' 'scalar'. A grammar is
 complete when all of its rule references are defined.
 
 Let's start with map:
@@ -109,13 +110,13 @@ whitespace, but we'll cover that more later.
 
 The first thing we notice is that a rule definition can span multiple lines. A
 rule definition ends when the next rule begins. Pegex actually allows for
-multiple rules on one line, but they must terminate with a semicolon, like so:
+multiple rules on one line, but they must be separated by semicolons, like so:
 
-    rule1: a|b; rule2: c|d;
+    rule1: a|b; rule2: c|d; rule3: e|f
 
-The next see are forward slash characters. Like in Perl and JavaScript, a pair
-of slashes indicate a regular expression. In this rule we have 3 regular
-expressions.
+The next thing we see are forward slash characters. Like in Perl and
+JavaScript, a pair of slashes indicate a regular expression. In this rule we
+have 3 regular expressions.
 
 It is a good time to note that Pegex grammars get compiled into a simple data
 structure that you can express as JSON or YAML. In fact the repository
@@ -133,7 +134,76 @@ understand.
 For example if we had this Pegex grammar:
 
     greeting: / <hello> <COMMA> ~ <world> /
-    hello: / (:O HAI | Hey there) /
+    hello: / (:O<SPACE>HAI | Hey<SPACE>there) /
     world: / (:Earth | Mars | Venus) /
+
+It would compile to:
+
+    greeting:
+      .rgx: (?:O\ HAI|Hey\ there),\s*(?:Earth|Mars|Venus)
+
+Note the the 'hello' and 'world' rules are gone, but their definitions have
+been baked into the one big regex for 'greeting'.
+
+Additionally there are references to things like <COMMA> and <SPACE>. These
+are called Pegex B<Atoms>, and there are atoms for all the punctuation
+characters, whitespace chars, and others. The full list is here:
+L<Pegex::Grammar::Atoms>.
+
+Having to write out '<SEMI>' instead of ';' seems strange at first, but it is
+how Pegex easily separates metasyntax from text to be matched. Once you get
+used to it, it is very readable.
+
+The actual whitespace (and comments) inside a regex are completely ignored by
+Pegex. This is the same as Perl's 'x' regex flag.
+
+Finally the '~' is Pegex's 'possible whitespace' indicator, and usually
+expands to \s*. It actually expands to <ws1>, which expands to <ws>*, which
+expands to <WS>*, which exapands to \s* (unless you override any of those
+rules).
+
+Getting back to JSON...
+
+The rule we defined for 'map' should now be more readable. Let's look at it
+again, but this time in a more compact form:
+
+    map: /~<LCURLY>~/   (pair* % /~<COMMA>~/)   /~<RCURLY>~/
+
+I've compacted the regexes (since they just mean curlies and commas with
+possible whitespace), and I've added parentheses around the middle stuff to
+indicate the the '%' operator has a tighter binding.
+
+So what is the '%' operator? It was borrowed from Perl 6 Rules. Consider:
+
+    a+ % b
+
+This means one or more 'a', separated by 'b'. Simple. The %% operator means
+the same thing, except it indicates that a trailing 'b' is OK.
+
+This notation is handy for things like comma separated lists. (Which is
+exactly what we are using it for here.)
+
+The rule above means zero or more 'pair's separated by commas. (trailing comma
+not allowed, which is strictly correct for JSON).
+
+Now is a good time to bring up 'rule I<quantifiers>'. A rule quantifier is a
+suffix to a rule reference, and can be one of ? * or +. These suffixes mean
+the same thing that they would in regexes.
+
+There are two other quantifier suffixes. '2+' is equivalent to the regex
+syntax {2,} and 2-5 is the same as {2,5}.
+
+That was a lot of learning for one rule, but now you know most of Pegex!
+
+Let's take a look at that rule after compilation:
+
+    map:
+      .all:
+      - .rgx: \s*\{\s*
+      - +min: 0
+        .ref: pair
+        .sep:
+          .rgx: \s*,\s*
+      - .rgx: \s*\}\s*
 
 
