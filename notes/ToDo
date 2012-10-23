@@ -5,6 +5,10 @@
 + Make pegex->parse repeatable (currently messes up)
 
 - Flesh out documentation
+- Fix inheritance construction in Moos
+- Test with
+  - Pegex::JSON
+  - TestML
 
 # New feature ideas
 - Move AST primatives to Pegex::AST

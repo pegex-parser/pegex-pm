@@ -93,7 +93,7 @@ sub parse {
 
     $self->{input} = $input;
 
-    $self->{input}->open unless $self->{input}->{_is_open};
+    $self->{input}->open unless $self->{input}{_is_open};
     $self->{buffer} = $self->{input}->read;
 
     my $grammar = $self->{grammar}
@@ -109,15 +109,15 @@ sub parse {
         or die "No 'receiver'. Can't parse";
 
     # Add circular ref and weaken it.
-    $self->{receiver}->{parser} = $self;
-    Scalar::Util::weaken($self->{receiver}->{parser});
+    $self->{receiver}{parser} = $self;
+    Scalar::Util::weaken($self->{receiver}{parser});
 
     # Do the parse
     my $match = $self->match($start_rule) or return;
 
     # Parse was successful!
     $self->{input}->close;
-    return ($self->{receiver}->{data} || $match);
+    return ($self->{receiver}{data} || $match);
 }
 
 sub match {
