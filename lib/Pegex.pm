@@ -28,10 +28,10 @@ our @EXPORT = 'pegex';
 # pegex() is a sugar method that takes a Pegex grammar string and returns a
 # Pegex::Parser object.
 sub pegex {
-    my ($grammar_text, $options) = @_;
+    my $grammar_text = shift;
     die "pegex() requires at least 1 argument, a pegex grammar string"
         unless $grammar_text;
-    $options ||= {};
+    my $options = (@_ > 1) ? {@_} : (shift || {});
     return Pegex::Parser->new(
         grammar => Pegex::Grammar->new(text => $grammar_text),
         receiver => _get_receiver($options),
