@@ -1,0 +1,9 @@
+=head1 A Pegex Calculator
+
+When you look around the web for stuff about parsing, you inevitably find a
+bunch of examples about how to write a precedence parser for mathematical
+expressions. This is the Pegex version of that.
+
+Precedence parsers are interesting because you need to deal with operators
+that have the same precedence, different precedences and both left and right
+associativity.
