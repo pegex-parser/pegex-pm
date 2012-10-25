@@ -66,13 +66,12 @@ has 'debug' => (
         defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
         0;
     },
-    lazy => 1,
 );
 
 sub BUILD {
     my $self = shift;
-    my $grammar = $self->{grammar};
-    my $receiver = $self->{receiver};
+    my $grammar = $self->grammar;
+    my $receiver = $self->receiver;
     if ($grammar and not ref $grammar) {
         $self->{grammar} = $grammar->new;
     }
