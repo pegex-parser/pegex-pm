@@ -1,0 +1,9 @@
+# After inlining set_position.
+ok 1 - ./xt/grammars/pegex.pgx parses in 0.031574 seconds
+ok 2 - ./xt/grammars/testml.pgx parses in 0.033537 seconds
+ok 3 - ./xt/grammars/json.pgx parses in 0.007398 seconds
+ok 4 - ./xt/grammars/yaml.pgx parses in 0.016572 seconds
+ok 5 - ./xt/grammars/kwim.pgx parses in 0.011311 seconds
+ok 6 - ./xt/grammars/drinkup.pgx parses in 0.009019 seconds
+ok 7 - ./xt/grammars/pg-lexer.pgx parses in 0.177601 seconds
+ok 8 - ./xt/grammars/Pg.pgx parses in 1.366311 seconds

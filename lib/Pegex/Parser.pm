@@ -116,6 +116,7 @@ sub parse {
 
     # Parse was successful!
     $self->{input}->close;
+#     XXX $self->{receiver}->{data}, $match;
     return ($self->{receiver}{data} || $match);
 }
 
@@ -174,12 +175,21 @@ sub match_next {
     }
     if ($max != 1) {
         $match = [$match];
-        $self->set_position($position);
+        # $self->set_position($position);
+        if (($self->{position} = $position) > $self->{farthest}) {
+            $self->{farthest} = $position;
+            $self->{re_count} = 0;
+        }
     }
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0)
         ^ ($assertion == -1);
-    $self->set_position($position)
-        if not($result) or $assertion;
+    if (not($result) or $assertion) {
+        # $self->set_position($position)
+        if (($self->{position} = $position) > $self->{farthest}) {
+            $self->{farthest} = $position;
+            $self->{re_count} = 0;
+        }
+    }
 
     $match = [] if $next->{'-skip'};
     return ($result ? $match : 0);
@@ -214,8 +224,13 @@ sub match_next_with_sep {
         $match = [$match];
     }
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0);
-    $self->set_position($position)
-        if $count == $scount and not $sep->{'+eok'};
+    if ($count == $scount and not $sep->{'+eok'}) {
+        # $self->set_position($position);
+        if (($self->{position} = $position) > $self->{farthest}) {
+            $self->{farthest} = $position;
+            $self->{re_count} = 0;
+        }
+    }
 
     $match = [] if $next->{'-skip'};
     return ($result ? $match : 0);
@@ -261,32 +276,36 @@ sub match_rgx {
     my ($self, $regexp, $parent) = @_;
 
     # XXX Commented out code for switch from \G to ^. Use later.
-    # my $start = $self->{position};
-    my $start = pos($self->{buffer}) = $self->{position};
+    # my $position = $self->{position};
+    my $position = pos($self->{buffer}) = $self->{position};
 
     my $terminator_iterator = ++$self->{re_count};
-    if ($start >= length $self->{buffer} and $terminator_iterator > $terminator_max) {
+    if ($position >= length $self->{buffer} and $terminator_iterator > $terminator_max) {
         $self->throw_on_error(1);
         $self->throw_error("Your grammar seems to not terminate at end of stream");
     }
 
-    # substr($self->{buffer}, $start) =~ $regexp or return 0;
-    # my $finish = $start + length(${^MATCH});
+    # substr($self->{buffer}, $position) =~ $regexp or return 0;
+    # my $position = $position + length(${^MATCH});
     $self->{buffer} =~ /$regexp/g or return 0;
-    my $finish = pos($self->{buffer});
+    $position = pos($self->{buffer});
 
     no strict 'refs';
     my $match = [ map $$_, 1..$#+ ];
     $match = [ $match ] if $#+ > 1;
 
-    $self->set_position($finish);
+    # $self->set_position($position);
+    if (($self->{position} = $position) > $self->{farthest}) {
+        $self->{farthest} = $position;
+        $self->{re_count} = 0;
+    }
 
     return $match;
 }
 
 sub match_all {
     my ($self, $list, $parent) = @_;
-    my $pos = $self->{position};
+    my $position = $self->{position};
     my $set = [];
     my $len = 0;
     for my $elem (@$list) {
@@ -296,7 +315,11 @@ sub match_all {
             $len++;
         }
         else {
-            $self->set_position($pos);
+            # $self->set_position($position);
+            if (($self->{position} = $position) > $self->{farthest}) {
+                $self->{farthest} = $position;
+                $self->{re_count} = 0;
+            }
             return 0;
         }
     }
@@ -325,14 +348,14 @@ sub match_code {
     return $self->$method();
 }
 
-sub set_position {
-    my ($self, $position) = @_;
-    $self->{position} = $position;
-    if ($position > $self->{farthest}) {
-        $self->{farthest} = $position;
-        $self->{re_count} = 0;
-    }
-}
+# sub set_position {
+#     my ($self, $position) = @_;
+#     $self->{position} = $position;
+#     if ($position > $self->{farthest}) {
+#         $self->{farthest} = $position;
+#         $self->{re_count} = 0;
+#     }
+# }
 
 sub trace {
     my ($self, $action) = @_;
