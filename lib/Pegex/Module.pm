@@ -8,38 +8,23 @@
 package Pegex::Module;
 use Pegex::Base;
 
+has parser_class => 'Pegex::Parser';
+has grammar_class => (
+    default => sub {
+        my $class = ref($_[0]);
+        die "$class needs a 'grammar_class' property";
+    },
+);
+has receiver_class => 'Pegex::Pegex::AST';
+
 sub parse {
     my ($self, $input) = @_;
     $self = $self->new unless ref $self;
-    my $parser = $self->parser->new(
-        grammar => $self->grammar,
-        receiver => $self->receiver,
+    my $parser = $self->parser_class->new(
+        grammar => $self->grammar_class->new,
+        receiver => $self->receiver_class->new,
     );
     $parser->parse($input);
-}
-
-sub grammar {
-    my ($self) = @_;
-    $self = ref($self) || $self;
-    my $class = "${self}::Grammar";
-    eval "package $class; use base 'Pegex::Grammar'";
-    return $class;
-}
-
-sub parser {
-    my ($self) = @_;
-    $self = ref($self) || $self;
-    my $class = "${self}::Parser";
-    eval "package $class; use base 'Pegex::Parser'";
-    return $class;
-}
-
-sub receiver {
-    my ($self) = @_;
-    $self = ref($self) || $self;
-    my $class = "${self}::Receiver";
-    eval "package $class; use base 'Pegex::Receiver'";
-    return $class;
 }
 
 1;
