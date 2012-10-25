@@ -13,7 +13,7 @@ my $code = io(moos_pm_path)->all;
 $code =~ s/^##.*\n(#.*\n)*( *\n)*//m;
 $code =~ s/^=head1.*//ms;
 $code =~ s/Moos::Object/Pegex::Object/g;
-$code =~ s/Moos/Pegex::Base/;
+$code =~ s/Moos/Pegex::Base/g;
 $code =~ s/MOOS/PEGEX/g;
 $code =~ s/^(our \$VERSION =)/# $1/m;
 
