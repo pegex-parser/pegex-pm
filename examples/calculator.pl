@@ -10,12 +10,13 @@
 # * Operators of both left and right associativity
 
 use Pegex;
+# $ENV{PERL_PEGEX_DEBUG} = 1;
 
 my $grammar = <<'...';
 expr: add_sub
-add_sub: mul_div (/~([<PLUS><DASH>])~/ mul_div)*
-mul_div: exp (/~([<STAR><SLASH>])~/ exp)*
-exp: token (/~<CARET>~/ token)*
+add_sub: mul_div+ % /~([<PLUS><DASH>])~/
+mul_div: exp+ % /~([<STAR><SLASH>])~/
+exp: token+ % /~<CARET>~/
 token: /~<LPAREN>~/ expr /~<RPAREN>~/ | number
 number: /~(<DASH>?<DIGIT>+)~/
 ...
