@@ -10,7 +10,6 @@
 # * Operators of both left and right associativity
 
 use Pegex;
-# $ENV{PERL_PEGEX_DEBUG} = 1;
 
 my $grammar = <<'...';
 expr: add_sub

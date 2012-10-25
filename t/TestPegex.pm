@@ -7,7 +7,7 @@ use Test::More;
 BEGIN {
     eval "require YAML::XS; 1"
         or plan skip_all => 'Requires YAML::XS';
-    if ($ENV{PERL_TEST_DIFFERENCES}) {
+    if ($ENV{PERL_PEGEX_TEST_DIFFERENCES}) {
         require Test::Differences;
         no warnings;
         *is = \&Test::Differences::eq_or_diff;

@@ -5,9 +5,9 @@
 # license:   perl
 # copyright: 2010, 2011, 2012
 # see:
-# - Pegex::Manual
-# - Pegex::Grammar
-# - Pegex::Regex
+# - Pegex::API
+# - Pegex::Syntax
+# - Pegex::Tutorial
 # - http://github.com/ingydotnet/pegex-pm
 # - irc.freenode.net#pegex
 
@@ -20,9 +20,9 @@ package Pegex;
 use Pegex::Parser;
 use Pegex::Grammar;
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
-use base 'Exporter';
+use Exporter 'import';
 our @EXPORT = 'pegex';
 
 # pegex() is a sugar method that takes a Pegex grammar string and returns a
@@ -67,20 +67,20 @@ sub _get_receiver {
 =head1 SYNOPSIS
 
     use Pegex;
-    my $data = pegex($grammar)->parse($input);
+    my $result = pegex($grammar)->parse($input);
 
 or with regular expression sugar:
 
     use Pegex::Regex;
     $input =~ qr{$grammar}x;
-    my $data = \%/;
+    my $result = \%/;
 
 or with options:
 
     use Pegex;
     use ReceiverClass;
     my $parser = pegex($grammar, {receiver => 'ReceiverClass'});
-    my $data = $parser->parse(input);
+    my $result = $parser->parse(input);
 
 or more explicitly:
 
@@ -93,7 +93,7 @@ or more explicitly:
     my $parser = Pegex::Parser->new(
         grammar => $pegex_grammar,
     );
-    my $data = $parser->parse($input);
+    my $result = $parser->parse($input);
 
 or customized explicitly:
 
@@ -118,7 +118,7 @@ or customized explicitly:
         receiver => MyReceiver->new,
     );
     $parser->parse($input);
-    my $data = $parser->receiver->data;
+    my $result = $parser->receiver->data;
 
 =head1 DESCRIPTION
 
