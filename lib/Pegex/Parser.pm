@@ -163,12 +163,20 @@ sub optimize {
 sub optimize_node {
     my ($self, $node) = @_;
 
+    for (qw(ref rgx all any err code xxx)) {
+        die if $_ eq 'xxx';
+        if ($node->{rule} = $node->{".$_"}) {
+            $node->{kind} = $_;
+            last;
+        }
+    }
+
     my ($min, $max) = @{$node}{'+min', '+max'};
     $node->{'+min'} //= defined($max) ? 0 : 1;
     $node->{'+max'} //= defined($min) ? 0 : 1;
 
-    if (my $group = $node->{'.all'} || $node->{'.any'}) {
-        $self->optimize_node($_) for @$group;
+    if ($node->{kind} =~ /(?:all|any)/) {
+        $self->optimize_node($_) for @{$node->{rule}};
     }
     if (my $sep = $node->{'.sep'}) {
         $self->optimize_node($sep);
@@ -183,10 +191,7 @@ sub match_next {
 
     my ($min, $max) = @{$next}{'+min', '+max'};
     my $assertion = $next->{'+asr'} || 0;
-    my ($rule, $kind);
-    for (qw(ref rgx all any err code)) {
-        $kind = $_, last if $rule = $next->{".$_"};
-    }
+    my ($rule, $kind) = @{$next}{'rule', 'kind'};
 
     my ($match, $position, $count, $method) =
         ([], $self->{position}, 0, "match_$kind");
@@ -222,12 +227,8 @@ sub match_next {
 sub match_next_with_sep {
     my ($self, $next) = @_;
 
-    my ($min, $max) = @{$next}{'+min', '+max'};
-    my ($rule, $kind);
-    for (qw(ref rgx all any err code)) {
-        $kind = $_, last if $rule = $next->{".$_"};
-    }
-    my $sep = $next->{'.sep'};
+    my ($min, $max, $rule, $kind, $sep) =
+        @{$next}{'+min', '+max', 'rule', 'kind', '.sep'};
 
     my ($match, $position, $count, $method, $scount, $smin, $smax) =
         ([], $self->{position}, 0, "match_$kind", 0,
