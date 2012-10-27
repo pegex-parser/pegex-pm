@@ -57,22 +57,24 @@ sub test_grammar_paths {
 #-----------------------------------------------------------------------------#
 sub check_grammar {
     my ($source) = @_;
-    return unless -e $source;
     (my $file = $source) =~ s!.*/!!;
     my $path = "./xt/grammars/$file";
-    if (not -e $path) {
-        diag "$path not found. Copying from $source\n";
-        copy_grammar($source, $path);
+    if (-e $source) {
+        if (not -e $path) {
+            diag "$path not found. Copying from $source\n";
+            copy_grammar($source, $path);
+        }
+        elsif (slurp($source) ne slurp($path)) {
+            diag "$path is out of date. Copying from $source\n";
+            copy_grammar($source, $path);
+        }
     }
-    elsif (slurp($source) ne slurp($path)) {
-        diag "$path is out of date. Copying from $source\n";
-        copy_grammar($source, $path);
-    }
-    return $path;
+    return -e $path ? $path : undef;
 }
 
 sub copy_grammar {
     my ($source, $target) = @_;
+    return unless -e $source;
     io->file($target)->assert->print(slurp($source));
 }
 
