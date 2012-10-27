@@ -1,0 +1,43 @@
+== Working Perl Module Repos that use Pegex
+- testml-pm
+- jsony-pm
+- pegex-json-pm
+- jsync-pm
+- pegex-cmd-pm
+- pegex-crontab-pm
+- stardoc-kwim-pm
+
+== Started Perl Module Repos
+- pegex-json-coffee
+- pegex-yaml-pm
+- pegex-ypath-pm
+- pegex-pegex-emitter-perl6regex-pm
+
+== Perl Modules Planned to use Pegex
+- vroom-pm
+
+== Pegex Grammar Repos
+- cdent-pgx
+- coffee-pgx
+- crontab-pgx
+- dtsl-pgx
+- json-pgx
+- kwim-pgx
+- markup-socialtext-pgx
+- testml-pgx
+- tt2-pgx
+- xml-pgx
+- yaml-pgx
+- pegex-pgx
+
+== Pegex Implementation Repos
+- pegex-pm
+- pegex-cd
+- pegex-js
+- pegex-rb
+- pegex-py
+
+== Other Repos
+- pegex-spec
+- pegex-json-py
+- pegex-grammar-crontab-pm

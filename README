@@ -3,20 +3,20 @@ NAME
 
 SYNOPSIS
         use Pegex;
-        my $data = pegex($grammar)->parse($input);
+        my $result = pegex($grammar)->parse($input);
 
     or with regular expression sugar:
 
         use Pegex::Regex;
         $input =~ qr{$grammar}x;
-        my $data = \%/;
+        my $result = \%/;
 
     or with options:
 
         use Pegex;
         use ReceiverClass;
         my $parser = pegex($grammar, {receiver => 'ReceiverClass'});
-        my $data = $parser->parse(input);
+        my $result = $parser->parse(input);
 
     or more explicitly:
 
@@ -29,7 +29,7 @@ SYNOPSIS
         my $parser = Pegex::Parser->new(
             grammar => $pegex_grammar,
         );
-        my $data = $parser->parse($input);
+        my $result = $parser->parse($input);
 
     or customized explicitly:
 
@@ -54,7 +54,7 @@ SYNOPSIS
             receiver => MyReceiver->new,
         );
         $parser->parse($input);
-        my $data = $parser->receiver->data;
+        my $result = $parser->receiver->data;
 
 DESCRIPTION
     Pegex is a Acmeist parser framework. It allows you to easily create
@@ -199,11 +199,11 @@ A REAL WORLD EXAMPLE
     to those languages in order to test the new Pegex implementation!
 
 SEE ALSO
-    *   Pegex::Manual
+    *   Pegex::API
 
-    *   Pegex::Grammar
+    *   Pegex::Syntax
 
-    *   Pegex::Regex
+    *   Pegex::Tutorial
 
     *   <http://github.com/ingydotnet/pegex-pm>
 

@@ -1,8 +1,6 @@
 package xt::Test;
 use strict; use warnings;
 
-use Pegex::Parser;
-use Pegex::Pegex::Grammar;
 use Test::More;
 use IO::All;
 use Time::HiRes qw(gettimeofday tv_interval);
@@ -12,6 +10,7 @@ my $time;
 use base 'Exporter';
 our @EXPORT = qw(
     pegex_parser
+    pegex_parser_ast
     slurp
     test_grammar_paths
     gettimeofday
@@ -31,9 +30,22 @@ use constant TEST_GRAMMARS => [
 ];
 
 sub pegex_parser {
+    require Pegex::Parser;
+    require Pegex::Pegex::Grammar;
     my ($grammar) = @_;
     return Pegex::Parser->new(
         grammar => Pegex::Pegex::Grammar->new,
+    );
+}
+
+sub pegex_parser_ast {
+    require Pegex::Parser;
+    require Pegex::Pegex::Grammar;
+    require Pegex::Pegex::AST;
+    my ($grammar) = @_;
+    return Pegex::Parser->new(
+        grammar => Pegex::Pegex::Grammar->new,
+        receiver => Pegex::Pegex::AST->new,
     );
 }
 
