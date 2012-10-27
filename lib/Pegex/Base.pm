@@ -7,12 +7,22 @@ use warnings;
 
 package Pegex::Base;
 use v5.10.0;
+
 use mro;
 use Scalar::Util;
+use Carp qw(confess);
 
-# our $VERSION = '0.05';
+# our $VERSION = '0.09';
+
+our $CAN_HAZ_XS =
+    !$ENV{PERL_PEGEX_XS_DISABLE} &&
+    eval{ require Class::XSAccessor; Class::XSAccessor->VERSION("1.07"); 1 };
+
+use constant default_metaclass => 'Pegex::Base::Meta::Class';
+use constant default_base_class => 'Pegex::Object';
 
 sub import {
+    my ($class, %args) = @_;
     # Get name of the "class" from whence "use Pegex::Base;"
     my $package = caller;
 
@@ -21,14 +31,24 @@ sub import {
     warnings->import;
 
     # Create/register a metaclass object for the package
-    my $meta = Pegex::Base::Meta::Class->initialize($package);
+    my $metaclass =
+        delete $args{metaclass}
+        || $class->default_metaclass;
+    my $meta = $metaclass->initialize($package, %args);
 
     # Make calling class inherit from Pegex::Object by default
-    extends($meta, 'Pegex::Object');
+    my $baseclass =
+        delete $args{base_class}
+        || $class->default_base_class;
+    extends($meta, $baseclass);
 
     # Export the 'has' and 'extends' helper functions
     _export($package, has => \&has, $meta);
     _export($package, extends => \&extends, $meta);
+
+    # Export the 'blessed' and 'confess' functions
+    _export($package, blessed => \&Scalar::Util::blessed);
+    _export($package, confess => \&Carp::confess);
 
     # Possibly export some handy debugging stuff
     _export_xxx($package) if $ENV{PERL_PEGEX_XXX};
@@ -39,11 +59,11 @@ sub has {
     my ($meta, $name) = splice(@_, 0, 2);
     my %args;
 
-    # Support 2-arg shorthand: 
+    # Support 2-arg shorthand:
     #     has foo => 42;
     if (@_ % 2) {
         my $default = shift;
-        my $sub = 
+        my $sub =
             ref($default) eq 'HASH' ? sub {+{%$default}} :
             ref($default) eq 'ARRAY' ? sub {[@$default]} :
             sub {$default};
@@ -52,39 +72,14 @@ sub has {
     %args = (%args, @_);
 
     # Add attribute to meta class object
-    $meta->add_attribute($name => %args);
-
-    # Make a Setter/Getter accessor
-    my ($builder, $default) = @args{qw(builder default)};
-    my $accessor =
-        $builder ? sub {
-            $#_ ? $_[0]{$name} = $_[1] :
-            exists($_[0]{$name}) ? $_[0]{$name} :
-            ($_[0]{$name} = $_[0]->$builder);
-        } :
-        $default ? sub {
-            $#_ ? $_[0]{$name} = $_[1] :
-            exists($_[0]{$name}) ? $_[0]{$name} :
-            ($_[0]{$name} = $default->($_[0]));
-        } :
-        sub {
-            $#_ ? $_[0]{$name} = $_[1] : $_[0]{$name};
-        };
-
-    # Dev debug thing to trace calls to accessor subs.
-    $accessor = _trace_accessor_calls($name, $accessor)
-        if $ENV{PERL_PEGEX_ACCESSOR_CALLS};
-
-    # Export the accessor.
-    _export($meta->{package}, $name, $accessor);
+    $meta->add_attribute($name => \%args);
 }
 
 # Inheritance maker
 sub extends {
-    my ($meta, $parent) = @_;
-    eval "require $parent";
-    no strict 'refs';
-    @{"$meta->{package}\::ISA"} = ($parent);
+    my ($meta, @parent) = @_;
+    eval "require $_" for @parent;
+    $meta->superclasses(@parent);
 }
 
 # Use this for exports and meta-exports
@@ -112,6 +107,71 @@ sub _export_xxx {
     _export($package, ZZZ => \&{__PACKAGE__ . '::ZZZ'});
 }
 
+# The remainder of this module was heavily inspired by Pegex::Basee, and tried to do
+# what Pegex::Basee does, only much less.
+package Pegex::Base::Meta::Class;
+use Carp qw(confess);
+our @ISA = 'Pegex::Object';
+
+# Store all the Pegex::Base meta-class-objects in a private hash, keyed on
+# package/class name:
+my $meta_class_objects = {};
+
+# Helper method to get class name:
+sub name { $_[0]->{package} }
+
+sub default_attribute_metaclass { 'Pegex::Base::Meta::Attribute' }
+
+# read-only accessor
+sub attribute_metaclass {
+    $_[0]{attribute_metaclass};
+}
+__PACKAGE__->meta->add_attribute(
+    attribute_metaclass => {
+        is          => 'ro',
+        default     => \&default_attribute_metaclass,
+        _skip_setup => 1,
+    },
+);
+
+# Either looking the existing meta-class-object or register a new one:
+sub initialize {
+    my ($class, $package, %args) = @_;
+
+    # Class to use to generate attribute accessors, etc
+    $args{attribute_metaclass} ||= $class->default_attribute_metaclass;
+
+    # This is a tiny version of a Pegex::Basee meta-class-object.
+    # We really just need a place to keep the attributes.
+    return $meta_class_objects->{$package} //= do {
+        bless {
+            package => $package,
+            # This isn't currently used but matches Pegex::Basee and is cheap.
+            attributes => {},
+            # We construct with attribute in order defined. (Unlike Pegex::Basee)
+            _attributes => [],
+            %args,
+        }, $class;
+    };
+}
+
+# Make a new attribute object and add it to both a hash and an array, so that
+# we can preserve the order defined.
+sub add_attribute {
+    my $self = shift;
+    my $name = shift;
+    my %args = @_==1 ? %{$_[0]} : @_;
+
+    push @{$self->{_attributes}}, (
+        $self->{attributes}{$name} =
+        $self->attribute_metaclass->new(
+            name             => $name,
+            associated_class => $self,
+            %args,
+        )
+    );
+}
+
 # A tracing wrapper for debugging accessors
 my $trace_exclude = +{
     map {($_, 1)} (
@@ -132,40 +192,16 @@ sub _trace_accessor_calls {
     };
 }
 
-# The remainder of this module was heavily inspired by Pegex::Basee, and tried to do
-# what Pegex::Basee does, only much less.
-package Pegex::Base::Meta::Class;
-
-my $meta_class_objects = {};
-
-sub name { $_[0]->{package} }
-
-sub initialize {
-    my ($class, $package) = @_;
-
-    return $meta_class_objects->{$package} //= do {
-        bless {
-            package => $package,
-            attributes => {},
-            _attributes => [],
-        }, $class;
-    };
+sub superclasses {
+    no strict 'refs';
+    my ($self, @supers) = @_;
+    if (@supers) {
+        @{"$self->{package}\::ISA"} = @supers;
+    }
+    return @{"$self->{package}\::ISA"};
 }
 
-# Make a new attrribute object and add it to both a hash and an array, so that
-# we can preserve the order defined.
-sub add_attribute {
-    my $self = shift;
-    my ($name, %args) = @_;
-    push @{$self->{_attributes}}, (
-        $self->{attributes}{$name} =
-            bless {
-                name => $name,
-                %args,
-            }, 'Pegex::Base::Meta::Attribute'
-    );
-}
-
+# This is where new objects are constructed. (Pegex::Basee style)
 sub new_object {
     my ($self, $params) = @_;
     my $object = $self->_construct_instance($params);
@@ -185,17 +221,24 @@ sub _construct_instance {
         }
         if (not $attr->{lazy}) {
             if (my $builder = $attr->{builder}) {
+                $builder = "_build_$name"
+                    if defined $builder && $builder eq "1";
                 $instance->{$name} = $instance->$builder();
                 next;
             }
             elsif (my $default = $attr->{default}) {
                 $instance->{$name} = $default->($instance);
             }
+            if ($attr->{required} and not exists $instance->{$name}) {
+                confess "missing required attribute '$name'";
+            }
         }
     }
     return $instance;
 }
 
+# Return all the unique attributes in the order defined from the outer class
+# inwards:
 sub get_all_attributes {
     my $self = shift;
     my (@attrs, %attrs);
@@ -210,8 +253,178 @@ sub get_all_attributes {
     return @attrs;
 }
 
+# Cheap introspection stuff
+sub get_attribute {
+    my ($self, $name) = @_;
+    return $self->{attributes}{$name};
+}
+
+sub find_attribute_by_name {
+    my ($self, $name) = @_;
+    for ($self->get_all_attributes) {
+        return $_ if $_->name eq $name;
+    }
+    return;
+}
+
+# Package for blessed attributes
+package Pegex::Base::Meta::Attribute;
+use Carp qw(confess);
+BEGIN { our @ISA = 'Pegex::Object' };
+
+__PACKAGE__->meta->add_attribute($_, { is=>'ro' })
+    for qw(
+        name associated_class is isa coerce does required
+        weak_ref lazy trigger handles builder default clearer
+        predicate documentation _skip_setup
+    );
+
+sub _is_simple {
+    not (  $_[0]{builder}
+        || $_[0]{default}
+        || $ENV{PERL_PEGEX_ACCESSOR_CALLS}
+    );
+}
+
+# Not sure why it is necessary to override &new here...
+sub new {
+    my $class = shift;
+    my $self  = bless $class->BUILDARGS(@_) => $class;
+    $self->Pegex::Object::BUILDALL;
+    return $self;
+}
+
+sub BUILDARGS {
+    shift;
+    my $args = @_==1 ? $_[0] : +{@_};
+
+    # Massage %args
+    my $name = $args->{name};
+    $args->{builder} = "_build_$name"
+        if defined $args->{builder} && $args->{builder} eq "1";
+    $args->{clearer} = $name =~ /^_/ ? "_clear$name" : "clear_$name"
+        if defined $args->{clearer} && $args->{clearer} eq "1";
+    $args->{predicate} = $name =~ /^_/ ? "_has$name" : "has_$name"
+        if defined $args->{predicate} && $args->{predicate} eq "1";
+    $args->{is} = 'rw'
+        unless defined $args->{is};
+
+    return $args;
+}
+
+sub BUILD {
+    my $self      = shift;
+    my $metaclass = $self->{associated_class} or return;
+
+    unless ( $self->{_skip_setup} ) {
+        $self->_setup_accessor($metaclass);
+        $self->_setup_clearer($metaclass)    if $self->{clearer};
+        $self->_setup_predicate($metaclass)  if $self->{predicate};
+        $self->_setup_delegation($metaclass) if $self->{handles};
+    }
+}
+
+# Make a Setter/Getter accessor
+sub _setup_accessor
+{
+    my ($self, $metaclass) = @_;
+    my $name = $self->{name};
+
+    if ($self->_is_simple and $Pegex::Base::CAN_HAZ_XS) {
+        my $type = $self->{is} eq 'ro' ? 'getters' : 'accessors';
+        Class::XSAccessor->import(
+            class => $metaclass->{package},
+            $type => [$name],
+        );
+        return;
+    }
+
+    my ($builder, $default) = map $self->{$_}, qw(builder default);
+    my $accessor =
+        $builder ? sub {
+            $#_ ? $_[0]{$name} = $_[1] :
+            exists($_[0]{$name}) ? $_[0]{$name} :
+            ($_[0]{$name} = $_[0]->$builder);
+        } :
+        $default ? sub {
+            $#_ ? $_[0]{$name} = $_[1] :
+            exists($_[0]{$name}) ? $_[0]{$name} :
+            ($_[0]{$name} = $default->($_[0]));
+        } :
+        sub {
+            $#_ ? $_[0]{$name} = $_[1] : $_[0]{$name};
+        };
+
+    if ($self->{is} eq 'ro') {
+        my $orig = $accessor;
+        $accessor = sub {
+            confess "cannot set value for read-only accessor '$name'" if @_ > 1;
+            goto $orig;
+        };
+    }
+
+    # Dev debug thing to trace calls to accessor subs.
+    $accessor = _trace_accessor_calls($name, $accessor)
+        if $ENV{PERL_PEGEX_ACCESSOR_CALLS};
+
+    # Export the accessor.
+    Pegex::Base::_export($metaclass->{package}, $name, $accessor);
+
+    return;
+}
+
+sub _setup_clearer {
+    my ($self, $metaclass) = @_;
+    my $name = $self->{name};
+
+    my $clearer = $self->{clearer} or return;
+    my $sub = sub { delete $_[0]{$name} };
+    Pegex::Base::_export($metaclass->{package}, $clearer, $sub);
+    return;
+}
+
+sub _setup_predicate {
+    my ($self, $metaclass) = @_;
+    my $name = $self->{name};
+
+    my $predicate = $self->{predicate} or return;
+
+    if ($Pegex::Base::CAN_HAZ_XS) {
+        Class::XSAccessor->import(
+            class      => $metaclass->{package},
+            predicates => { $predicate => $name },
+        );
+        return;
+    }
+
+    my $sub = sub { exists $_[0]{$name} };
+    Pegex::Base::_export($metaclass->{package}, $predicate, $sub);
+    return;
+}
+
+sub _setup_delegation {
+    my ($self, $metaclass) = @_;
+    my $name = $self->{name};
+
+    return unless exists $self->{handles};
+
+    my %map;
+    %map = %{$self->{handles}}
+        if Scalar::Util::reftype($self->{handles}) eq 'HASH';
+    %map = map { ;$_=>$_ } @{$self->{handles}}
+        if Scalar::Util::reftype($self->{handles}) eq 'ARRAY';
+
+    while (my ($local, $remote) = each %map) {
+        my $sub = sub { shift->{$name}->$remote(@_) };
+        Pegex::Base::_export($metaclass->{package}, $local, $sub);
+    }
+    return;
+}
+
+# This is the default base class for all Pegex::Base classes:
 package Pegex::Object;
 
+# Pegex::Base constructor
 sub new {
     my $class = shift;
     my $real_class = Scalar::Util::blessed($class) || $class;
@@ -219,10 +432,12 @@ sub new {
     return Pegex::Base::Meta::Class->initialize($real_class)->new_object($params);
 }
 
+# A default BUILDARGS
 sub BUILDARGS {
     return {@_[1..$#_]};
 }
 
+# A default BUILDALL
 sub BUILDALL {
     return unless $_[0]->can('BUILD');
     my ($self, $params) = @_;
@@ -236,6 +451,7 @@ sub BUILDALL {
     }
 }
 
+# A Data::Dumper method. (Pegex::Basee has it. No cost.)
 sub dump {
     no warnings 'once';
     my $self = shift;
@@ -244,9 +460,13 @@ sub dump {
     Data::Dumper::Dumper $self;
 }
 
+# Use to retrieve the (rather useless) Pegex::Base meta-class-object. Hey it's a
+# start. :)
 sub meta {
-    Pegex::Base::MOP::Class->initialize(Scalar::Util::blessed($_[0]) || $_[0]);
+    Pegex::Base::Meta::Class->initialize(Scalar::Util::blessed($_[0]) || $_[0]);
 }
 
 1;
+
+=encoding utf8
 
