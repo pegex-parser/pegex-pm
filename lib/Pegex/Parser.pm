@@ -47,6 +47,7 @@ has wrap => (
 # Internal properties.
 has input => ();            # Input object to read from
 has buffer => ();           # Input buffer to parse
+has length => ();           # Length of buffer
 has error => ();            # Error message goes here
 has position => 0;          # Current position in buffer
 has farthest => 0;          # Farthest point matched in buffer
@@ -90,6 +91,7 @@ sub parse {
 
     $self->{input}->open unless $self->{input}{_is_open};
     $self->{buffer} = $self->{input}->read;
+    $self->{length} = length ${$self->{buffer}};
 
     my $grammar = $self->{grammar}
         or die "No 'grammar'. Can't parse";
@@ -127,7 +129,7 @@ sub match {
         if $self->{receiver}->can("initial");
 
     my $match = $self->match_ref($rule, {});
-    if (not $match or $self->{position} < length($self->{buffer})) {
+    if (not $match or $self->{position} < $self->{length}) {
         $self->throw_error("Parse document failed for some reason");
         return;  # In case $self->throw_on_error is off
     }
@@ -297,21 +299,26 @@ my $terminator_max = 10000; # XXX Kludge alert!
 
 sub match_rgx {
     my ($self, $regexp, $parent) = @_;
+    my $buffer = $self->{buffer};
 
     # XXX Commented out code for switch from \G to ^. Use later.
     # my $position = $self->{position};
-    my $position = pos($self->{buffer}) = $self->{position};
+    my $position = pos($$buffer) = $self->{position};
 
     my $terminator_iterator = ++$self->{re_count};
-    if ($position >= length $self->{buffer} and $terminator_iterator > $terminator_max) {
-        $self->throw_on_error(1);
-        $self->throw_error("Your grammar seems to not terminate at end of stream");
+    if ($position >= $self->{length} and
+        $terminator_iterator > $terminator_max
+    ) {
+        $self->{throw_on_error} = 1;
+        $self->throw_error(
+            "Your grammar seems to not terminate at end of stream"
+        );
     }
 
-    # substr($self->{buffer}, $position) =~ $regexp or return 0;
+    # substr($$buffer, $position) =~ $regexp or return 0;
     # my $position = $position + length(${^MATCH});
-    $self->{buffer} =~ /$regexp/g or return 0;
-    $position = pos($self->{buffer});
+    $$buffer =~ /$regexp/g or return 0;
+    $position = pos($$buffer);
 
     no strict 'refs';
     my $match = [ map $$_, 1..$#+ ];
@@ -387,7 +394,7 @@ sub trace {
     $self->{indent}-- unless $indent;
     print STDERR ' ' x $self->{indent};
     $self->{indent}++ if $indent;
-    my $snippet = substr($self->{buffer}, $self->{position});
+    my $snippet = substr(${$self->{buffer}}, $self->{position});
     $snippet = substr($snippet, 0, 30) . "..." if length $snippet > 30;
     $snippet =~ s/\n/\\n/g;
     print STDERR sprintf("%-30s", $action) .
@@ -404,18 +411,19 @@ sub throw_error {
 
 sub format_error {
     my ($self, $msg) = @_;
+    my $buffer = $self->{buffer};
     my $position = $self->{farthest};
     my $real_pos = $self->{position};
 
-    my $line = @{[substr($self->{buffer}, 0, $position) =~ /(\n)/g]} + 1;
-    my $column = $position - rindex($self->{buffer}, "\n", $position);
+    my $line = @{[substr($$buffer, 0, $position) =~ /(\n)/g]} + 1;
+    my $column = $position - rindex($$buffer, "\n", $position);
 
     my $pretext = substr(
-        $self->{buffer},
+        $$buffer,
         $position < 50 ? 0 : $position - 50,
         $position < 50 ? $position : 50
     );
-    my $context = substr($self->{buffer}, $position, 50);
+    my $context = substr($$buffer, $position, 50);
     $pretext =~ s/.*\n//gs;
     $context =~ s/\n/\\n/g;
 

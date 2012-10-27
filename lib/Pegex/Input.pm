@@ -12,7 +12,7 @@ has string => ();
 has stringref => ();
 has file => ();
 has handle => ();
-has _buffer => ( default => sub { my $x; \$x } );
+has _buffer => ();
 has _is_eof => 0;
 has _is_open => 0;
 has _is_close => 0;
@@ -27,7 +27,7 @@ sub read {
     $self->{_buffer} = undef;
     $self->{_is_eof} = 1;
 
-    return $$buffer;
+    return $buffer;
 }
 
 sub open {
