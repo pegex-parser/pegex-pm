@@ -78,7 +78,7 @@ sub BUILD {
 }
 
 sub parse {
-    my ($self, $input, $start_rule) = @_;
+    my ($self, $input, $rule) = @_;
     $self->{position} = 0; # XXX Currently needed for repeated calls.
 
     die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
@@ -99,7 +99,7 @@ sub parse {
     my $tree = $self->{tree} = $grammar->{tree} //= $grammar->make_tree;
     $self->optimize;
 
-    $start_rule ||=
+    $rule ||=
         $tree->{'+toprule'} ||
         ($tree->{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
@@ -110,20 +110,6 @@ sub parse {
     # Add circular ref and weaken it.
     $self->{receiver}{parser} = $self;
     Scalar::Util::weaken($self->{receiver}{parser});
-
-    # Do the parse
-    my $match = $self->match($start_rule) or return;
-
-    # Parse was successful!
-    $self->{input}->close;
-
-    # TODO Can't return a false value yet.
-    return ($self->{receiver}{data} || $match);
-}
-
-# Inline this method above
-sub match {
-    my ($self, $rule) = @_;
 
     $self->{receiver}->initial($rule)
         if $self->{receiver}->can("initial");
@@ -142,7 +128,10 @@ sub match {
 
     $match = $match->{TOP} || $match if $rule eq 'TOP';
 
-    return $match;
+    $self->{input}->close;
+
+    # TODO Can't return a false value yet.
+    return ($self->{receiver}{data} || $match);
 }
 
 sub optimize {
