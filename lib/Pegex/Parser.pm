@@ -73,7 +73,7 @@ sub BUILD {
         $self->{grammar} = $grammar->new;
     }
     if ($receiver and not ref $receiver) {
-        $self->receiver($receiver->new);
+        $self->{receiver} = $receiver->new;
     }
 }
 
@@ -145,13 +145,12 @@ sub match {
     return $match;
 }
 
-# + set min/max
-# - set method (like match_rgx) use sub ref
-# - set receiver sub
-# - use buffer ref
 sub optimize {
     my ($self) = @_;
     return if $self->{optimized}++;
+    for (qw(ref rgx all any err code)) {
+        $self->{$_} = $self->can("match_$_") or die;
+    }
     my $tree = $self->{tree};
     for my $name (keys %$tree) {
         my $node = $tree->{$name};
@@ -174,6 +173,7 @@ sub optimize_node {
     my ($min, $max) = @{$node}{'+min', '+max'};
     $node->{'+min'} //= defined($max) ? 0 : 1;
     $node->{'+max'} //= defined($min) ? 0 : 1;
+    $node->{'+asr'} //= 0;
 
     if ($node->{kind} =~ /(?:all|any)/) {
         $self->optimize_node($_) for @{$node->{rule}};
@@ -189,14 +189,13 @@ sub match_next {
     return $self->match_next_with_sep($next)
         if $next->{'.sep'};
 
-    my ($min, $max) = @{$next}{'+min', '+max'};
-    my $assertion = $next->{'+asr'} || 0;
-    my ($rule, $kind) = @{$next}{'rule', 'kind'};
+    my ($rule, $kind, $min, $max, $assertion) =
+        @{$next}{'rule', 'kind', '+min', '+max', '+asr'};
 
-    my ($match, $position, $count, $method) =
-        ([], $self->{position}, 0, "match_$kind");
+    my ($method, $position, $match, $count) =
+        (@{$self}{$kind, 'position'}, [], 0);
 
-    while (my $return = $self->$method($rule, $next)) {
+    while (my $return = $method->($self, $rule, $next)) {
         $position = $self->{position} unless $assertion;
         $count++;
         push @$match, @$return;
@@ -207,7 +206,6 @@ sub match_next {
         # $self->set_position($position);
         if (($self->{position} = $position) > $self->{farthest}) {
             $self->{farthest} = $position;
-            $self->{re_count} = 0;
         }
     }
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0)
@@ -216,7 +214,6 @@ sub match_next {
         # $self->set_position($position)
         if (($self->{position} = $position) > $self->{farthest}) {
             $self->{farthest} = $position;
-            $self->{re_count} = 0;
         }
     }
 
@@ -227,13 +224,13 @@ sub match_next {
 sub match_next_with_sep {
     my ($self, $next) = @_;
 
-    my ($min, $max, $rule, $kind, $sep) =
-        @{$next}{'+min', '+max', 'rule', 'kind', '.sep'};
+    my ($rule, $kind, $min, $max, $sep) =
+        @{$next}{'rule', 'kind', '+min', '+max', '.sep'};
 
-    my ($match, $position, $count, $method, $scount, $smin, $smax) =
-        ([], $self->{position}, 0, "match_$kind", 0,
-            @{$sep}{'+min', '+max'});
-    while (my $return = $self->$method($rule, $next)) {
+    my ($method, $position, $match, $count, $scount, $smin, $smax) =
+        (@{$self}{$kind, 'position'}, [], 0, 0, @{$sep}{'+min', '+max'});
+
+    while (my $return = $method->($self, $rule, $next)) {
         $position = $self->{position};
         $count++;
         push @$match, @$return;
@@ -253,7 +250,6 @@ sub match_next_with_sep {
         # $self->set_position($position);
         if (($self->{position} = $position) > $self->{farthest}) {
             $self->{farthest} = $position;
-            $self->{re_count} = 0;
         }
     }
 
@@ -264,17 +260,12 @@ sub match_next_with_sep {
 sub match_ref {
     my ($self, $ref, $parent) = @_;
     my $rule = $self->{tree}{$ref};
-    $rule ||= $self->can("match_rule_$ref")
-            ? { '.code' => $ref }
-            : die "\n\n*** No grammar support for '$ref'\n\n";
 
-    my $trace = (not $rule->{'+asr'} and $self->{debug});
+    my $trace = $rule->{trace} //= (not $rule->{'+asr'} and $self->{debug});
     $self->trace("try_$ref") if $trace;
 
-    my $match = (ref($rule) eq 'CODE')
-        ? $self->$rule()
-        : $self->match_next($rule);
-    if ($match) {
+    my $match;
+    if ($match = $self->match_next($rule)) {
         $self->trace("got_$ref") if $trace;
         if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
             if (my $sub = $self->{receiver}->can("got_$ref")) {
@@ -286,13 +277,12 @@ sub match_ref {
                 $match = [ @$match ? { $ref => $match->[0] } : () ];
             }
         }
+        return $match;
     }
     else {
         $self->trace("not_$ref") if $trace;
-        $match = 0;
+        return 0;
     }
-
-    return $match;
 }
 
 # TODO need to detect left recursion and other non-advancing conditions.
@@ -349,7 +339,6 @@ sub match_all {
             # $self->set_position($position);
             if (($self->{position} = $position) > $self->{farthest}) {
                 $self->{farthest} = $position;
-                $self->{re_count} = 0;
             }
             return 0;
         }
