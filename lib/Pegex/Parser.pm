@@ -167,6 +167,13 @@ sub optimize_node {
     if ($node->{kind} =~ /(?:all|any)/) {
         $self->optimize_node($_) for @{$node->{rule}};
     }
+    elsif ($node->{kind} eq 'ref') {
+        my $ref = $node->{rule};
+        my $rule = $self->{tree}{$ref};
+        if (my $sub = $self->{receiver}->can("got_$ref")) {
+            $rule->{got} = $sub;
+        }
+    }
     if (my $sep = $node->{'.sep'}) {
         $self->optimize_node($sep);
     }
@@ -192,7 +199,6 @@ sub match_next {
     }
     if ($max != 1) {
         $match = [$match];
-        # $self->set_position($position);
         if (($self->{position} = $position) > $self->{farthest}) {
             $self->{farthest} = $position;
         }
@@ -200,7 +206,6 @@ sub match_next {
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0)
         ^ ($assertion == -1);
     if (not($result) or $assertion) {
-        # $self->set_position($position)
         if (($self->{position} = $position) > $self->{farthest}) {
             $self->{farthest} = $position;
         }
@@ -236,7 +241,6 @@ sub match_next_with_sep {
     }
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0);
     if ($count == $scount and not $sep->{'+eok'}) {
-        # $self->set_position($position);
         if (($self->{position} = $position) > $self->{farthest}) {
             $self->{farthest} = $position;
         }
@@ -253,11 +257,10 @@ sub match_ref {
     my $trace = $rule->{trace} //= (not $rule->{'+asr'} and $self->{debug});
     $self->trace("try_$ref") if $trace;
 
-    my $match;
-    if ($match = $self->match_next($rule)) {
+    if (my $match = $self->match_next($rule)) {
         $self->trace("got_$ref") if $trace;
         if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
-            if (my $sub = $self->{receiver}->can("got_$ref")) {
+            if (my $sub = $rule->{got}) {
                 $match = [ $sub->($self->{receiver}, $match->[0]) ];
             }
             elsif (
@@ -304,7 +307,6 @@ sub match_rgx {
     my $match = [ map $$_, 1..$#+ ];
     $match = [ $match ] if $#+ > 1;
 
-    # $self->set_position($position);
     if (($self->{position} = $position) > $self->{farthest}) {
         $self->{farthest} = $position;
         $self->{re_count} = 0;
@@ -325,7 +327,6 @@ sub match_all {
             $len++;
         }
         else {
-            # $self->set_position($position);
             if (($self->{position} = $position) > $self->{farthest}) {
                 $self->{farthest} = $position;
             }
@@ -356,15 +357,6 @@ sub match_code {
     my $method = "match_rule_$code";
     return $self->$method();
 }
-
-# sub set_position {
-#     my ($self, $position) = @_;
-#     $self->{position} = $position;
-#     if ($position > $self->{farthest}) {
-#         $self->{farthest} = $position;
-#         $self->{re_count} = 0;
-#     }
-# }
 
 sub trace {
     my ($self, $action) = @_;
