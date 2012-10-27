@@ -10,16 +10,14 @@ use Pegex::Base;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.
 # Grammar can also be stored in a file.
-has file => (is => 'ro');
+has file => ();
 has text => (
-    is => 'ro',
-    lazy => 1,
     builder => 'make_text',
+    lazy => 1,
 );
 has tree => (
-    is => 'ro',
-    lazy => 1,
     builder => 'make_tree',
+    lazy => 1,
 );
 
 sub make_text {

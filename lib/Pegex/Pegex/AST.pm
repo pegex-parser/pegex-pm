@@ -12,9 +12,7 @@ extends 'Pegex::Receiver';
 use Pegex::Grammar::Atoms;
 
 has toprule => ();
-has extra_rules => (
-    default => sub {+{}},
-);
+has extra_rules => {};
 
 my %prefixes = (
     '!' => ['+asr', -1],

@@ -12,22 +12,10 @@ has string => ();
 has stringref => ();
 has file => ();
 has handle => ();
-has _buffer => (
-    default => sub { my $x; \$x },
-    lazy => 1,
-);
-has _is_eof => (
-    default => sub {0},
-    lazy => 1,
-);
-has _is_open => (
-    default => sub {0},
-    lazy => 1,
-);
-has _is_close => (
-    default => sub {0},
-    lazy => 1,
-);
+has _buffer => ( default => sub { my $x; \$x } );
+has _is_eof => 0;
+has _is_open => 0;
+has _is_close => 0;
 
 # NOTE: Current implementation reads entire input into _buffer on open().
 sub read {
