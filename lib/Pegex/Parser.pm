@@ -78,7 +78,7 @@ sub BUILD {
 }
 
 sub parse {
-    my ($self, $input, $rule) = @_;
+    my ($self, $input, $start) = @_;
     $self->{position} = 0; # XXX Currently needed for repeated calls.
 
     die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
@@ -97,12 +97,13 @@ sub parse {
         or die "No 'grammar'. Can't parse";
 
     my $tree = $self->{tree} = $grammar->{tree} //= $grammar->make_tree;
-    $self->optimize;
 
-    $rule ||=
+    my $start_rule_ref = $start ||
         $tree->{'+toprule'} ||
         ($tree->{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
+
+    $self->optimize($start_rule_ref);
 
     my $receiver = $self->{receiver}
         or die "No 'receiver'. Can't parse";
@@ -111,22 +112,22 @@ sub parse {
     $self->{receiver}{parser} = $self;
     Scalar::Util::weaken($self->{receiver}{parser});
 
-    $self->{receiver}->initial($rule)
+    $self->{receiver}->initial($start_rule_ref)
         if $self->{receiver}->can("initial");
 
-    my $match = $self->match_ref($rule, {});
+    my $match = $self->match_ref($start_rule_ref, {});
     if (not $match or $self->{position} < $self->{length}) {
         $self->throw_error("Parse document failed for some reason");
         return;  # In case $self->throw_on_error is off
     }
     $match = $match->[0];
 
-    $match = $self->{receiver}->final($match, $rule)
+    $match = $self->{receiver}->final($match, $start_rule_ref)
         if $self->{receiver}->can("final");
 
-    $match = {$rule => []} unless $match;
+    $match = {$start_rule_ref => []} unless $match;
 
-    $match = $match->{TOP} || $match if $rule eq 'TOP';
+    $match = $match->{TOP} || $match if $start_rule_ref eq 'TOP';
 
     $self->{input}->close;
 
@@ -135,7 +136,7 @@ sub parse {
 }
 
 sub optimize {
-    my ($self) = @_;
+    my ($self, $start) = @_;
     return if $self->{optimized}++;
     for (qw(ref rgx all any err code)) {
         $self->{$_} = $self->can("match_$_") or die;
@@ -146,6 +147,7 @@ sub optimize {
         next unless ref($node);
         $self->optimize_node($node);
     }
+    $self->optimize_node({'.ref' => $start});
 }
 
 sub optimize_node {
