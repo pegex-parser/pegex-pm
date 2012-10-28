@@ -2,23 +2,23 @@
 - pegex-pm
 - pegex-cd
 - pegex-js
-- pegex-rb
 - pegex-py
+- pegex-rb
 
 == Working Perl Module Repos that use Pegex
-- testml-pm
 - jsony-pm
-- pegex-json-pm
 - jsync-pm
 - pegex-cmd-pm
 - pegex-crontab-pm
+- pegex-json-pm
 - stardoc-kwim-pm
+- testml-pm
 
 == Started Perl Module Repos
 - pegex-json-coffee
+- pegex-pegex-emitter-perl6regex-pm
 - pegex-yaml-pm
 - pegex-ypath-pm
-- pegex-pegex-emitter-perl6regex-pm
 
 == Perl Modules Planned to use Pegex
 - vroom-pm
@@ -31,13 +31,13 @@
 - json-pgx
 - kwim-pgx
 - markup-socialtext-pgx
+- pegex-pgx
 - testml-pgx
 - tt2-pgx
 - xml-pgx
 - yaml-pgx
-- pegex-pgx
 
 == Other Repos
-- pegex-spec
-- pegex-json-py
 - pegex-grammar-crontab-pm
+- pegex-json-py
+- pegex-spec
