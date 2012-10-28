@@ -1,3 +1,10 @@
+== Pegex Implementation Repos
+- pegex-pm
+- pegex-cd
+- pegex-js
+- pegex-rb
+- pegex-py
+
 == Working Perl Module Repos that use Pegex
 - testml-pm
 - jsony-pm
@@ -29,13 +36,6 @@
 - xml-pgx
 - yaml-pgx
 - pegex-pgx
-
-== Pegex Implementation Repos
-- pegex-pm
-- pegex-cd
-- pegex-js
-- pegex-rb
-- pegex-py
 
 == Other Repos
 - pegex-spec
