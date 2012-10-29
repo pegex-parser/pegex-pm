@@ -1,11 +1,224 @@
 =encoding utf8
 
-I<
-
 =head1 The Pegex API
 
-Pegex has a fairly simple API. At the highest level it's just this:
+Pegex can be used in many ways: inside scripts, from the command line or as
+the foundation of a modular parsing framework. This document details the
+various ways to use Pegex.
 
-    result = parser.parse(input)
+At the most abstract level, Pegex works like this:
 
+    $result = $parser($grammar, $receiver)->parse($input);
 
+Which is to say, abstractly: a Pegex parser, under the direction of a Pegex
+grammar, parses an input stream, and reports matches to a Pegex receiver,
+which produces a result.
+
+The parser, grammar, receiver and even the input, are Pegex objects. These 4
+objects are involved in every Pegex parse operation, so let's review them
+briefly:
+
+=over
+
+=item L<Pegex::Parser>
+
+The Pegex parsing engine. This engine applies the logic of the grammar to an
+input text. A B<parser> object contains a B<grammar> object and a B<receiver>
+object. Its primary method is called C<parse>. The default parser engine is
+non-backtracking, recursive descent. However there are parser subclasses for
+various alternative types of parsing.
+
+=item L<Pegex::Grammar>
+
+A Pegex grammar starts as a text file/string composed in the B<Pegex> syntax.
+Before it can be used in by a Parser it must be compiled. After compilation,
+it is turned into a data tree consisting of rules and regexes. In modules that
+are based on a Pegex grammar, the grammar will be compiled into a class file.
+Pegex itself, uses a Pegex grammar class called L<Pegex::Pegex::Grammar> to
+parse various Pegex grammars.
+
+=item L<Pegex::Receiver>
+
+A parser on it's own has no idea what to do with the text it matches. A Pegex
+B<receiver> is a class that contains methods corresponding to the rules in a
+grammar. As a rule in the grammar matches, its corresponding receiver method
+(if one exists) is called with the data that has been matched. It is the
+receivers job to take action on the data, often building it into some new
+structure.
+
+=item L<Pegex::Input>
+
+Pegex abstracts its input stream into an object.
+
+=back
+
+All of these can be subclassed to acheive various results. Normally, you will
+write your own Pegex grammar and a Pegex receiver to achieve a task.
+
+=head2 Starting Simple - The C<pegex> Function
+
+The L<Pegex> module exports a function called C<pegex> that you can use for
+smaller tasks. Here is an example:
+
+    use Pegex; use YAML;
+
+    $grammar = "
+    expr: num PLUS num
+    num: /(<DIGIT>+)/
+    ";
+
+    print Dump pegex($grammar).parse('2+2');
+
+This program would produce:
+
+    expr:
+    - num: 2
+    - num: 2
+
+Let's review what's happening here. The L<Pegex> module is exporting a
+C<pegex> function. This function takes a Pegex grammar string as input.
+Internally this function compiles the grammar string into a grammar object.
+Then it creates a parser object containing the grammar object and returns it.
+
+The parse method is called on the input string: C<'2+2'>. The string matches,
+and a nice data structure is returned.
+
+So how was the data structure created? By the receiver object, of course! But
+we didn't specify one, did we? Nope. It used the default receiver,
+L<Pegex::AST>. We could have said:
+
+    print Dump pegex($grammar, receiver => 'Pegex::AST')->parse('2+2');
+
+This receiver basically generates a mapping, where rule names of matches are
+the keys, and the leaf values are the regex captures.
+
+The more basic receiver called L<Pegex::Receiver> generates a tree of sequences
+that contain just the data (without the rule names). This code:
+
+    print Dump pegex($grammar, receiver => 'Pegex::Receiver')->parse('2+2');
+
+would produce:
+
+    - 2
+    - 2
+
+If we wrote our own receiver class called C<Calculator> like this:
+
+    package Calculator;
+    use base 'Pegex.Receiver';
+
+    sub got_expr {
+        my ($receiver, $data) = @_;
+        my ($a, $b) = @$data;
+        return $a + $b;
+    }
+
+Then, this:
+
+    print pegex(grammar, receiver => 'Calculator')->parse('2+2');
+
+would print:
+
+    4
+
+=head2 More Explicit Usage
+
+Continuing with the example above, let's see how to do it a little more
+formally.
+
+    use Pegex::Parser;
+    use Pegex::Grammar;
+    use Pegex::AST;
+    use Pegex::Input;
+
+    $grammar_text = "
+    expr: num PLUS num
+    num: /(<DIGIT>+)/
+    ";
+
+    $grammar = Pegex::Grammar->new(text => $grammar_text);
+    $receiver = Pegex::AST->new();
+    $parser = Pegex::Parser->new(
+        grammar => $grammar,
+        receiver => $receiver,
+    );
+    $input = Pegex::Input->new(string => '2+2');
+
+    print Dump parser->parse($input);
+
+This code does the same thing as the first example, but this time we've made
+all the objects ourselves.
+
+=head2 Precompiled Grammars
+
+If you ship a Pegex grammar as part of a CPAN distribution, you'll want it to
+be precompiled into a module. Pegex make that easy.
+
+Say the grammar_text about is stored in a file called C<share/expr.pgx>. If you
+create a module called C<lib/MyThing/Grammar.pm> with content like this:
+
+    package MyThing::Grammar;
+    use base 'Pegex::Grammar';
+    use constant file => './share/expr.pgx';
+    sub make_tree {
+    }
+    1;
+
+Then run this command line:
+
+    perl -MMyThing::Grammar=compile
+
+It will rewrite your module to look something like this:
+
+    package MyThing::Grammar;
+    use base 'Pegex::Grammar';
+    use constant file => './share/expr.pgx';
+    sub make_tree {
+      { '+toprule' => 'expr',
+        'PLUS' => { '.rgx' => qr/\G\+/ },
+        'expr' => {
+          '.all' => [
+            { '.ref' => 'num' },
+            { '.ref' => 'PLUS' },
+            { '.ref' => 'num' }
+          ]
+        },
+        'num' => { '.rgx' => qr/\G([0-9]+)/ }
+      }
+    }
+    1;
+
+This command found the file where your grammar is, compiled it, and used
+L<Data::Dumper> to output it back into your module's C<make_tree> method.
+
+This is what a compiled Pegex grammar looks like. As soon as this module is
+loaded, the grammar is ready to be used by Pegex.
+
+If you find yourself needing to compile your grammar module a lot during
+development, just set this environment variable like so:
+
+    export PERL_PEGEX_AUTO_COMPILE=MyThing::Grammar
+
+Now, everytime the grammar module is loaded it will check to see if it needs to
+be recompiled, and do it on the fly.
+
+If you have more than one grammar to recompile, just list all the names
+separated by commas.
+
+=head1 See Also
+
+=over
+
+=item L<Pegex::Parser>
+
+=item L<Pegex::Grammar>
+
+=item L<Pegex::Pegex::Grammar>
+
+=item L<Pegex::Receiver>
+
+=item L<Pegex::AST>
+
+=item L<Pegex::Input>
+
+=back

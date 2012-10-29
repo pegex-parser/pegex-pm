@@ -1,9 +1,29 @@
+=encoding utf8
+
 =head1 Pegex Syntax
 
-Pegex has a fairly simple set of syntax constructs. This document details them
-all.
+The term "Pegex" can be used to mean both the Pegex Parser Framework and also
+the Pegex Grammar Language Syntax that is used to write Pegex grammar files.
+This document details the Pegex Syntax.
 
-A grammar file/text is split up into two parts:
+Pegex is a self-hosting language. That means that the grammar for defining the
+Pegex Language is written in the Pegex::Language itself. You can see it for
+yourself here:
+L<https://github.com/ingydotnet/pegex-pgx/blob/master/pegex.pgx>.
+
+I encourage you to take a quick look at it even now. A Pegex grammar (like
+this one) is made up of 2 parts: a meta section and a rule section. 
+
+The meta section just contains keyword/value meta attributes about the
+grammar. Things like the grammar's name and version.
+
+The real meat of a Pegex grammar is in its rules. The very first rule of the
+grammar above is (basically):
+
+    grammar: meta_section rule_section
+
+Which says, a B<grammar> I<IS> a B<meta_section> I<followed by> a
+B<rule_section>. But hey, we already knew that!
 
 =head2 Meta Statements
 
@@ -64,7 +84,7 @@ Note that you must use angle brackets if you are using a numbered modifier:
 
     rule8    # WRONG!  This would match rule "rule8".
     rule2+   # WRONG!  This would match rule "rule2", 1 or more times.
-    rule2-3  # This -might- work, but it's certainly unreadable and risky.
+    rule2-3  # WRONG!  Pegex syntax error
 
 Pre-defined "L<Atoms|Pegex::Grammar::Atoms>" exist to enchance readability
 and allow for characters that normally cannot be used (like slash or hash):

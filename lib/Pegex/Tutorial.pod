@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 Pegex Tutorials
 
 Pegex has a growing number of tutorials on how to do various parsing tasks.
@@ -9,14 +11,14 @@ This document is just an index to the current tutorials.
 =item L<Pegex::Tutorial::JSON>
 
 This is a very in-depth tutorial of the creation of the module L<Pegex::JSON>
-and the thought that went into creating it. It covers almost all of the
-L<Pegex::Syntax> as well.
+(a JSON decoder that uses Pegex) and the thought that went into creating it.
+It covers almost all of the L<Pegex::Syntax> as well.
 
 =item L<Pegex::Tutorial::Calculator>
 
-Pegex comes with an examples/ directory. One example is
-L<Pegex/examples/calculator.pl>. It's a simple precedence parser for
-arithmetic expressions like this one:
+Pegex comes with an C<examples/> directory. One example is
+L<Pegex/examples/calculator.pl>. It's a simple precedence parser (and
+evaluator) for arithmetic expressions like this one:
 
    1 * (2 + 3) / (4 ^ 5 ^ 6 - -7)
 
