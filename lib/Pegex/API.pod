@@ -8,7 +8,7 @@ various ways to use Pegex.
 
 At the most abstract level, Pegex works like this:
 
-    $result = $parser($grammar, $receiver)->parse($input);
+    $result = $parser->new($grammar, $receiver)->parse($input);
 
 Which is to say, abstractly: a Pegex parser, under the direction of a Pegex
 grammar, parses an input stream, and reports matches to a Pegex receiver,
@@ -43,17 +43,21 @@ A parser on it's own has no idea what to do with the text it matches. A Pegex
 B<receiver> is a class that contains methods corresponding to the rules in a
 grammar. As a rule in the grammar matches, its corresponding receiver method
 (if one exists) is called with the data that has been matched. It is the
-receivers job to take action on the data, often building it into some new
+receiver's job to take action on the data, often building it into some new
 structure.
 
 =item L<Pegex::Input>
 
-Pegex abstracts its input stream into an object.
+Pegex abstracts its input streams into an object interface as well. Any
+operation that can take an input string, can also take an input object. Pegex
+will turn regular strings into these objects. This is probably the API concept
+you will encounter the least, but it is covered here for completeness.
 
 =back
 
-All of these can be subclassed to acheive various results. Normally, you will
-write your own Pegex grammar and a Pegex receiver to achieve a task.
+All of these object classes can be subclassed to acheive various results.
+Normally, you will write your own Pegex grammar and a Pegex receiver to
+achieve a task.
 
 =head2 Starting Simple - The C<pegex> Function
 
@@ -67,7 +71,7 @@ smaller tasks. Here is an example:
     num: /(<DIGIT>+)/
     ";
 
-    print Dump pegex($grammar).parse('2+2');
+    print Dump pegex($grammar)->parse('2+2');
 
 This program would produce:
 
@@ -199,8 +203,8 @@ development, just set this environment variable like so:
 
     export PERL_PEGEX_AUTO_COMPILE=MyThing::Grammar
 
-Now, everytime the grammar module is loaded it will check to see if it needs to
-be recompiled, and do it on the fly.
+Now, every time the grammar module is loaded it will check to see if it needs
+to be recompiled, and do it on the fly.
 
 If you have more than one grammar to recompile, just list all the names
 separated by commas.
