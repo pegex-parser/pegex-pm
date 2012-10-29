@@ -7,12 +7,12 @@ the Pegex Grammar Language Syntax that is used to write Pegex grammar files.
 This document details the Pegex Syntax.
 
 Pegex is a self-hosting language. That means that the grammar for defining the
-Pegex Language is written in the Pegex::Language itself. You can see it for
+Pegex Language is written in the Pegex Language itself. You can see it for
 yourself here:
 L<https://github.com/ingydotnet/pegex-pgx/blob/master/pegex.pgx>.
 
-I encourage you to take a quick look at it even now. A Pegex grammar (like
-this one) is made up of 2 parts: a meta section and a rule section. 
+I encourage you to take a quick look at that link even now. A Pegex grammar
+(like this one) is made up of 2 parts: a meta section and a rule section.
 
 The meta section just contains keyword/value meta attributes about the
 grammar. Things like the grammar's name and version.
@@ -25,42 +25,86 @@ grammar above is (basically):
 Which says, a B<grammar> I<IS> a B<meta_section> I<followed by> a
 B<rule_section>. But hey, we already knew that!
 
-=head2 Meta Statements
+=head1 Meta Section
 
-Meta statements are similar to the percent-prefixed declarations found in
-yacc, bison, flex, and other parsers:
+The meta statements ate the top of a grammar file look like this:
+
+    %pegexKeyword value
+
+Let's look at the top the the pegex.pgx grammar:
 
     # This is the Pegex grammar for Pegex grammars!
     %grammar pegex
     %version 0.1.0
 
-A rule definition will end the meta section.
+This defines two meta values: C<grammar> and C<version>, which specify the
+name and the version of the grammar, respectively.
 
-=head2 Rules
+You'll also notice that the first line is a comment. Comments start with a
+C<#> and go until the end of the line. Comments are allowed almost anywhere in
+the grammar, both on their own lines, after statements, and even within regex
+definitions as we will see later.
 
-Most of a Pegex grammar is just a set of named rules.  They look like this:
+The Pegex Meta Section ends when the Pegex Rule Section begins (with the first
+rule definition).
 
-    rule_name_1: <rule>* <body> /1/
-    rule_name_2: /rule body 2/
+=head1 Rule Section
 
-A rule is a name, followed by a ':', followed by a rule body.  It can optionally
-end with a semicolon, if you want to put more than one on a line.
+The remainder of a Pegex grammar is a set of named rules. Each rule is a rule
+name, followed by a ':', followed by the definition of the rule, followed by a
+';' or a newline.
 
-=head3 Basic Tokens
+Here are a couple rules from the pegex.pgx grammar. (These are the rules that
+start to define a rule!).
 
-Pegex only has 3 kinds of basic tokens:
+    rule_definition:
+        rule_start
+        rule_group
+        ending
 
-=over
+    rule_start: /
+        ( <rule_name> )     # Capture the rule_name
+        <BLANK>*
+        <COLON> ~
+    /
 
-=item Rule Reference
+Rule definitions are infix expressions. They consist of tokens separated by
+operators, with parentheses to disambiguate binding precedence. There are 3
+distinct tokens and 3 operators.
 
-A rule reference is the name of a rule inside angle brackets.  The brackets
-are optional (in most cases; see below).
+The 3 token types are: rule-reference, regex and error-message. The 3
+operators are AND (' '), OR ('|') and ALT ('%', '%%').
+
+Here's an example from a Pegex grammar for parsing JSON:
+
+    json: hash | array
+    array: /<LSQUARE>/ ( node* % /<COMMA>/ ) (
+        /<RSQUARE>/ | `missing ']'` )
+
+This is saying: "json is either a hash or array. array is '[', zero or more
+nodes separated by commas, and a ']'. error if no ']'".
+
+C<hash>, C<array> and C<node> are rule references, meaning that they refer to
+named rules within the grammar that must match at that point. Text surrounded
+by a pair of '/' chars forms a regex. Text surrounding by backticks is an
+error message.
+
+C<LSQUARE>, C<RSQUARE> and C<COMMA> are also rule references. Rules may be
+referred to inside of regexes, as long as they refer to regexes themselves. In
+this way big regexes can be assembled from smaller ones, thus leading to reuse
+and readability. Finally, the '*' after C<node> is called a "quntifier". More
+about those later.
+
+=head2 Rule References
+
+A rule reference is the name of a rule inside angle brackets. The brackets are
+usually optional outside of a regex, and always required inside a regex.
 
     <sub_rule_name>
     sub_rule_name
 
-It can have a number of prefix modifiers:
+When used outside a regex, a reference can have a number of prefix modifiers.
+Note the the angle brackets are not required here, but add to readability.
 
     =<rule>  # Zero-width positive assertion (look-ahead)
     !<rule>  # Zero-width negative assertion (look-ahead)
@@ -68,17 +112,17 @@ It can have a number of prefix modifiers:
     -<rule>  # Pass (never wrap)
     +<rule>  # Always wrap
 
-(The latter two options and wrapping are discussed L<below|/Return_Values>.)
+A reference can also have a number of suffixed quantifiers. Similar to regular
+expression syntax, a quantifier indicates how many times a rule (reference)
+should match.
 
-As well as suffixed quantifiers (similar to REs):
-
-    <rule>?    # optional
-    <rule>*    # 0 or more times
-    <rule>+    # 1 or more times
+    rule?      # optional
+    rule*      # 0 or more times
+    rule+      # 1 or more times
     <rule>8    # exactly 8 times
     <rule>2+   # 2 or more times
     <rule>2-3  # 2 or 3 times
-    <rule>1-6  # 1 to 6 times
+    <rule>0-6  # 0 to 6 times
 
 Note that you must use angle brackets if you are using a numbered modifier:
 
@@ -86,8 +130,24 @@ Note that you must use angle brackets if you are using a numbered modifier:
     rule2+   # WRONG!  This would match rule "rule2", 1 or more times.
     rule2-3  # WRONG!  Pegex syntax error
 
-Pre-defined "L<Atoms|Pegex::Grammar::Atoms>" exist to enchance readability
-and allow for characters that normally cannot be used (like slash or hash):
+There is a special set of predefined "L<Atoms|Pegex::Grammar::Atoms>" that
+refer to regular expression fragments. Atoms exist for every punctuation
+character and for characters commonly found in regular expressions. Atoms
+enchance readability in grammar texts, and allow special characters (like
+slash or hash) to be used as Pegex syntax.
+
+For example, a regex to match a comment might be '#' followed by anything,
+followed by a newline. In Pegex, you would write:
+
+    comment: / <HASH> <ANY>* <EOL> /
+
+instead of:
+
+    comment: /#.*\r?\n/
+
+Pegex would compile the former into the latter.
+
+Here are some atoms:
 
     <TILDE>   # ~
     <SLASH>   # /
@@ -98,108 +158,113 @@ and allow for characters that normally cannot be used (like slash or hash):
     <RPAREN>  # ) (literal)
     <WORD>    # \w
     <WS>      # \s
-    <ws>      # <WS>*
 
-The full list can be found in the L<Atoms source code|https://metacpan.org/source/Pegex::Grammar::Atoms>.
+The full list can be found in the
+L<Atoms source code|https://metacpan.org/source/Pegex::Grammar::Atoms>.
 
-=item Regular Expression
+=head2 Regexes
 
-A regular expression is a string inside forward slashes.
+In Pegex we call the syntax for a regular expression a "regex". ie When the
+term "regex" is used, it is referring to Pegex syntax, and when the term
+"regular expression" is used it refers to the actual regular expression that
+the regex is compiled into.
 
-    /regular expression/
+A regex is a string inside forward slashes.
 
-The RE syntax mostly follows Perl, with the following exceptions:
+    /regex/
 
-    # Any rules in angle brackets are referenced in the RE
+The regex syntax mostly follows Perl, with the following exceptions:
+
+    # Any rules in angle brackets are referenced in the regex
     / ( <rule1> | non_rule ) /  # "non_rule" is interpreted literally
 
-    # The syntax implies a /x modifier, so whitespace is ignored.
-    / ( <rule1> | <rule2> ) /
+    # The syntax implies a /x modifier, so whitespace and comments are
+    # ignored.
+    / (
+        <rule1>+   # Match rule1 one or more times
+        |
+        <rule2>
+    ) /
 
     # Whitespace is declared with tildes.
-    / ~ <rule3> ~~ /  # ~ = <ws1>, ~~ = <ws2>, etc.
+    / ~ <rule3> ~~ /  # ~ = \s*, ~~ = \s+, etc.
 
     # Any (?XX ) syntax can have the question mark removed
-    / (: <this> | <that> ) /  # just like (?: ) syntax
+    / (: <a> | <b> ) /  # same as / (?: <a> | <b> ) /
 
-=item Error Message
+=head2 Error Message
 
-An error message is a string inside backticks.
+An error message is a string inside backticks. If the parser gets to an error
+message in the grammar, it throws a parse error with that message.
 
     `error message`
 
-The error message looks like this:
+=head2 Operators
 
-    Error parsing Pegex document:
-      msg: $msg
-      line: $line
-      column: $column
-      context: "$context"
-      position: $position
+The Pegex operators in descending precedence order are: ALT, AND, and OR.
 
-The Parser's C<throw_on_error> boolean determines if it's actually
-going to C<croak>, or merely stuff the error into C<$@>.  (Default
-is yes.)
+AND and OR are the most common operators. AND is represented by the absence of
+an operator. Like in these rules:
+
+    r1: <a><b>
+    r2: a b
+
+Those are both the same. They mean rule C<a> AND (followed immediately by)
+rule C<b>.
+
+OR means match one or the other.
+
+    r: a | b | c
+
+means match rule C<a> OR rule C<b> OR rule C<c>. The rules are checked in
+order and if one matches, the others are skipped.
+
+ALT means alternation. It's a way to specify a separator in a list.
+
+    r: a+ % b
+
+would match these:
+
+    a
+    aba
+    ababa
+
+C<%%> means that a trailing separator is optional.
+
+    r: a+ %% b
+
+would match these:
+
+    a
+    ab
+    aba
+    abab
+
+These rules have the same binding precedence:
+
+    r1: a b | c % d
+    r2: (a b) | (c % d)
+
+Parens are not only used for indicating binding precedence; they also can
+create quantifiable groups:
+
+    r1: (a b)+ c
+
+would match:
+
+    abababac
+
+The same quantifiers that can be applied to references, can be applied to
+groups too.
+
+=head1 See Also
+
+=over
+
+=item L<Pegex::API>
+
+=item L<Pegex::Tutorial>
+
+=item L<Pegex::Resources>
 
 =back
-
-Rule tokens can be arranged in various ways:
-
-    ~                       # whitespace tildes can be used anywhere
-    <token>                 # just a single token
-    <token1> <token2>       # both tokens must exist (AND group)
-    <token1> | <token2>     # either or (ANY group)
-    ( <token> | ~~ )*       # use parens to group up tokens and apply quantifiers
-    .( <token> | ~~ )*      # Skip (just like the rule modifier)
-
-    <token>+ %  <DOT>       # one or more tokens are separated by <DOT>
-    <token>+ %% <DOT>       # with %%, a trailing <DOT> is okay
-
-    a+ %  b                 # same as: a (b a)*
-    a+ %% b                 # same as: a (b a)* b?
-
-    # This is perfectly legal
-    rule_name_1:
-        / ( <token1>? ) <DOT> ~ /
-        rule_name_2
-        / ~ <DOT> ( <token2>? ) /
-        ( =<token3> | <token4>1-6 )2
-
-C<Any> pipes take precedence over everything else, similar to other parsers:
-
-    # (these are the same)
-    a b c    | d %% e
-    (a b c ) | (d %% e)
-
-=head1 Return Values
-
-All return values are based on the capture groups (C<$1/$2/$3/etc.> type
-variables) of parsed RE statements.  With a basic parser (not invoked via
-C<pegex()>), the return value of parsed items are going to be:
-
-    [ $1 ]              # single capture group
-    [ [ @+[1..$#+] ] ]  # multiple capture groups
-
-However, you can also turn on "wrapping" with the C<wrap> (boolean) attribute
-within the parser.  This will wrap all match values in a hash with the rule
-name, like so:
-
-    [ { rule_A => $match } ]
-    [ { rule_B => [ @matches ] } ]
-
-Note that this behavior can be "hard set" with the C<+/-> rule modifiers:
-
-    -<rule>  # Never wrap  (even if wrap is set)
-    +<rule>  # Always wrap (even if wrap is off)
-
-Any C<got_*> Receiver subs will override even these settings, though, choosing
-to pass the match as-is.  In this case, the C<got_*> sub return value dictates
-what ultimately gets put into the tree object:
-
-    +rule_A   # in this case, the + is useless here
-
-    sub got_rule_A {
-       my ($self, $matches_arrayref) = @_;
-       return { foobar => $matches_arrayref };
-       # will be received as [ { foobar => [ @matches ] } ]
-    }
