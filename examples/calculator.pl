@@ -1,14 +1,3 @@
-# This is a Pegex precedence parser for arithmetic expressions that properly
-# parses and evaluates expressions containing the following symbols:
-#
-#   Int -Int + - * / ^ ( )
-#
-# It demonstrates:
-#
-# * 3 levels of precedence.
-# * Multiple operators at same precedence level
-# * Operators of both left and right associativity
-
 use Pegex;
 
 my $grammar = <<'...';
@@ -20,38 +9,40 @@ token: /~<LPAREN>~/ expr /~<RPAREN>~/ | number
 number: /~(<DASH>?<DIGIT>+)~/
 ...
 
-package Calculator;
-use base 'Pegex::Receiver';
+{
+    package Calculator;
+    use base 'Pegex::Receiver';
 
-sub got_add_sub {
-    my @list = flatten(pop);
-    while (@list > 1) {
-        my ($a, $op, $b) = splice(@list, 0, 3);
-        unshift @list, ($op eq '+') ? ($a + $b) : ($a - $b);
+    sub got_add_sub {
+        my @list = flatten(pop);
+        while (@list > 1) {
+            my ($a, $op, $b) = splice(@list, 0, 3);
+            unshift @list, ($op eq '+') ? ($a + $b) : ($a - $b);
+        }
+        $list[0];
     }
-    $list[0];
-}
 
-sub got_mul_div {
-    my @list = flatten(pop);
-    while (@list > 1) {
-        my ($a, $op, $b) = splice(@list, 0, 3);
-        unshift @list, ($op eq '*') ? ($a * $b) : ($a / $b);
+    sub got_mul_div {
+        my @list = flatten(pop);
+        while (@list > 1) {
+            my ($a, $op, $b) = splice(@list, 0, 3);
+            unshift @list, ($op eq '*') ? ($a * $b) : ($a / $b);
+        }
+        $list[0];
     }
-    $list[0];
-}
 
-sub got_exp {
-    my @list = flatten(pop);
-    while (@list > 1) {
-        my ($a, $b) = splice(@list, -2, 2);
-        push @list, $a ** $b;
+    sub got_exp {
+        my @list = flatten(pop);
+        while (@list > 1) {
+            my ($a, $b) = splice(@list, -2, 2);
+            push @list, $a ** $b;
+        }
+        $list[0];
     }
-    $list[0];
-}
 
-sub flatten {
-    ref($_[0]) ? map flatten($_), @{$_[0]} : $_[0];
+    sub flatten {
+        ref($_[0]) ? map flatten($_), @{$_[0]} : $_[0];
+    }
 }
 
 package main;
