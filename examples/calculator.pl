@@ -45,8 +45,6 @@ number: /~(<DASH>?<DIGIT>+)~/
     }
 }
 
-package main;
-
 while (1) {
     print "\nEnter an equation: ";
     my $input = <>;

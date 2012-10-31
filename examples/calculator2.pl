@@ -3,6 +3,7 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 
 use Pegex;
+use RPN;
 
 my $grammar = <<'...';
 expr: operand (operator operand)*
@@ -14,7 +15,6 @@ num: /~(<DASH>?<DIGIT>+)~/
 {
     package Calculator;
     use base 'Pegex::Receiver', 'Precedence';
-    use RPN;
 
     my $operator_precedence_table = {
         '+' => {p => 1, a => 'l'},
@@ -27,11 +27,6 @@ num: /~(<DASH>?<DIGIT>+)~/
     sub got_expr {
         my ($self, $expr) = @_;
         $self->precedence_rpn($expr, $operator_precedence_table);
-    }
-
-    sub final {
-        my ($self, $rpn) = @_;
-        RPN::evaluate($rpn);
     }
 }
 
@@ -46,6 +41,7 @@ while (1) {
 sub calc {
     my $expr = shift;
     my $calculator = pegex($grammar, receiver => 'Calculator');
-    my $result = eval { $calculator->parse($expr) };
+    my $rpn = eval { $calculator->parse($expr) };
+    my $result = RPN::evaluate($rpn);
     print $@ || "$expr = $result\n";
 }
