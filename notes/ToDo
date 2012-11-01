@@ -7,11 +7,15 @@
 + List all docs
 + List all related projects
 
+- Add Pegex::AST (wrap = 1)
+  - Use as default in Pegex.pm
+- Write Pegex::LoL (wrap = 0)
 - Flesh out documentation
 - Test with external projects
   - Write xt tests for related projects
 
 # New feature ideas
+- Compile to arrays only (optionally)
 - Move AST primatives to Pegex::AST
   - Pegex::AST subclass of Pegex::Receiver
 - Add $_ support
