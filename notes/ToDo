@@ -14,6 +14,9 @@
 - Test with external projects
   - Write xt tests for related projects
 
+- Write tests for various ASTs
+- Write tests for skip wrap pass and flat
+
 # New feature ideas
 - Compile to arrays only (optionally)
 - Move AST primatives to Pegex::AST
