@@ -173,6 +173,8 @@ sub optimize_node {
         if (my $sub = $self->{receiver}->can("got_$ref")) {
             $rule->{got} = $sub;
         }
+        $node->{method} = $self->can("match_ref_trace")
+            if $self->{debug};
     }
     if (my $sep = $node->{'.sep'}) {
         $self->optimize_node($sep);
@@ -251,9 +253,8 @@ sub match_next_with_sep {
 sub match_ref_trace {
     my ($self, $ref, $parent) = @_;
     my $rule = $self->{tree}{$ref};
-    my $trace = (not $rule->{'+asr'} and $self->{debug});
+    my $trace = not $rule->{'+asr'};
     $self->trace("try_$ref") if $trace;
-    die if $main::xx++ > 5;
     my $result;
     if ($result = $self->match_ref($ref, $parent)) {
         $self->trace("got_$ref") if $trace;
