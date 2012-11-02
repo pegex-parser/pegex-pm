@@ -213,8 +213,7 @@ sub match_next {
         }
     }
 
-    $match = [] if $next->{'-skip'};
-    return ($result ? $match : 0);
+    return ($result ? $next->{'-skip'} ? [] : $match : 0);
 }
 
 sub match_next_with_sep {
@@ -248,35 +247,41 @@ sub match_next_with_sep {
         }
     }
 
-    $match = [] if $next->{'-skip'};
-    return ($result ? $match : 0);
+    return ($result ? $next->{'-skip'} ? [] : $match : 0);
+}
+
+sub match_ref_trace {
+    my ($self, $ref, $parent) = @_;
+    my $rule = $self->{tree}{$ref};
+    my $trace = (not $rule->{'+asr'} and $self->{debug});
+    $self->trace("try_$ref") if $trace;
+    die if $main::xx++ > 5;
+    my $result;
+    if ($result = $self->match_ref($ref, $parent)) {
+        $self->trace("got_$ref") if $trace;
+    }
+    else {
+        $self->trace("not_$ref") if $trace;
+    }
+    return $result;
 }
 
 sub match_ref {
     my ($self, $ref, $parent) = @_;
     my $rule = $self->{tree}{$ref};
 
-    my $trace = $rule->{trace} //= (not $rule->{'+asr'} and $self->{debug});
-    $self->trace("try_$ref") if $trace;
-
-    if (my $match = $self->match_next($rule)) {
-        $self->trace("got_$ref") if $trace;
-        if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
-            if (my $sub = $rule->{got}) {
-                $match = [ $sub->($self->{receiver}, $match->[0]) ];
-            }
-            elsif (
-                $self->{wrap} ? not($parent->{'-pass'}) : $parent->{'-wrap'}
-            ) {
-                $match = [ @$match ? { $ref => $match->[0] } : () ];
-            }
+    my $match = $self->match_next($rule) or return 0;
+    if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
+        if (my $sub = $rule->{got}) {
+            $match = [ $sub->($self->{receiver}, $match->[0]) ];
         }
-        return $match;
+        elsif (
+            $self->{wrap} ? not($parent->{'-pass'}) : $parent->{'-wrap'}
+        ) {
+            $match = [ @$match ? { $ref => $match->[0] } : () ];
+        }
     }
-    else {
-        $self->trace("not_$ref") if $trace;
-        return 0;
-    }
+    return $match;
 }
 
 # TODO need to detect left recursion and other non-advancing conditions.
