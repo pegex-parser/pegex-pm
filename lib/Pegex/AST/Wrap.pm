@@ -9,8 +9,11 @@ package Pegex::AST::Wrap;
 use Pegex::Base;
 extends 'Pegex::Receiver';
 
-sub got {
-    my ($self, $data, $name, $rule, $parent) = @_;
+sub gotrule {
+    my ($self, $data, $name, $parent) = @_;
+    $data // return ();
+    return $data if $parent->{-pass};
+    return {$name => $data}
 }
 
 1;

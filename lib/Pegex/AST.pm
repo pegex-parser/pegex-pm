@@ -9,8 +9,9 @@ package Pegex::AST;
 use Pegex::Base;
 extends 'Pegex::Receiver';
 
-sub got {
-    my ($self, $data, $name, $rule, $parent) = @_;
+sub gotrule {
+    my ($self, $data, $name, $parent) = @_;
+    $data // ();
 }
 
 1;

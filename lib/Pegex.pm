@@ -49,15 +49,8 @@ sub _get_receiver {
         }
     }
     else {
-        require Pegex::Receiver;
-        $receiver = Pegex::Receiver->new;
-        if (not defined $options->{wrap}) {
-            $receiver->{wrap} = 1;
-        }
-    }
-    if (defined $options->{wrap}) {
-        $receiver->wrap($options->{wrap})
-            if $receiver->can('wrap');
+        require Pegex::AST::Wrap;
+        $receiver = Pegex::AST::Wrap->new;
     }
     return $receiver;
 }

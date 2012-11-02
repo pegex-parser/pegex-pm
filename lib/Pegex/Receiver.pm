@@ -10,7 +10,6 @@ use Pegex::Base;
 
 has parser => ();
 has data => ();
-has wrap => 0;
 
 # Flatten a structure of nested arrays into a single array.
 sub flatten {

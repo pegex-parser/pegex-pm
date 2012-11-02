@@ -34,13 +34,6 @@ has receiver => (
 # Allow errors to not be thrown
 has throw_on_error => 1;
 
-# Wrap results in hash with rule name for key
-has wrap => (
-    default => sub {
-        $_[0]->receiver->{wrap};
-    },
-);
-
 # # Allow a partial parse
 # has 'partial' => default => sub {0};
 
@@ -70,9 +63,11 @@ sub BUILD {
     my $grammar = $self->grammar;
     my $receiver = $self->receiver;
     if ($grammar and not ref $grammar) {
+        eval "require $grammar";
         $self->{grammar} = $grammar->new;
     }
     if ($receiver and not ref $receiver) {
+        eval "require $receiver";
         $self->{receiver} = $receiver->new;
     }
 }
@@ -170,8 +165,11 @@ sub optimize_node {
     elsif ($node->{kind} eq 'ref') {
         my $ref = $node->{rule};
         my $rule = $self->{tree}{$ref};
-        if (my $sub = $self->{receiver}->can("got_$ref")) {
-            $rule->{got} = $sub;
+        if (my $got = $self->{receiver}->can("got_$ref")) {
+            $rule->{got} = $got;
+        }
+        elsif (my $gotrule = $self->{receiver}->can("gotrule")) {
+            $rule->{got} = $gotrule;
         }
         $node->{method} = $self->can("match_ref_trace")
             if $self->{debug};
@@ -257,11 +255,11 @@ sub match_ref {
     my $match = $self->match_next($rule) or return 0;
     if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
         if (my $sub = $rule->{got}) {
-            $match = [ $sub->($self->{receiver}, $match->[0]) ];
+            $match = [
+                $sub->($self->{receiver}, $match->[0], $ref, $parent)
+            ];
         }
-        elsif (
-            $self->{wrap} ? not($parent->{'-pass'}) : $parent->{'-wrap'}
-        ) {
+        elsif ($parent->{'-wrap'}) {
             $match = [ @$match ? { $ref => $match->[0] } : () ];
         }
     }
