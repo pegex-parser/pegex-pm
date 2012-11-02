@@ -27,15 +27,7 @@ my %prefixes = (
 #     my ($self, $match) = @_;
 #     XXX $match;
 # }
-# 
 # __END__
-
-# XXX Bug in Moos. Does not call set defaults in entire class hierarchy.
-# Remove this when Moos/Pegex::Base is fixed.
-sub initial {
-    my ($self) = @_;
-    $self->extra_rules;
-}
 
 sub got_grammar {
     my ($self, $rules) = @_;
