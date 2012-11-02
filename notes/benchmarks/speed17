@@ -1,0 +1,9 @@
+# After AST refactoring
+ok 1 - ./xt/grammars/pegex.pgx parses in 0.021552 seconds
+ok 2 - ./xt/grammars/testml.pgx parses in 0.023591 seconds
+ok 3 - ./xt/grammars/json.pgx parses in 0.006295 seconds
+ok 4 - ./xt/grammars/yaml.pgx parses in 0.012427 seconds
+ok 5 - ./xt/grammars/kwim.pgx parses in 0.009065 seconds
+ok 6 - ./xt/grammars/drinkup.pgx parses in 0.007516 seconds
+ok 7 - ./xt/grammars/pg-lexer.pgx parses in 0.130256 seconds
+ok 8 - ./xt/grammars/Pg.pgx parses in 1.018367 seconds

@@ -12,7 +12,7 @@ sub run {
         yaml(
             pegex(
                 $grammar,
-                receiver => 'Pegex::AST'
+                receiver => 'Pegex::AST::Wrap'
             )->parse($input)
         )
     );
@@ -32,21 +32,9 @@ sub yaml {
 
 __DATA__
 
-plan: 16
+plan: 17
 
 blocks:
-- title: Wrap
-  points:
-    grammar: |
-        a: +<b> -<c> .<d>
-        b: /(b+)/
-        c: /(c+)/
-        d: /(d+)/
-    input: bbccdd
-    ast: |
-      - b: bb
-      - cc
-
 - title: Pass and Skip
   points:
     grammar: |
@@ -56,7 +44,8 @@ blocks:
         d: /(d+)/
     input: bbccdd
     ast: |
-      - bb
+      a:
+      - b: bb
       - cc
 
 - title: Pass and Skip Multi
@@ -68,7 +57,8 @@ blocks:
         d: /(d)/
     input: bccdd
     ast: |
-      - - b
+      a:
+      - - b: b
       - - c
         - c
 
@@ -81,6 +71,7 @@ blocks:
         d: /d/
     input: bbccdd
     ast: |
+      a:
       - []
       - []
 
@@ -92,7 +83,8 @@ blocks:
         c: /(c+)/
     input: ccc
     ast: |
-        ccc
+      a:
+        c: ccc
 
 - title: Skip Bracketed
   points:
@@ -103,7 +95,8 @@ blocks:
         d: /(d+)/
     input: bcccd
     ast: |
-        b
+      a:
+        b: b
 
 - title: List and Separators
   points:
@@ -114,12 +107,13 @@ blocks:
         d: /(d+)/
     input: bcccdccddc
     ast: |
-      - b
-      - - ccc
-        - d
-        - cc
-        - dd
-        - c
+      a:
+      - b: b
+      - - c: ccc
+        - d: d
+        - c: cc
+        - d: dd
+        - c: c
 
 - title: List without Separators
   points:
@@ -129,9 +123,10 @@ blocks:
         d: /d+/
     input: cccdccddc
     ast: |
-      - ccc
-      - cc
-      - c
+      a:
+      - c: ccc
+      - c: cc
+      - c: c
 
 - title: List without Separators
   points:
@@ -142,21 +137,22 @@ blocks:
         d: /d+/
     input: bb
     ast: |
-      - b
+      a:
+      - b: b
       - []
-      - b
+      - b: b
 
-# - title: Automatically Pass TOP
-#   points:
-#     grammar: |
-#         b: /(b)/
-#         TOP: <b> <c>*
-#         c: /(c)/
-#     input: bcc
-#     ast: |
-#       - b: b
-#       - - c: c
-#         - c: c
+- title: Automatically Pass TOP
+  points:
+    grammar: |
+        b: /(b)/
+        TOP: <b> <c>*
+        c: /(c)/
+    input: bcc
+    ast: |
+      - b: b
+      - - c: c
+        - c: c
 
 - title: Multi Group Regex
   points:
@@ -164,21 +160,22 @@ blocks:
         t: /.*(x).*(y).*(z).*/
     input: aaaxbbbyccczddd
     ast: |
+      t:
       - x
       - y
       - z
 
-# - title: Whitespace Matchers
-#   points:
-#     grammar: |
-#         TOP: /<ws>*(<DOT>)~(<DOT>*)~/
-#     input: |2+
-#         .  
-#            ..    
-# 
-#     ast: |
-#       - .
-#       - ..
+- title: Whitespace Matchers
+  points:
+    grammar: |
+        TOP: /<ws>*(<DOT>)~(<DOT>*)~/
+    input: |2+
+        .  
+           ..    
+
+    ast: |
+      - .
+      - ..
 
 - title: Empty Stars
   points:
@@ -188,8 +185,9 @@ blocks:
         c: /(c+)/
     input: cc
     ast: |
+      a:
       - - - []
-          - cc
+          - c: cc
       - []
 
 - title: Exact Quantifier
@@ -199,9 +197,10 @@ blocks:
         b: /(b)/
     input: bbb
     ast: |
-      - b
-      - b
-      - b
+      a:
+      - b: b
+      - b: b
+      - b: b
 
 - title: Quantifier with Separator
   points:
@@ -210,9 +209,10 @@ blocks:
         b: /(b)/
     input: b,b,b,
     ast: |
-      - b
-      - b
-      - b
+      a:
+      - b: b
+      - b: b
+      - b: b
 
 - title: Quantifier with Separator, Trailing OK
   points:
@@ -221,9 +221,10 @@ blocks:
         b: /(b)/
     input: b,b,b,
     ast: |
-      - b
-      - b
-      - b
+      a:
+      - b: b
+      - b: b
+      - b: b
 
 - title: Quantifier on the Separator
   points:
@@ -233,10 +234,11 @@ blocks:
         c: /<COMMA>/
     input: b,b,,,,bb,
     ast: |
-      - b
-      - b
-      - b
-      - b
+      a:
+      - b: b
+      - b: b
+      - b: b
+      - b: b
 
 - title: Tilde matching
   points:
@@ -246,6 +248,7 @@ blocks:
         c: /<COMMA>/
     input: b  bb
     ast: |
-      - b
-      - - b
-        - b
+      a:
+      - b: b
+      - - b: b
+        - b: b

@@ -253,15 +253,11 @@ sub match_ref {
     my $rule = $self->{tree}{$ref};
 
     my $match = $self->match_next($rule) or return 0;
-    if (not $rule->{'+asr'} and not $parent->{'-skip'}) {
-        if (my $sub = $rule->{got}) {
-            $match = [
-                $sub->($self->{receiver}, $match->[0], $ref, $parent)
-            ];
-        }
-        elsif ($parent->{'-wrap'}) {
-            $match = [ @$match ? { $ref => $match->[0] } : () ];
-        }
+    if ($rule->{got}) {
+        # XXX Need to put ref and parent into receiver object.
+        $match = [
+            $rule->{got}->($self->{receiver}, $match->[0], $ref, $parent)
+        ];
     }
     return $match;
 }

@@ -25,9 +25,32 @@ sub yaml {
 __DATA__
 %TestML 1.0
 
-Plan = 10;
+Plan = 12;
 
 *grammar.parse(*input).yaml == *ast;
+
+=== Skip work
+--- grammar
+a: x .y EOL
+x: /(x+)/
+y: /(y+)/
+--- input
+xxxyyyy
+--- ast
+a:
+- x: xxx
+
+=== Assertion not captured
+--- grammar
+a: =x x y EOL
+x: /(x+)/
+y: /(y+)/
+--- input
+xxxyyyy
+--- ast
+a:
+- x: xxx
+- y: yyyy
 
 === Single Regex - Single Capture
 --- grammar

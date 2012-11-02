@@ -11,7 +11,9 @@ extends 'Pegex::Receiver';
 
 sub gotrule {
     my ($self, $data, $name, $parent) = @_;
-    $data // ();
+    $data // return ();
+    return {$name => $data} if $parent->{-wrap};
+    return $data;
 }
 
 1;
