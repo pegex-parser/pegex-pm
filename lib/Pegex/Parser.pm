@@ -103,7 +103,7 @@ sub parse {
         ($tree->{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
 
-    $self->optimize($start_rule_ref);
+    $self->optimize_grammar($start_rule_ref);
 
     my $receiver = $self->{receiver}
         or die "No 'receiver'. Can't parse";
@@ -135,12 +135,9 @@ sub parse {
     return ($self->{receiver}{data} || $match);
 }
 
-sub optimize {
+sub optimize_grammar {
     my ($self, $start) = @_;
     return if $self->{optimized}++;
-    for (qw(ref rgx all any err code)) {
-        $self->{$_} = $self->can("match_$_") or die;
-    }
     my $tree = $self->{tree};
     for my $name (keys %$tree) {
         my $node = $tree->{$name};
@@ -157,6 +154,7 @@ sub optimize_node {
         die if $_ eq 'xxx';
         if ($node->{rule} = $node->{".$_"}) {
             $node->{kind} = $_;
+            $node->{method} = $self->can("match_$_") or die;
             last;
         }
     }
@@ -187,11 +185,11 @@ sub match_next {
     return $self->match_next_with_sep($next)
         if $next->{'.sep'};
 
-    my ($rule, $kind, $min, $max, $assertion) =
-        @{$next}{'rule', 'kind', '+min', '+max', '+asr'};
+    my ($rule, $method, $kind, $min, $max, $assertion) =
+        @{$next}{'rule', 'method', 'kind', '+min', '+max', '+asr'};
 
-    my ($method, $position, $match, $count) =
-        (@{$self}{$kind, 'position'}, [], 0);
+    my ($position, $match, $count) =
+        ($self->{position}, [], 0);
 
     while (my $return = $method->($self, $rule, $next)) {
         $position = $self->{position} unless $assertion;
@@ -219,11 +217,11 @@ sub match_next {
 sub match_next_with_sep {
     my ($self, $next) = @_;
 
-    my ($rule, $kind, $min, $max, $sep) =
-        @{$next}{'rule', 'kind', '+min', '+max', '.sep'};
+    my ($rule, $method, $kind, $min, $max, $sep) =
+        @{$next}{'rule', 'method', 'kind', '+min', '+max', '.sep'};
 
-    my ($method, $position, $match, $count, $scount, $smin, $smax) =
-        (@{$self}{$kind, 'position'}, [], 0, 0, @{$sep}{'+min', '+max'});
+    my ($position, $match, $count, $scount, $smin, $smax) =
+        ($self->{position}, [], 0, 0, @{$sep}{'+min', '+max'});
 
     while (my $return = $method->($self, $rule, $next)) {
         $position = $self->{position};
