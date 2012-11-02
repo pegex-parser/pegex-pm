@@ -250,21 +250,6 @@ sub match_next_with_sep {
     return ($result ? $next->{'-skip'} ? [] : $match : 0);
 }
 
-sub match_ref_trace {
-    my ($self, $ref, $parent) = @_;
-    my $rule = $self->{tree}{$ref};
-    my $trace = not $rule->{'+asr'};
-    $self->trace("try_$ref") if $trace;
-    my $result;
-    if ($result = $self->match_ref($ref, $parent)) {
-        $self->trace("got_$ref") if $trace;
-    }
-    else {
-        $self->trace("not_$ref") if $trace;
-    }
-    return $result;
-}
-
 sub match_ref {
     my ($self, $ref, $parent) = @_;
     my $rule = $self->{tree}{$ref};
@@ -362,6 +347,21 @@ sub match_code {
     my ($self, $code) = @_;
     my $method = "match_rule_$code";
     return $self->$method();
+}
+
+sub match_ref_trace {
+    my ($self, $ref, $parent) = @_;
+    my $rule = $self->{tree}{$ref};
+    my $trace = not $rule->{'+asr'};
+    $self->trace("try_$ref") if $trace;
+    my $result;
+    if ($result = $self->match_ref($ref, $parent)) {
+        $self->trace("got_$ref") if $trace;
+    }
+    else {
+        $self->trace("not_$ref") if $trace;
+    }
+    return $result;
 }
 
 sub trace {
