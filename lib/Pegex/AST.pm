@@ -10,9 +10,10 @@ use Pegex::Base;
 extends 'Pegex::Receiver';
 
 sub gotrule {
-    my ($self, $data, $name, $parent) = @_;
+    my ($self, $data) = @_;
     $data // return ();
-    return {$name => $data} if $parent->{-wrap};
+    return {$self->{reference} => $data}
+        if $self->{parent}{-wrap};
     return $data;
 }
 

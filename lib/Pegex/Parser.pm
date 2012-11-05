@@ -249,15 +249,13 @@ sub match_next_with_sep {
 }
 
 sub match_ref {
-    my ($self, $ref, $parent) = @_;
-    my $rule = $self->{tree}{$ref};
+    my ($self) = @_; # $self, $ref, $parent
+    my $rule = $self->{tree}{$_[1]};
 
     my $match = $self->match_next($rule) or return 0;
     if ($rule->{got}) {
-        # XXX Need to put ref and parent into receiver object.
-        $match = [
-            $rule->{got}->($self->{receiver}, $match->[0], $ref, $parent)
-        ];
+        @{$self->{receiver}}{'reference', 'parent'} = @_[1,2];
+        $match = [ $rule->{got}->($self->{receiver}, $match->[0]) ];
     }
     return $match;
 }
@@ -266,7 +264,7 @@ sub match_ref {
 my $terminator_max = 10000; # XXX Kludge alert!
 
 sub match_rgx {
-    my ($self, $regexp, $parent) = @_;
+    my ($self, $regexp) = @_;
     my $buffer = $self->{buffer};
 
     # XXX Commented out code for switch from \G to ^. Use later.
@@ -301,7 +299,7 @@ sub match_rgx {
 }
 
 sub match_all {
-    my ($self, $list, $parent) = @_;
+    my ($self, $list) = @_;
     my $position = $self->{position};
     my $set = [];
     my $len = 0;
@@ -323,7 +321,7 @@ sub match_all {
 }
 
 sub match_any {
-    my ($self, $list, $parent) = @_;
+    my ($self, $list) = @_;
     for my $elem (@$list) {
         if (my $match = $self->match_next($elem)) {
             return $match;
@@ -344,12 +342,12 @@ sub match_code {
 }
 
 sub match_ref_trace {
-    my ($self, $ref, $parent) = @_;
+    my ($self, $ref) = @_;
     my $rule = $self->{tree}{$ref};
     my $trace = not $rule->{'+asr'};
     $self->trace("try_$ref") if $trace;
     my $result;
-    if ($result = $self->match_ref($ref, $parent)) {
+    if ($result = $self->match_ref($ref)) {
         $self->trace("got_$ref") if $trace;
     }
     else {
