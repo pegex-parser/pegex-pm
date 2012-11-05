@@ -29,35 +29,28 @@ use constant default_base_class => 'Pegex::Base::Object';
 
 sub import {
     my ($class, %args) = @_;
-    # Get name of the "class" from whence "use Pegex::Base;"
     my $package = caller;
 
-    # Turn on strict/warnings for caller
     strict->import;
     warnings->import;
 
-    # Create/register a metaclass object for the package
     my $metaclass =
         delete $args{metaclass}
         || $class->default_metaclass;
     my $meta = $metaclass->initialize($package, %args);
 
-    # Make calling class inherit from Pegex::Base::Object by default
     my $baseclass = exists $args{base_class}
         ? delete $args{base_class}
         : $class->default_base_class;
     extends($meta, $baseclass) if defined $baseclass;
 
-    # Export the 'has', 'extends', and 'with' helper functions
     _export($package, has => \&has, $meta);
     _export($package, extends => \&extends, $meta);
     _export($package, with => \&with, $meta);
 
-    # Export the 'blessed' and 'confess' functions
     _export($package, blessed => \&Scalar::Util::blessed);
     _export($package, confess => \&Carp::confess);
 
-    # Possibly export some handy debugging stuff
     _export_xxx($package) if $ENV{PERL_MOOS_XXX};
 }
 
@@ -66,8 +59,6 @@ sub has {
     $name = [$name] unless ref $name;
     my %args;
 
-    # Support 2-arg shorthand:
-    #     has foo => 42;
     if (@_ % 2) {
         my $default = shift;
         my $sub =
@@ -78,7 +69,6 @@ sub has {
     }
     %args = (%args, @_);
 
-    # Add attributes to meta class object
     $meta->add_attribute($_ => \%args) for @$name;
 }
 
@@ -140,17 +130,12 @@ __PACKAGE__->meta->add_attribute(
 sub initialize {
     my ($class, $package, %args) = @_;
 
-    # Class to use to generate attribute accessors, etc
     $args{attribute_metaclass} ||= $class->default_attribute_metaclass;
 
-    # This is a tiny version of a Pegex::Basee meta-class-object.
-    # We really just need a place to keep the attributes.
     return $meta_class_objects->{$package} ||= do {
         bless {
             package => $package,
-            # This isn't currently used but matches Pegex::Basee and is cheap.
             attributes => {},
-            # We construct with attribute in order defined. (Unlike Pegex::Basee)
             _attributes => [],
             %args,
         }, $class;
@@ -213,13 +198,9 @@ sub apply_roles
 
     require Role::Tiny;
 
-    # Load the role modules. (Role::Tiny would do this for us anyway.)
     Role::Tiny::_load_module($_) for @roles;
 
-    # If any of them were Pegex::Basee roles, then Class::MOP will now be
-    # available to us. Use it to detect which roles have antlers.
     if (my $class_of = 'Class::MOP'->can('class_of')) {
-        # Divide list of roles into Pegex::Basee and non-Pegex::Basee.
         my (@moose, @nonmoose);
         while (@roles) {
             my $role = shift @roles;
@@ -229,8 +210,7 @@ sub apply_roles
                 push @$list, shift @roles;
             }
         }
-        # Apply Pegex::Basee roles
-        if (@moose and my $apply = 'Pegex::Basee::Util'->can('apply_all_roles')) {
+        if (@moose and my $apply = 'Moose::Util'->can('apply_all_roles')) {
             $apply->($package, @moose);
 
             foreach my $role (@moose) {
@@ -255,7 +235,6 @@ sub apply_roles
                 }
             }
         }
-        # Allow non-Pegex::Basee roles to fall through
         @roles = @nonmoose;
     }
 
@@ -263,7 +242,6 @@ sub apply_roles
         'Role::Tiny'->apply_roles_to_package($package, @roles);
 
         foreach my $role (@roles) {
-            # Moo::Role stashes its attributes here...
             my @attributes = @{ $Role::Tiny::INFO{$role}{attributes} || [] };
             while (@attributes) {
                 my $name = shift @attributes;
@@ -305,7 +283,6 @@ sub _construct_instance {
                 confess "missing required attribute '$name'";
             }
         }
-        # Triggers only fire for explicit assignment; not defaults.
         if (exists $attr->{trigger} and exists $params->{$name}) {
             $attr->{trigger}->($instance, $params->{$name});
         }
@@ -370,7 +347,6 @@ sub BUILDARGS {
     shift;
     my $args = @_==1 ? $_[0] : +{@_};
 
-    # Massage %args
     my $name = $args->{name};
     $args->{builder} = "_build_$name"
         if defined $args->{builder} && $args->{builder} eq "1";
@@ -474,11 +450,9 @@ sub _setup_accessor
         };
     }
 
-    # Dev debug thing to trace calls to accessor subs.
     $accessor = _trace_accessor_calls($name, $accessor)
         if $ENV{PERL_MOOS_ACCESSOR_CALLS};
 
-    # Export the accessor.
     Pegex::Base::_export($metaclass->{package}, $name, $accessor);
 
     return;
@@ -576,9 +550,9 @@ sub does {
     return 1
         if Role::Tiny::does_role($self, $role);
     return 1
-        if UNIVERSAL::can('Pegex::Basee::Util', 'can')
-        && Pegex::Basee::Util->can('does_role')
-        && Pegex::Basee::Util::does_role($self, $role);
+        if UNIVERSAL::can('Moose::Util', 'can')
+        && Moose::Util->can('does_role')
+        && Moose::Util::does_role($self, $role);
     return 0;
 }
 
