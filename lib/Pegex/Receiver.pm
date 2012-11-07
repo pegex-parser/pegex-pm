@@ -8,12 +8,13 @@
 package Pegex::Receiver;
 use Pegex::Base;
 
-# TODO Change name to 'got'
-has data => ();
-has got => ();
-
+# The parser object.
 has parser => ();
-has reference => ();
+# The grammar object.
+has grammar => ();
+# The current rule name.
+has rule => ();
+# The grammar object pointing to the current rule.
 has parent => ();
 
 # Flatten a structure of nested arrays into a single array.

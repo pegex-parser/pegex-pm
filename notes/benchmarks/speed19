@@ -1,0 +1,9 @@
+# Remove left recursion hacks
+ok 1 - ./xt/grammars/pegex.pgx parses in 0.0204 seconds
+ok 2 - ./xt/grammars/testml.pgx parses in 0.022546 seconds
+ok 3 - ./xt/grammars/json.pgx parses in 0.006019 seconds
+ok 4 - ./xt/grammars/yaml.pgx parses in 0.011876 seconds
+ok 5 - ./xt/grammars/kwim.pgx parses in 0.008713 seconds
+ok 6 - ./xt/grammars/drinkup.pgx parses in 0.00704 seconds
+ok 7 - ./xt/grammars/pg-lexer.pgx parses in 0.124517 seconds
+ok 8 - ./xt/grammars/Pg.pgx parses in 0.968988 seconds

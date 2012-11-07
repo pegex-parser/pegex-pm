@@ -13,7 +13,7 @@ sub gotrule {
     my ($self, $data) = @_;
     $data // return ();
     return $data if $self->{parent}{-pass};
-    return {$self->{reference} => $data}
+    return {$self->{rule} => $data}
 }
 
 1;

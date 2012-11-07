@@ -35,7 +35,7 @@ has receiver => (
 has throw_on_error => 1;
 
 # # Allow a partial parse
-# has 'partial' => default => sub {0};
+# has 'partial' => 0;
 
 # Internal properties.
 has input => ();            # Input object to read from
@@ -45,9 +45,6 @@ has error => ();            # Error message goes here
 has position => 0;          # Current position in buffer
 has farthest => 0;          # Farthest point matched in buffer
 has optimized => 0;         # Parser object has been optimized
-
-# XXX Loop counter for RE non-terminating spin prevention
-has re_count => 0;
 
 # Debug the parsing of input.
 has 'debug' => (
@@ -59,7 +56,7 @@ has 'debug' => (
 );
 
 sub BUILD {
-    my $self = shift;
+    my ($self) = @_;
     my $grammar = $self->grammar;
     my $receiver = $self->receiver;
     if ($grammar and not ref $grammar) {
@@ -76,7 +73,7 @@ sub parse {
     my ($self, $input, $start) = @_;
     $self->{position} = 0; # XXX Currently needed for repeated calls.
 
-    die "Usage: " . ref($self) . '->parse($input [, $start_rule]'
+    die 'Usage: ->parse($input [, $start_rule]'
         unless 2 <= @_ and @_ <= 3;
 
     $input = Pegex::Input->new(string => $input)
@@ -254,35 +251,18 @@ sub match_ref {
 
     my $match = $self->match_next($rule) or return 0;
     if ($rule->{got}) {
-        @{$self->{receiver}}{'reference', 'parent'} = @_[1,2];
-        $match = [ $rule->{got}->($self->{receiver}, $match->[0]) ];
+        @{$self->{receiver}}{'rule', 'parent'} = @_[1,2];
+        return [ $rule->{got}->($self->{receiver}, $match->[0]) ];
     }
     return $match;
 }
-
-# TODO need to detect left recursion and other non-advancing conditions.
-my $terminator_max = 10000; # XXX Kludge alert!
 
 sub match_rgx {
     my ($self, $regexp) = @_;
     my $buffer = $self->{buffer};
 
-    # XXX Commented out code for switch from \G to ^. Use later.
-    # my $position = $self->{position};
     my $position = pos($$buffer) = $self->{position};
 
-    my $terminator_iterator = ++$self->{re_count};
-    if ($position >= $self->{length} and
-        $terminator_iterator > $terminator_max
-    ) {
-        $self->{throw_on_error} = 1;
-        $self->throw_error(
-            "Your grammar seems to not terminate at end of stream"
-        );
-    }
-
-    # substr($$buffer, $position) =~ $regexp or return 0;
-    # my $position = $position + length(${^MATCH});
     $$buffer =~ /$regexp/g or return 0;
     $position = pos($$buffer);
 
@@ -292,7 +272,6 @@ sub match_rgx {
 
     if (($self->{position} = $position) > $self->{farthest}) {
         $self->{farthest} = $position;
-        $self->{re_count} = 0;
     }
 
     return $match;
@@ -426,10 +405,9 @@ Error parsing Pegex document:
 Pegex::Parser is the Pegex component that provides the parsing engine runtime.
 It requires a Grammar object and a Receiver object. It's C<parse()> method
 takes an input that is expected to be matched by the grammar, and applies the
-grammar rules to the input. As the grammar is applied the receiver is notified
+grammar rules to the input. As the grammar is applied, the receiver is notified
 of matches. The receiver is free to do whatever it wishes, but often times it
-builds the data into a structure that is commonly known as an AST (Abstract
-Syntax Tree).
+builds the data into a structure that is commonly known as a Parse Tree.
 
 When the parse method is complete it returns whatever object the receiver has
 provided as the final result. If the grammar fails to match the input along
