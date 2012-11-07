@@ -1,4 +1,4 @@
-# Pegex::Base generated from Moos-0.10
+# Pegex::Base generated from Moos-0.11
 
 use strict;
 use warnings;
@@ -18,21 +18,24 @@ else {
     require MRO::Compat;
 }
 
-# our $VERSION = '0.10';
+# our $VERSION = '0.11';
 
 our $CAN_HAZ_XS =
     !$ENV{PERL_MOOS_XS_DISABLE} &&
     eval{ require Class::XSAccessor; Class::XSAccessor->VERSION("1.07"); 1 };
 
 use constant default_metaclass => 'Pegex::Base::Meta::Class';
+use constant default_metarole  => 'Pegex::Base::Meta::Role';
 use constant default_base_class => 'Pegex::Base::Object';
 
 sub import {
-    my ($class, %args) = @_;
-    my $package = caller;
-
     strict->import;
     warnings->import;
+
+    ($_[1]||'') eq -Role and goto \&role_import;
+
+    my ($class, %args) = @_;
+    my $package = caller;
 
     my $metaclass =
         delete $args{metaclass}
@@ -52,6 +55,36 @@ sub import {
     _export($package, confess => \&Carp::confess);
 
     _export_xxx($package) if $ENV{PERL_MOOS_XXX};
+}
+
+sub role_import {
+    my ($class, undef, %args) = @_;
+    my $package = caller;
+
+    my $metarole =
+        delete $args{metarole}
+        || $class->default_metarole;
+    my $meta = $metarole->initialize($package, %args);
+
+    eval q{
+        package }.$package.q{;
+        sub meta {
+            Pegex::Base::Meta::Role->initialize(
+                Scalar::Util::blessed($_[0]) || $_[0]
+            );
+        }
+    };
+
+    _export($package, has => \&has, $meta);
+
+    _export($package, blessed => \&Scalar::Util::blessed);
+    _export($package, confess => \&Carp::confess);
+
+    _export_xxx($package) if $ENV{PERL_MOOS_XXX};
+
+    require Role::Tiny;
+    @_ = qw(Role::Tiny);
+    goto \&Role::Tiny::import; # preserve caller
 }
 
 sub has {
@@ -214,10 +247,11 @@ sub apply_roles
             $apply->($package, @moose);
 
             foreach my $role (@moose) {
+                my $rolemeta = $class_of->($role);
                 my @attributes =
                     sort { $a->insertion_order <=> $b->insertion_order }
-                    map  { $role->meta->get_attribute($_) }
-                    $role->meta->get_attribute_list;
+                    map  { $rolemeta->get_attribute($_) }
+                    $rolemeta->get_attribute_list;
                 foreach my $attr ( @attributes ) {
                     my $name = $attr->name;
                     my %args = (
@@ -241,7 +275,11 @@ sub apply_roles
     if (@roles) {
         'Role::Tiny'->apply_roles_to_package($package, @roles);
 
-        foreach my $role (@roles) {
+        my @more_roles = map {
+            keys %{ $Role::Tiny::APPLIED_TO{$_} }
+        } @roles;
+
+        foreach my $role (@more_roles) {
             my @attributes = @{ $Role::Tiny::INFO{$role}{attributes} || [] };
             while (@attributes) {
                 my $name = shift @attributes;
@@ -315,6 +353,21 @@ sub find_attribute_by_name {
         return $_ if $_->name eq $name;
     }
     return;
+}
+
+package Pegex::Base::Meta::Role;
+use Carp qw(confess);
+our @ISA = 'Pegex::Base::Meta::Class';
+
+sub add_attribute {
+    my $self = shift;
+    my $name = shift;
+    my %args = @_==1 ? %{$_[0]} : @_;
+
+    push @{$Role::Tiny::INFO{ $self->name }{attributes}},
+        $name => \%args;
+
+    $self->SUPER::add_attribute($name, \%args);
 }
 
 package Pegex::Base::Meta::Attribute;
