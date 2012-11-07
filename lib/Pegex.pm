@@ -31,15 +31,15 @@ sub pegex {
     my $grammar_text = shift;
     die "pegex() requires at least 1 argument, a pegex grammar string"
         unless $grammar_text;
-    my $options = (@_ > 1) ? {@_} : (shift || {});
+    my ($receiver) = _get_options(@_);
     return Pegex::Parser->new(
         grammar => Pegex::Grammar->new(text => $grammar_text),
-        receiver => _get_receiver($options),
+        receiver => $receiver,
     );
 }
 
-sub _get_receiver {
-    my ($options) = @_;
+sub _get_options {
+    my $options = (@_ > 1) ? {@_} : (shift || {});
     my $receiver;
     if ($receiver = $options->{receiver}) {
         if (not ref $receiver) {
@@ -49,10 +49,10 @@ sub _get_receiver {
         }
     }
     else {
-        require Pegex::AST::Wrap;
-        $receiver = Pegex::AST::Wrap->new;
+        require Pegex::Tree::Wrap;
+        $receiver = Pegex::Tree::Wrap->new;
     }
-    return $receiver;
+    return ($receiver);
 }
 
 1;

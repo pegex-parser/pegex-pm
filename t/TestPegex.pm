@@ -41,7 +41,7 @@ sub run {
 
 package t::TestPegex::AST;
 use Pegex::Base;
-extends 'Pegex::AST';
+extends 'Pegex::Tree';
 
 sub got_zero { return 0 };
 sub got_empty { return '' };

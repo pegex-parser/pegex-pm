@@ -72,7 +72,7 @@ Then parse and dump the Pegex grammar with Pegex:
 
 For a different view of the data tree, try:
 
-    perl -MXXX -MPegex -e 'XXX pegex("pegex.pgx", receiver => "Pegex::AST")->parse("pegex.pgx")'
+    perl -MXXX -MPegex -e 'XXX pegex("pegex.pgx", receiver => "Pegex::Tree")->parse("pegex.pgx")'
 
 Finally to emulate the Pegex compiler do this:
 

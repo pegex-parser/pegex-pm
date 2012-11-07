@@ -89,14 +89,14 @@ and a nice data structure is returned.
 
 So how was the data structure created? By the receiver object, of course! But
 we didn't specify one, did we? Nope. It used the default receiver,
-L<Pegex::AST>. We could have said:
+L<Pegex::Tree::Wrap>. We could have said:
 
-    print Dump pegex($grammar, receiver => 'Pegex::AST')->parse('2+2');
+    print Dump pegex($grammar, receiver => 'Pegex::Tree::Wrap')->parse('2+2');
 
 This receiver basically generates a mapping, where rule names of matches are
 the keys, and the leaf values are the regex captures.
 
-The more basic receiver called L<Pegex::Receiver> generates a tree of sequences
+The more basic receiver called L<Pegex::Tree> generates a tree of sequences
 that contain just the data (without the rule names). This code:
 
     print Dump pegex($grammar, receiver => 'Pegex::Receiver')->parse('2+2');
@@ -132,7 +132,7 @@ formally.
 
     use Pegex::Parser;
     use Pegex::Grammar;
-    use Pegex::AST;
+    use Pegex::Tree;
     use Pegex::Input;
 
     $grammar_text = "
@@ -141,7 +141,7 @@ formally.
     ";
 
     $grammar = Pegex::Grammar->new(text => $grammar_text);
-    $receiver = Pegex::AST->new();
+    $receiver = Pegex::Tree->new();
     $parser = Pegex::Parser->new(
         grammar => $grammar,
         receiver => $receiver,
@@ -219,7 +219,7 @@ separated by commas.
 
 =item L<Pegex::Receiver>
 
-=item L<Pegex::AST>
+=item L<Pegex::Tree>
 
 =item L<Pegex::Input>
 

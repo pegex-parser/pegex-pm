@@ -48,7 +48,7 @@ blocks:
       - ~
 
 - title: Wrap
-  receiver: Pegex::AST::Wrap
+  receiver: Pegex::Tree::Wrap
   points:
     grammar: |
         a: <b> <c> <d>

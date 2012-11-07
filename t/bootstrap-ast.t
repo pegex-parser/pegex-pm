@@ -12,7 +12,7 @@ sub run {
         yaml(
             pegex(
                 $grammar,
-                receiver => 'Pegex::AST'
+                receiver => 'Pegex::Tree'
             )->parse($input)
         )
     );

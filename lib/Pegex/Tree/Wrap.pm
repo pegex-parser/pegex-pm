@@ -1,20 +1,22 @@
 ##
-# name:      Pegex::AST
-# abstract:  Pegex Generic AST Receiver
+# name:      Pegex::Tree::Wrap
+# abstract:  Pegex Wrapper Parse Tree Receiver
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2012
+# see:
+# - Pegex::Receiver
+# - Pegex::Tree
 
-package Pegex::AST;
+package Pegex::Tree::Wrap;
 use Pegex::Base;
 extends 'Pegex::Receiver';
 
 sub gotrule {
     my ($self, $data) = @_;
     $data // return ();
+    return $data if $self->{parent}{-pass};
     return {$self->{rule} => $data}
-        if $self->{parent}{-wrap};
-    return $data;
 }
 
 1;
