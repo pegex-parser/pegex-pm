@@ -381,7 +381,8 @@ Error parsing Pegex document:
   msg:      $msg
   line:     $line
   column:   $column
-  context:  $pretext"$context"
+  context:  $pretext$context
+  ${\ (' ' x (length($pretext) + 10) . '^')}
   position: $position ($real_pos pre-lookahead)
 ...
 }
