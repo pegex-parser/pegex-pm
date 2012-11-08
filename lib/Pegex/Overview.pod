@@ -60,3 +60,15 @@ In the simplest terms, Pegex works like this (pseudocode):
         receiver: new Markdown.Receiver.HTML
     )
     html = parser.parse(markdown)
+
+=head1 See Also
+
+=over
+
+=item L<Pegex::API>
+
+=item L<Pegex::Syntax>
+
+=item L<Pegex::Tutorial>
+
+=back

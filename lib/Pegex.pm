@@ -5,6 +5,7 @@
 # license:   perl
 # copyright: 2010, 2011, 2012
 # see:
+# - Pegex::Overview
 # - Pegex::API
 # - Pegex::Syntax
 # - Pegex::Tutorial
