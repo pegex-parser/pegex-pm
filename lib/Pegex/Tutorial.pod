@@ -36,4 +36,8 @@ How to use the various Pegex modules and functions.
 
 A detailed description of the Pegex grammar language syntax.
 
+=item L<Pegex::Resources>
+
+A list of all things Pegex.
+
 =back

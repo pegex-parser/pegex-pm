@@ -84,7 +84,7 @@ sub _guess_input {
 
     use Pegex;
     use Pegex::Input;
-    my $ast = pegex(Pegex::Input->new(file => 'foo-grammar-file.pgx'))
+    my $ast = pegex($foo_grammar)
         ->parse(Pegex::Input->new(string => $foo_input));
 
 =head1 DESCRIPTION
@@ -92,10 +92,6 @@ sub _guess_input {
 Pegex::Parser parses input. The input can be a string, a string reference, a
 file path, or an open file handle. Pegex::Input is an abstraction over any
 type of input. It provides a uniform inteface to the parser.
-
-It also give the end user total control, when it is needed. In the rare case
-when you need to have Pegex parse a string that happens to be a filename,
-you'll need to use a Pegex::Input object.
 
 =head1 USAGE
 

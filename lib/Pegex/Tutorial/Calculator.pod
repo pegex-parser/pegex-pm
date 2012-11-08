@@ -7,3 +7,11 @@ expressions. This is the Pegex version of that.
 Precedence parsers are interesting because you need to deal with operators
 that have the same precedence, different precedences and both left and right
 associativity.
+
+... not finished yet ...
+
+=head1 The Code
+
+There are 2 pegex calculators that come with Pegex. Look in the C<examples/> directory. L<https://github.com/ingydotnet/pegex-pm/tree/master/examples/>.
+
+They both do the same thing but using different parsing approaches.

@@ -4,6 +4,8 @@
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2010, 2011, 2012
+# see:
+# - Pegex::Compiler
 
 # NOTE:
 # This algorithm should be rewritten as a proper token -> infix ->
@@ -61,7 +63,7 @@ sub parse {
     if ($grammar_text =~ s/\A((%\w+ +.*\n)+)//) {
         my $section = $1;
         my (@directives) = ($section =~ /%(\w+) +(.*?) *\n/g);
-        my $tree = $self->{tree};
+        my $tree = $self->tree;
         while (@directives) {
             my ($key, $val) = splice(@directives, 0, 2);
             die "'$key' is an invalid Pegex directive"
@@ -293,3 +295,20 @@ sub set_quantity {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Pegex::Bootstrap;
+    my $grammar_text = '... grammar text ...';
+    my $pegex_compiler = Pegex::Bootstrap->new();
+    my $grammar_tree = $pegex_compiler->compile($grammar_text)->tree;
+
+=head1 DESCRIPTION
+
+The Pegex language is defined in Pegex. In order to do that, it was necessary
+to make a bootstrap compiler that did the same thing. This way we could slowly
+build up the grammar, and make sure that the 2 compilers do the same thing.
+Parsing the Pegex language itself is not terribly hard, so this module just
+does it by hand.
+
+Unless you are working on Pegex itself, you can ignore this module.

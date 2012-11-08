@@ -150,6 +150,7 @@ blocks:
         c: /(c)/
     input: bcc
     ast: |
+      TOP:
       - b: b
       - - c: c
         - c: c
@@ -174,6 +175,7 @@ blocks:
            ..    
 
     ast: |
+      TOP:
       - .
       - ..
 

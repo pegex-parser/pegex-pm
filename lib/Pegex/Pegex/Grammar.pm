@@ -419,3 +419,13 @@ sub make_tree {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+    use Pegex::Pegex::Grammar;
+
+=head1 DESCRIPTION
+
+This is the precompiled grammar class for parsing Pegex itself.
+
+It is not normally used idirectly by end users.

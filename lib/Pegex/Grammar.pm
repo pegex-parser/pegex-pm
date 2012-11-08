@@ -95,41 +95,33 @@ sub compile_into_module {
 
 Define a Pegex grammar (for the Foo syntax):
 
-    package Pegex::Grammar::Foo;
-    use base 'Pegex::Grammar';
+    package Pegex::Foo::Grammar;
+    use base 'Pegex::Base';
+    extends 'Pegex::Grammar';
 
-    use constant text => q{
+    has text => q{
     foo: <bar> <baz>
     ... rest of Foo grammar ...
     };
-    use constant receiver => 'Pegex::Receiver';
 
 then use it to parse some Foo:
 
-    use Pegex::Grammar::Foo;
-    my $ast = Pegex::Grammar::Foo->parse('my/file.foo');
+    use Pegex::Parser;
+    my $parse_tree = Pegex::Parser->new(
+        grammar => 'Pegex::Foo::Grammar',
+        receiver => 'Pegex::Tree',
+    )->parse('my/file.foo');
 
 =head1 DESCRIPTION
 
-Pegex::Grammar is a base class for defining your own Pegex grammar classes. It
-provides a single action method, `parse()`, that invokes a Pegex parser
-(usually Pegex::Parser) for you, and then returns the kind of result that you
-want it to. In other words, subclassing Pegex::Grammar is usually all you need
-to do to create a parser/compiler for your language/syntax.
+Pegex::Grammar is a base class for defining your own Pegex grammar classes.
+You just need to provide the grammar view the C<text> or the C<file>
+attributes.
 
-Pegex::Grammar classes are very simple. You just need to define a C<text>
-property that returns your Pegex grammar string, or (if you don't want to
-incur the compilation of the grammar each time) a C<tree> property which
-returns a precompiled grammar.
+When L<Pegex::Parser> uses your grammar, it will want it in the tree (compiled)
+form, so L<Pegex::Grammar> provides automatic compilation support.
 
-You also need to define the receiver class or object that will produce a
-result from your parse. 'Pegex::Receiver' is the easiest choice, as long as
-you are satisfied which its results. Otherwise you can subclass it or define
-something different.
-
-=head1 PROPERTIES
-
-There are 2 properties of a Pegex::Grammar: C<tree> and C<text>.
+=head1 PROPERTIES AND METHODS
 
 =over
 
@@ -147,13 +139,27 @@ Often times you will want to generate your own Pegex::Grammar subclasses in an
 automated fashion. The Pegex and TestML modules do this to be performant. This
 also allows you to keep your grammar text in a separate file, and often in a
 separate repository, so it can be shared by multiple programming language's
-module implementations. See the src/ subdirectory in
-L<http://github.com/ingydotnet/pegex-pm/>.
+module implementations.
+
+See L<https://github.com/ingydotnet/pegex-pgx> and
+L<https://github.com/ingydotnet/pegex-pm/blob/master/lib/Pegex/Pegex/Grammar.pm>.
 
 =item text
 
 This is simply the text of your grammar, if you define this, you should
 (probably) not define the C<tree> property. This grammar text will be
 automatically compiled when the C<tree> is required.
+
+=item file
+
+This is the file where your Pegex grammar lives. It is usually used when you
+are making a Pegex module. The path is relative to your top level module
+directory.
+
+=item make_tree
+
+This method is called when the grammar needs the compiled version.
+
+=over
 
 =back

@@ -107,27 +107,26 @@ sub parse {
     $self->{receiver}{parser} = $self;
     Scalar::Util::weaken($self->{receiver}{parser});
 
-    $self->{receiver}->initial($start_rule_ref)
-        if $self->{receiver}->can("initial");
+    if ($self->{receiver}->can("initial")) {
+        @{$self}{'rule', 'parent'} = ($start_rule_ref, {});
+        $self->{receiver}->initial();
+    }
 
     my $match = $self->match_ref($start_rule_ref, {});
+
+    $self->{input}->close;
+
     if (not $match or $self->{position} < $self->{length}) {
         $self->throw_error("Parse document failed for some reason");
         return;  # In case $self->throw_on_error is off
     }
-    $match = $match->[0];
 
-    $match = $self->{receiver}->final($match, $start_rule_ref)
-        if $self->{receiver}->can("final");
+    if ($self->{receiver}->can("final")) {
+        @{$self}{'rule', 'parent'} = ($start_rule_ref, {});
+        $match = [ $self->{receiver}->final(@$match) ];
+    }
 
-    $match = {$start_rule_ref => []} unless $match;
-
-    $match = $match->{TOP} || $match if $start_rule_ref eq 'TOP';
-
-    $self->{input}->close;
-
-    # TODO Can't return a false value yet.
-    return ($self->{receiver}{data} || $match);
+    return $match->[0];
 }
 
 sub optimize_grammar {

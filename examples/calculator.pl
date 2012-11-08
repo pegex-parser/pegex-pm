@@ -11,7 +11,7 @@ number: /~(<DASH>?<DIGIT>+)~/
 
 {
     package Calculator;
-    use base 'Pegex::Receiver';
+    use base 'Pegex::Tree';
 
     sub got_add_sub {
         my @list = flatten(pop);

@@ -9,6 +9,7 @@
 # - Pegex::API
 # - Pegex::Syntax
 # - Pegex::Tutorial
+# - Pegex::Resources
 # - http://github.com/ingydotnet/pegex-pm
 # - irc.freenode.net#pegex
 
@@ -58,7 +59,7 @@ sub _get_options {
 
 1;
 
-=head1 Synopsis
+=head1 SYNOPSIS
 
     use Pegex;
     my $result = pegex($grammar)->parse($input);
@@ -105,7 +106,7 @@ or customized explicitly:
     $parser->parse($input);
     my $result = $parser->receiver->data;
 
-=head1 Description
+=head1 DESCRIPTION
 
 Pegex is a Acmeist parser framework. It allows you to easily create parsers
 that will work equivalently in lots of programming languages!
@@ -123,10 +124,10 @@ Pegex attempts to be the simplest way to define new (or old) Domain Specific
 Languages (DSLs) that need to be used in several programming languages and
 environments.
 
-=head1 Usage
+=head1 USAGE
 
-The C<Pegex.pm> module itself is just a trivial way to use the Pegex
-framework. It is only intended for the simplest of uses.
+The C<Pegex.pm> module itself (this module) is just a trivial way to use the
+Pegex framework. It is only intended for the simplest of uses.
 
 This module exports a single function, C<pegex>, which takes a Pegex grammar
 string as input. You may also pass named parameters after the grammar.

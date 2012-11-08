@@ -70,6 +70,11 @@ sub _module_is_active {
 
 1;
 
+=head1 NOTE
+
+This module is just for experimental fun. See L<Pegex> for the right way to use
+the Pegex parsing framework.
+
 =head1 SYNOPSIS
 
     {
@@ -77,7 +82,7 @@ sub _module_is_active {
         use Pegex::Regex;
         my $grammar = qr{$grammar_text}x;
         $text =~ $grammar;
-        my $data = \%/;
+        my $result = \%/;
 
         # Turn off Pegex in this scope.
         no Pegex::Regex;
@@ -101,62 +106,13 @@ expression, is not the clearest way to code. But, of course, TMTOWTDI. :)
 Here's a Pegex::Regex code snippet:
 
     use Pegex::Regex;
-    $text =~ qr{path/to/grammar_file.pgx};
-    print $/{foo};
+    $text =~ qr{... Pegex grammar text ...};
+    $data = \%/;
 
 And the equivalent Pegex code:
 
     use Pegex;
-    my $data = pegex('path/to/grammar_file.pgx')->parse($text);
-    print $data->{foo};
-
-And the more explicit Pegex solution:
-
-    use Pegex::Grammar;
-    my $grammar = Pegex::Grammar->new(
-        text => 'path/to/grammar_file.pgx',
-    );
-    my $data = $grammar->parse($input);
-    print $data->{foo};
-
-And even more explicit yet:
-
-    use Pegex::Grammar;
-    use Pegex::Compiler;
-    use Pegex::Parser;
-    use Pegex::Receiver;
-    use Pegex::Input;
-    my $parser = Pegex::Grammar->new(
-        grammar => Pegex::Grammar->new(
-            tree => Pegex::Compile->compile(
-                Pegex::Input->new(
-                    file => 'path/to/grammar_file.pgx',
-                )
-            )->tree,
-        ),
-        parser => 'Pegex::Parser',
-        receiver => 'Pegex::Receiver',
-    );
-    $parser->parse(Pegex::Input->new(string => $input));
-    print $parser->receiver->data->{foo};
-
-In the last example there are 5 components/classes, all of which you can
-subclass to make your perfect parser.
-
-Pegex::Regex is just a gateway drug. :)
-
-=head1 INPUT OPTIONS
-
-There are different ways to input a grammar into a Pegex::Regex:
-
-    qr{
-        grammar: <as> <text>
-    }x;
-    qr{$grammar_in_a_variable}x;
-    qr{path/to/grammar-file.pgx};
-
-Make sure to use the C<x> modifier if you are specifying the grammar as a
-literal string or in a variable.
+    my $data = pegex('... Pegex grammar text ...')->parse($text);
 
 =head1 WARNING
 
@@ -169,4 +125,3 @@ call to the regex engine, which is not supported yet.  Use at your own risk.
 
 Better yet, do yourself a favor and learn how to use the Pegex toolset without
 this ::Regex sugar.  C<:-)>
-

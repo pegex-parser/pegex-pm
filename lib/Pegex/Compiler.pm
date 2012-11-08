@@ -202,6 +202,10 @@ The grammar tree can be serialized to YAML, JSON, Perl, or any other
 programming language. This makes it extremely portable. Pegex::Grammar has
 methods for serializing to all these forms.
 
+NOTE: Unless you are developing Pegex based modules, you can safely ignore this
+module. Even if you are you probably won't use it directly. See L<IN PLACE
+COMPILATION> below.
+
 =head1 METHODS
 
 The following public methods are available:
@@ -271,8 +275,8 @@ mechanism for this. Say you have a class like this:
     use Pegex::Base;
     extends 'Pegex::Grammar';
 
-    use constant text => '../mything-grammar-repo/mything.pgx';
-    sub tree {
+    use constant file => '../mything-grammar-repo/mything.pgx';
+    sub make_tree {
     }
 
 Simply use this command:
