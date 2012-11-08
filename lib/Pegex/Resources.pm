@@ -61,6 +61,8 @@ yard algorithm, to handle precedence.
 
 =item L<A JSON Decoder Perl Module|https://github.com/ingydotnet/pegex-json-pgx>
 
+=item L<A JSONY Decoder Perl Module|https://github.com/ingydotnet/json-pgx>
+
 =item L<A CronTab Parser Perl Module|https://github.com/ingydotnet/pegex-crontab-pm>
 
 =back
