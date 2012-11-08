@@ -1,9 +1,44 @@
+# Release 0.22
+- More testing
+  - Compilation units
+  - Receiver results
+  - Regex captures
+  - Write tests for various ASTs
+  - Write tests for skip wrap pass and flat
+- Try stack based parser\
+  - pop with pointer decrement
+    - Analyze stack on errors
+- Rewrite Pegex::BootStrap as tokenizing/shunting-yard
+- Make suffixes and prefixes be universal
+  - Add _ flatten prefix to language
+- Work on Pegex::Input
+- Pegex::pegex (2+ even args)
+  - (input => $input_str_or_object)
+  - (grammar => $grammar_class_or_object)
+  - (grammar => $grammar_class_or_object, receiver => $receiver)
+  - (..., debug => 1) # parse debug only
+  - (..., debug => 2) # compile and parse debugging
+  - (..., compile => 1) # precompile grammar
+- Add inheritance and inclusion
+  - Make sure that things are *lazy*
+- More aggressively compile into modules
+  - support compile options in grammar
+    - optimize
+    - min/max
+- Support multiple data formats in make_tree
+- Support single quoted token 'a + b = ...'
+  - defines a literal regex with YAML single quote semantics
+- Combinate adjacent regexes
+- Support %SmartWhitespace
+  - rulename ~: a '=' b
+  - rulename: a /~<EQUAL>~/ b
+- Consider replacing ~ with ,
+- Support partial and multiple parses on a grammar
+- Support parser delegation to another parser
+
 # New feature ideas
-- Write tests for various ASTs
-- Write tests for skip wrap pass and flat
 - Compile to arrays only (optionally)
 - Add $_ support
-- Add flatten syntax to grammar
 - $parser->reset (or ->close)
 - Support EXPR precedence parsing grammar
 - Support grammar class methods as rules
@@ -13,12 +48,9 @@
 - Multiple rule definitions per statement
   - Allow multiline
 - Support special <RULE> reference (literal rule name)
-- Support single quoted token 'a + b = ...'
-  - defines a literal regex with YAML single quote semantics
 - Support include and inherit (extends)
   - Class/object resolution
 - '::' commit syntax
-- Combinate adjacent regexes
 - Support position moving syntax
   - -- ++ -2 +3 -x +x
 - Support subparser using Input object and certain pos
