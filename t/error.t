@@ -21,13 +21,14 @@ Plan = 16;
 *grammar.parse(*input).Catch ~~ *error;
 
 === Error fails at furthest match
+# XXX This one not testing much.
 --- grammar
 a: b+ c
 b: /b/
 c: /c/
 --- input
 bbbbddddd
---- error: "ddddd\n"
+--- error: ddddd\n
 
 ### TODO ###
 # === Pegex: Illegal meta rule

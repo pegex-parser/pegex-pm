@@ -1,7 +1,7 @@
 NAME
     Pegex - Acmeist PEG Parsing Framework
 
-Synopsis
+SYNOPSIS
         use Pegex;
         my $result = pegex($grammar)->parse($input);
 
@@ -47,7 +47,7 @@ Synopsis
         $parser->parse($input);
         my $result = $parser->receiver->data;
 
-Description
+DESCRIPTION
     Pegex is a Acmeist parser framework. It allows you to easily create
     parsers that will work equivalently in lots of programming languages!
 
@@ -65,9 +65,9 @@ Description
     Specific Languages (DSLs) that need to be used in several programming
     languages and environments.
 
-Usage
-    The "Pegex.pm" module itself is just a trivial way to use the Pegex
-    framework. It is only intended for the simplest of uses.
+USAGE
+    The "Pegex.pm" module itself (this module) is just a trivial way to use
+    the Pegex framework. It is only intended for the simplest of uses.
 
     This module exports a single function, "pegex", which takes a Pegex
     grammar string as input. You may also pass named parameters after the
@@ -82,11 +82,15 @@ Usage
     See Pegex::API for more details.
 
 SEE ALSO
+    *   Pegex::Overview
+
     *   Pegex::API
 
     *   Pegex::Syntax
 
     *   Pegex::Tutorial
+
+    *   Pegex::Resources
 
     *   <http://github.com/ingydotnet/pegex-pm>
 

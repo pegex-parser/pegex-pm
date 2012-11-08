@@ -3,7 +3,7 @@ use Test::More;
 use Cwd 'cwd';
 use Capture::Tiny 'capture_merged';
 use Devel::Local '.', '../testml-pm';
-use XXX;
+# use XXX;
 
 my $home = cwd;
 my $repos = [

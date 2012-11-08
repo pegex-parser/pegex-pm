@@ -1,4 +1,16 @@
 ---
+version: 0.21
+date:    
+changes:
+- A massive refactoring release.
+- 8-10 times faster parsing speed!
+- Support a b | c precedence in Pegex grammars.
+- Complete documenatation.
+- Examples and Tutorials
+- New receivers: Pegex::Tree and Pegex::Tree::Wrap
+- API becomes more solidified.
+
+---
 version: 0.20
 date:    Thu Aug 30 00:06:30 PDT 2012
 changes:

@@ -1,3 +1,25 @@
+# 0.21 release
++ Fix 'a b | c' in bootstrap parser
+  + Test precedence parsing
++ strip (?-xism:...) wrapper from regexps
++ Make pegex->parse repeatable (currently messes up)
++ Fix inheritance construction in Moos
++ List all docs
++ List all related projects
++ Test with external projects
+  + Write xt tests for related projects
++ Add Pegex::Tree::Wrap (wrap = 1)
+  + Use as default in Pegex.pm
++ Write Pegex::Tree (wrap = 0)
++ Flesh out documentation
++ Move AST primatives to Pegex::AST
+  + Pegex::AST subclass of Pegex::Receiver
+
++ AST receiver (most common base class) Pegex::Receiver::AST
++ Streaming receiver (does about nothing) Pegex::Receiver
++ TreeDump receiver (instead of wrap)
++ arithmetic precedence
+
 + Rework atoms
 + Grammar auto compile PERL_PEGEX_AUTO_COMPILE
 + Merge grammar changes
