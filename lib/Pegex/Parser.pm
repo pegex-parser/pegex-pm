@@ -256,7 +256,7 @@ sub match_ref {
     my $match = $self->match_next($rule) or return 0;
     return $dummy unless $rule->{action};
     @{$self}{'rule', 'parent'} = @_[1,2];
-    [ $rule->{action}->($self->{receiver}, $match->[0]) ];
+    [ $rule->{action}->($self->{receiver}, @$match) ];
 }
 
 sub match_rgx {

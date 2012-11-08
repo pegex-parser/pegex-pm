@@ -13,10 +13,10 @@ use Pegex::Base;
 extends 'Pegex::Receiver';
 
 sub gotrule {
-    my ($self, $data) = @_;
-    $data // return ();
-    return $data if $self->{parser}{parent}{-pass};
-    return {$self->{parser}{rule} => $data}
+    my $self = shift;
+    @_ || return ();
+    return $_[0] if $self->{parser}{parent}{-pass};
+    return {$self->{parser}{rule} => $_[0]}
 }
 
 1;
