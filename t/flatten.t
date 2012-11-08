@@ -12,20 +12,21 @@ d: /y/
     package R;
     use base 'Pegex::Receiver';
     sub got_a {
-        my ($self, $data) = @_;
-        $self->flatten($data, 2);
+        my ($self, $got) = @_;
+        $self->flatten($got);
+        $got;
     }
     sub got_b {
-        my ($self, $data) = @_;
-        [$data];
+        my ($self, $got) = @_;
+        [$got];
     }
     sub got_c {
-        my ($self, $data) = @_;
-        [$data];
+        my ($self, $got) = @_;
+        [$got];
     }
 }
 
 my $parser = pegex($grammar, {receiver => 'R'});
-my $data = $parser->parse('xxx');
+my $got = $parser->parse('xxx');
 
-is join('', @$data), 'xxx', 'Array was flattened';
+is join('', @$got), 'xxx', 'Array was flattened';

@@ -7,7 +7,7 @@
 
 package Pegex::Pegex::AST;
 use Pegex::Base;
-extends 'Pegex::Receiver';
+extends 'Pegex::Tree';
 
 use Pegex::Grammar::Atoms;
 

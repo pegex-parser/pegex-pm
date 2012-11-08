@@ -12,26 +12,18 @@
 package Pegex::Receiver;
 use Pegex::Base;
 
-# The parser object.
-has parser => ();
-# The grammar object.
-has grammar => ();
-# The current rule name.
-has rule => ();
-# The grammar object pointing to the current rule.
-has parent => ();
+has parser => (); # The parser object.
 
-# Flatten a structure of nested arrays into a single array.
-# TODO Should be done in place.
+# Flatten a structure of nested arrays into a single array in place.
 sub flatten {
     my ($self, $array, $times) = @_;
     $times //= -1;
-    return $array unless $times--;
-    return [
-        map {
-            (ref($_) eq 'ARRAY') ? @{$self->flatten($_, $times)} : $_
-        } @$array
-    ];
+    while ($times-- and grep {ref($_) eq 'ARRAY'} @$array) {
+        @$array = map {
+            (ref($_) eq 'ARRAY') ? @$_ : $_
+        } @$array;
+    }
+    return;
 }
 
 1;
@@ -121,8 +113,26 @@ Called at the beginning of a parse operation, before the parsing begins.
 Called at the end of a parse operation. Whatever this action returns, will be
 the result of the parse.
 
+=back
+
+=head2 Methods
+
+=over
+
 =item C<parser>
 
-An attribute containing the parser object that is currently running.
+An attribute containing the parser object that is currently running. This can
+be very useful to introspect what is happening, and possibly modify the grammar
+on the fly. (Experts only!)
+
+=item C<flatten($array)>
+
+A utility method that can turn an array of arrays into a single array. For
+example:
+
+    $self->flatten([1, [2, [3, 4], 5], 6]);
+    # produces [1, 2, 3, 4, 5, 6]
+
+Hashes are left unchanged. The array is modified in place. Nothing is returned.
 
 =back

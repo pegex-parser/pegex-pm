@@ -46,6 +46,9 @@ has position => 0;          # Current position in buffer
 has farthest => 0;          # Farthest point matched in buffer
 has optimized => 0;         # Parser object has been optimized
 
+has rule => ();             # The current rule name.
+has parent => ();           # The grammar object pointing to the current rule.
+
 # Debug the parsing of input.
 has 'debug' => (
     default => sub {
@@ -162,11 +165,11 @@ sub optimize_node {
     elsif ($node->{kind} eq 'ref') {
         my $ref = $node->{rule};
         my $rule = $self->{tree}{$ref};
-        if (my $got = $self->{receiver}->can("got_$ref")) {
-            $rule->{got} = $got;
+        if (my $action = $self->{receiver}->can("got_$ref")) {
+            $rule->{action} = $action;
         }
         elsif (my $gotrule = $self->{receiver}->can("gotrule")) {
-            $rule->{got} = $gotrule;
+            $rule->{action} = $gotrule;
         }
         $node->{method} = $self->can("match_ref_trace")
             if $self->{debug};
@@ -245,16 +248,15 @@ sub match_next_with_sep {
     return ($result ? $next->{'-skip'} ? [] : $match : 0);
 }
 
+my $dummy = [1];
 sub match_ref {
     my ($self) = @_; # $self, $ref, $parent
     my $rule = $self->{tree}{$_[1]};
 
     my $match = $self->match_next($rule) or return 0;
-    if ($rule->{got}) {
-        @{$self->{receiver}}{'rule', 'parent'} = @_[1,2];
-        return [ $rule->{got}->($self->{receiver}, $match->[0]) ];
-    }
-    return $match;
+    return $dummy unless $rule->{action};
+    @{$self}{'rule', 'parent'} = @_[1,2];
+    [ $rule->{action}->($self->{receiver}, $match->[0]) ];
 }
 
 sub match_rgx {

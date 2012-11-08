@@ -15,8 +15,8 @@ extends 'Pegex::Receiver';
 sub gotrule {
     my ($self, $data) = @_;
     $data // return ();
-    return $data if $self->{parent}{-pass};
-    return {$self->{rule} => $data}
+    return $data if $self->{parser}{parent}{-pass};
+    return {$self->{parser}{rule} => $data}
 }
 
 1;
