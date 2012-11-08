@@ -8,16 +8,14 @@
 + List all related projects
 + Test with external projects
   + Write xt tests for related projects
-
-- Add Pegex::AST (wrap = 1)
-  - Use as default in Pegex.pm
-- Write Pegex::LoL (wrap = 0)
-- Flesh out documentation
-
-- Write tests for various ASTs
-- Write tests for skip wrap pass and flat
++ Add Pegex::Tree::Wrap (wrap = 1)
+  + Use as default in Pegex.pm
++ Write Pegex::Tree (wrap = 0)
++ Flesh out documentation
 
 # New feature ideas
+- Write tests for various ASTs
+- Write tests for skip wrap pass and flat
 - Compile to arrays only (optionally)
 - Move AST primatives to Pegex::AST
   - Pegex::AST subclass of Pegex::Receiver
