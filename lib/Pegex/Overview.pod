@@ -1,4 +1,6 @@
-= What is Pegex?
+=encoding utf8
+
+=head1 What is Pegex?
 
 Pegex is a Friendly, Acmeist, PEG Parser framework. Friendly means that it is
 simple to create, understand, modify and maintain Pegex parsers. Acmeist means
@@ -12,7 +14,7 @@ grammars that eventually break down to regex fragments. ie The low level
 parsing matches are always done with regexes against the current position in
 the input stream.
 
-= What is Parsing?
+=head1 What is Parsing?
 
 It may seem like a silly question, but it's important to have an understanding
 of what parsing is and what a parser can do for you. At the the most basic
@@ -25,14 +27,21 @@ be structured. In many parsing methodologies, input is preprocessed (possibly
 into tokesn) before the parser/grammar get to look at it. Although this is
 a common method, it is not the only approach.
 
-= How Pegex Works
+=head1 How Pegex Works
 
 Pegex parsing consists of 4 distinct parts or objects:
 
-* Parser - The Pegex parsing engine
-* Grammar - The rules of a particular syntax
-* Receiver - The logic for processing matches
-* Input - Text conforming to the grammar rules
+=over
+
+=item * Parser - The Pegex parsing engine
+
+=item * Grammar - The rules of a particular syntax
+
+=item * Receiver - The logic for processing matches
+
+=item * Input - Text conforming to the grammar rules
+
+=back
 
 Quite simply, a parser object is created with a grammar object and a receiver
 object. Then the parser object's `parse()` method is called on an input
@@ -44,12 +53,10 @@ should be.
 For example consider a parser that turns the Markdown text language into HTML.
 The Pegex code to use this might look like this:
 
-In the simplest terms, Pegex works like this:
+In the simplest terms, Pegex works like this (pseudocode):
 
     parser = new Pegex.Parser(
         grammar: new Markdown.Grammar
         receiver: new Markdown.Receiver.HTML
     )
-    html = parser.parse(input)
-
-
+    html = parser.parse(markdown)
