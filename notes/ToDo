@@ -6,13 +6,13 @@
 + Fix inheritance construction in Moos
 + List all docs
 + List all related projects
++ Test with external projects
+  + Write xt tests for related projects
 
 - Add Pegex::AST (wrap = 1)
   - Use as default in Pegex.pm
 - Write Pegex::LoL (wrap = 0)
 - Flesh out documentation
-- Test with external projects
-  - Write xt tests for related projects
 
 - Write tests for various ASTs
 - Write tests for skip wrap pass and flat
