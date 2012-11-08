@@ -23,7 +23,7 @@ sub flatten {
             (ref($_) eq 'ARRAY') ? @$_ : $_
         } @$array;
     }
-    return;
+    return $array;
 }
 
 1;
@@ -133,6 +133,7 @@ example:
     $self->flatten([1, [2, [3, 4], 5], 6]);
     # produces [1, 2, 3, 4, 5, 6]
 
-Hashes are left unchanged. The array is modified in place. Nothing is returned.
+Hashes are left unchanged. The array is modified in place, but is
+also the reutrn value.
 
 =back

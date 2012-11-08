@@ -14,7 +14,7 @@ num: /~(<DASH>?<DIGIT>+)~/
 
 {
     package Calculator;
-    use base 'Pegex::Receiver', 'Precedence';
+    use base 'Pegex::Tree', 'Precedence';
 
     my $operator_precedence_table = {
         '+' => {p => 1, a => 'l'},

@@ -14,34 +14,33 @@ number: /~(<DASH>?<DIGIT>+)~/
     use base 'Pegex::Tree';
 
     sub got_add_sub {
-        my @list = flatten(pop);
-        while (@list > 1) {
-            my ($a, $op, $b) = splice(@list, 0, 3);
-            unshift @list, ($op eq '+') ? ($a + $b) : ($a - $b);
+        my ($self, $list) = @_;
+        $self->flatten($list);
+        while (@$list > 1) {
+            my ($a, $op, $b) = splice(@$list, 0, 3);
+            unshift @$list, ($op eq '+') ? ($a + $b) : ($a - $b);
         }
-        $list[0];
+        @$list;
     }
 
     sub got_mul_div {
-        my @list = flatten(pop);
-        while (@list > 1) {
-            my ($a, $op, $b) = splice(@list, 0, 3);
-            unshift @list, ($op eq '*') ? ($a * $b) : ($a / $b);
+        my ($self, $list) = @_;
+        $self->flatten($list);
+        while (@$list > 1) {
+            my ($a, $op, $b) = splice(@$list, 0, 3);
+            unshift @$list, ($op eq '*') ? ($a * $b) : ($a / $b);
         }
-        $list[0];
+        @$list;
     }
 
     sub got_exp {
-        my @list = flatten(pop);
-        while (@list > 1) {
-            my ($a, $b) = splice(@list, -2, 2);
-            push @list, $a ** $b;
+        my ($self, $list) = @_;
+        $self->flatten($list);
+        while (@$list > 1) {
+            my ($a, $b) = splice(@$list, -2, 2);
+            push @$list, $a ** $b;
         }
-        $list[0];
-    }
-
-    sub flatten {
-        ref($_[0]) ? map flatten($_), @{$_[0]} : $_[0];
+        @$list;
     }
 }
 

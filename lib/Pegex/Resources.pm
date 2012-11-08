@@ -25,7 +25,7 @@ parsers:
 
 =over
 
-=item C<calculator.pl>
+=item C<calculator1.pl>
 
 This an arithmetic expression parser and evaluator. It uses
 the precedence climbing method to deal with operator precedence.
