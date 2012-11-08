@@ -4,17 +4,29 @@ When you look around the web for stuff about parsing, you inevitably find a
 bunch of examples about how to write a precedence parser for mathematical
 expressions.
 
-    * http://en.wikipedia.org/wiki/Operator-precedence_parser
-    * http://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing/
-    * http://www.hokstad.com/operator-precedence-parser.html
-    * http://www.perlmonks.org/?node_id=554516
+=over
+
+=item L<http://en.wikipedia.org/wiki/Operator-precedence_parserZ>
+
+=item L<http://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing/>
+
+=item L<http://www.hokstad.com/operator-precedence-parser.html>
+
+=item L<http://www.perlmonks.org/?node_id=554516>
+
+=back
 
 This tutorial is the Pegex version of that. Pegex actually comes with an
 examples directory that contains two arithmetic expression parser/evaluator
 caclulator programs:
 
-    * https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator1.pl
-    * https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator2.pl
+=over
+
+=item L<https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator1.pl>
+
+=item L<https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator2.pl>
+
+=back
 
 They both do the same thing but using different parsing approaches. We'll
 cover both of them in detail. I hope you'll find that Pegex handles operator
@@ -206,6 +218,7 @@ a separate base class called C<examples/lib/Precedence.pm>.
 This is an implementation of Edsger Dijkstra's famous Shunting-yard
 Algorithm from 1961! It's only 20 lines of Perl. I won't include it
 inline here, but have a look at it for yourself.
+L<https://github.com/ingydotnet/pegex-pm/blob/master/examples/lib/Precedence.pm>
 
 The Shunting-yard algorithm simply takes a list of expression tokens
 and transforms them into an RPN stack. It uses information from a
@@ -230,6 +243,7 @@ changed the runner code to look like this:
 As you can see I also moved the evaluator code into a
 separate/reusable module: C<examples/lib/RPN.pm>. This is another 30
 lines of Perl. Please take a look at it.
+L<https://github.com/ingydotnet/pegex-pm/blob/master/examples/lib/RPN.pm>
 
 So overall, this second solution was a bit more code, but also feels
 more solid on several levels.
