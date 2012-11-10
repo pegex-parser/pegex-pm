@@ -7,20 +7,27 @@ require_or_skip('YAML::XS');
 
 # plan tests => 12;
 
-data('t/tree.tml');
+my @files = qw(
+    t/tree.tml
+    t/tree-pegex.tml
+);
+for my $file (@files) {
+    data($file);
 
-label('Normal Tree - $label');
-test(
-    ['yaml',['parse', 'Pegex::Tree', '*grammar', '*input']],
-    '==',
-    '*tree'
-);
-label('Wrapper Tree - $label');
-test(
-    ['yaml',['parse', 'Pegex::Tree::Wrap', '*grammar', '*input']],
-    '==',
-    '*wrap'
-);
+    label('Normal Tree - $label');
+    loop([
+        ['yaml',['parse', 'Pegex::Tree', '*grammar', '*input']],
+        '==',
+        '*tree'
+    ]);
+
+    label('Wrapper Tree - $label');
+    loop([
+        ['yaml',['parse', 'Pegex::Tree::Wrap', '*grammar', '*input']],
+        '==',
+        '*wrap'
+    ]);
+}
 
 done_testing;
 

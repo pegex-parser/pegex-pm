@@ -8,7 +8,7 @@ use XXX;
 my $data;
 my $label = '$label';
 
-our @EXPORT = qw'require_or_skip data label test plan done_testing';
+our @EXPORT = qw'require_or_skip data label loop test plan done_testing';
 
 sub require_or_skip {
     eval "use $_[0]; 1"
@@ -25,16 +25,23 @@ sub label {
     $label = shift;
 }
 
-sub test {
-    my ($left, $op, $right) = @_;
-    for my $block (@{get_blocks([$left, $right])}) {
-        die "Invalid operator '$op'" if $op ne '==';
-        my $got = evaluate($left, $block);
-        my $want = evaluate($right, $block);
-        my $title = $label;
-        $title =~ s/\$label/$block->{title}/;
-        is $got, $want, $title;
+sub loop {
+    my ($expr, $callback) = @_;
+    $callback //= \&test;
+    for my $block (@{get_blocks($expr)}) {
+        $callback->($expr, $block);
     }
+}
+
+sub test {
+    my ($expr, $block) = @_;
+    my ($left, $op, $right) = @$expr;
+    die "Invalid operator '$op'" if $op ne '==';
+    my $got = evaluate($left, $block);
+    my $want = evaluate($right, $block);
+    my $title = $label;
+    $title =~ s/\$label/$block->{title}/;
+    is $got, $want, $title;
 }
 
 sub evaluate {
@@ -53,22 +60,19 @@ sub evaluate {
 
 sub get_blocks {
     my @want = grep s/^\*//, flatten(@_);
-    my $blocks = [];
-OUTER:
-    for my $block (@$data) {
-        for (@want) {
-            next OUTER unless exists $block->{points}{$_};
-        }
-        push @$blocks, $block;
-    }
+    my $blocks = $data;
     my @only = grep $_->{ONLY}, @$blocks;
     $blocks = \@only if @only;
     my $final = [];
-    for (@$blocks) {
-        next if $_->{SKIP};
-        push @$final, $_;
-        last if $_->{LAST};
-    };
+OUTER:
+    for my $block (@$blocks) {
+        next if $block->{SKIP};
+        for (@want) {
+            next OUTER unless exists $block->{points}{$_};
+        }
+        push @$final, $block;
+        last if $block->{LAST};
+    }
     return $final;
 }
 
@@ -101,8 +105,7 @@ sub parse_tml {
                     }
                 }
                 else {
-                    XXX $str;
-                    die;
+                    die "Failed to parse FakeTestML string:\n$str";
                 }
             }
             $block;
