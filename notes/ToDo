@@ -1,4 +1,6 @@
 # Release 0.22
+- Remove TestML dependency
+  - Consolidate boot and testml tests
 - More testing
   - Compilation units
   - Receiver results

@@ -1,42 +1,13 @@
-# BEGIN { $TestML::Test::Differences = 1 }
-# BEGIN { $Pegex::Parser::Debug = 1 }
-
-use TestML -run,
-    -require_or_skip => 'YAML::XS';
-
-use Pegex;
-use YAML::XS;
-
-sub parse {
-    my $grammar = (shift)->value;
-    my $input = (shift)->value;
-    my $parser = pegex($grammar);
-    return $parser->parse($input);
-}
-
-sub yaml {
-    my $data = (shift)->value;
-    my $yaml = YAML::XS::Dump($data);
-    $yaml =~ s/^---\s+//;
-    $yaml =~ s/'(\d+)':/$1:/g;
-    return $yaml;
-}
-
-__DATA__
-%TestML 1.0
-
-Plan = 12;
-
-*grammar.parse(*input).yaml == *ast;
-
-=== Skip work
+=== Skip modifier works
 --- grammar
 a: x .y EOL
 x: /(x+)/
 y: /(y+)/
 --- input
 xxxyyyy
---- ast
+--- tree
+- xxx
+--- wrap
 a:
 - x: xxx
 
@@ -47,7 +18,10 @@ x: /(x+)/
 y: /(y+)/
 --- input
 xxxyyyy
---- ast
+--- tree
+- xxx
+- yyyy
+--- wrap
 a:
 - x: xxx
 - y: yyyy
@@ -57,7 +31,9 @@ a:
 a: /x*(y*)z*<EOL>/
 --- input
 xxxyyyyzzz
---- ast
+--- tree
+yyyy
+--- wrap
 a: yyyy
 
 === Single Regex - Multi Capture
@@ -65,7 +41,11 @@ a: yyyy
 a: /(x*)(y*)(z*)<EOL>/
 --- input
 xxxyyyyzzz
---- ast
+--- tree
+- xxx
+- yyyy
+- zzz
+--- wrap
 a:
 - xxx
 - yyyy
@@ -76,7 +56,9 @@ a:
 a: /x*y*z*<EOL>/
 --- input
 xxxyyyyzzz
---- ast
+--- tree
+[]
+--- wrap
 a: []
 
 === A subrule
@@ -85,7 +67,10 @@ a: <b> /(y+)/ <EOL>
 b: /(x+)/
 --- input
 xxxyyyy
---- ast
+--- tree
+- xxx
+- yyyy
+--- wrap
 a:
 - b: xxx
 - yyyy
@@ -96,7 +81,10 @@ a: <b>
 b: /(x*)y*(z*)<EOL>/
 --- input
 xxxyyyyzzz
---- ast
+--- tree
+- xxx
+- zzz
+--- wrap
 a:
   b:
   - xxx
@@ -109,7 +97,10 @@ b: /(bleh)/
 c: /(x*)y*(z*)<EOL>?/
 --- input
 xxxyyyyzzz
---- ast
+--- tree
+- xxx
+- zzz
+--- wrap
 a:
   c:
   - xxx
@@ -122,7 +113,12 @@ b: /(x*)/
 c: /(y+)/
 --- input
 xxyyxy
---- ast
+--- tree
+- - - xx
+    - yy
+  - - x
+    - y
+--- wrap
 a:
 - - - b: xx
     - c: yy
@@ -136,7 +132,10 @@ b: /xxx/
 c: /(yyy)/
 --- input
 xxxyyy
---- ast
+--- tree
+- []
+- yyy
+--- wrap
 a:
 - []
 - c: yyy
@@ -156,7 +155,15 @@ rule_line: /(<line>)<EOL>/
 \# This is the Pegex grammar for Pegex grammars!
 grammar: ( <comment>* <rule_definition> )+ <comment>*
 rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
---- ast
+--- tree
+- - - []
+    - - grammar
+      - ( <comment>* <rule_definition> )+ <comment>*
+  - - []
+    - - rule_definition
+      - /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
+- []
+--- wrap
 grammar:
 - - - []
     - rule_definition:
@@ -178,11 +185,13 @@ d: /x(y)z/
 --- input
 xyz
 xyz
---- ast
+--- tree
+- - y
+- - y
+--- wrap
 a:
   b:
   - c:
     - d: y
   - c:
     - d: y
-
