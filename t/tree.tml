@@ -414,3 +414,28 @@ a:
 - b: b
 - - b: b
   - b: b
+
+=== False Values
+--- grammar
+a: <zero> <empty> <undef>
+zero: /(b+)/
+empty: /(c+)/
+undef: /(d+)/
+--- input: bbccdd
+--- ast
+- 0
+- ''
+- ~
+
+=== Wrap
+--- grammar
+a: <b> <c> <d>
+b: /(b+)/
+c: /(c+)/
+d: /(d+)/
+--- input: bbccdd
+--- wrap
+a:
+- b: bb
+- c: cc
+- d: dd

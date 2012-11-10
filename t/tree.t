@@ -14,18 +14,25 @@ my @files = qw(
 for my $file (@files) {
     data($file);
 
-    label('Normal Tree - $label');
+    label('Pegex::Tree - $label');
     loop([
         ['yaml',['parse', 'Pegex::Tree', '*grammar', '*input']],
         '==',
         '*tree'
     ]);
 
-    label('Wrapper Tree - $label');
+    label('Pegex::Tree::Wrap - $label');
     loop([
         ['yaml',['parse', 'Pegex::Tree::Wrap', '*grammar', '*input']],
         '==',
         '*wrap'
+    ]);
+
+    label('t::TestPegex::AST - $label');
+    loop([
+        ['yaml',['parse', 't::TestPegex::AST', '*grammar', '*input']],
+        '==',
+        '*ast'
     ]);
 }
 
