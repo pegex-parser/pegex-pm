@@ -6,7 +6,7 @@ expressions.
 
 =over
 
-=item L<http://en.wikipedia.org/wiki/Operator-precedence_parserZ>
+=item L<http://en.wikipedia.org/wiki/Operator-precedence_parser>
 
 =item L<http://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing/>
 

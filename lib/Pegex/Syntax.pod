@@ -112,6 +112,8 @@ Note the the angle brackets are not required here, but add to readability.
     -<rule>  # Pass (never wrap)
     +<rule>  # Always wrap
 
+(Skipping and wrapping are explained in L</Return Values>.)
+    
 A reference can also have a number of suffixed quantifiers. Similar to regular
 expression syntax, a quantifier indicates how many times a rule (reference)
 should match.
@@ -240,6 +242,7 @@ would match these:
     aba
     abab
 
+ANY operators take precedence over everything else, similar to other parsers.
 These rules have the same binding precedence:
 
     r1: a b | c % d
@@ -254,9 +257,98 @@ would match:
 
     abababac
 
-The same quantifiers that can be applied to references, can be applied to
-groups too.
+=head1 Return Values
 
+All return values are based on the capture groups (C<$1/$2/$3/etc.> type
+variables) of parsed RE statements.  The exact structure of the result tree
+depends on the type of Receiver used.  For example, L<Pegex::Tree> will
+return: 
+
+    $1              # single capture group
+    [ @+[1..$#+] ]  # multiple capture groups
+
+This would be a match directly from the RE rule.  As rules go further back,
+things are put into arrays, but only if there is more than one result.  For
+example:
+
+    r: (a b)+ % ~~
+    a: /( <ALPHA>+ )/
+    b: /( <DIGIT>+ )(<PLUS>)/
+    
+    # input = foobar123+
+    # output (using Pegex::Tree) = [
+    #     'foobar', [ '123', '+' ]
+    # ]
+    # 
+    # input = foobar123+ boofar789+
+    # output (using Pegex::Tree) = [
+    #     [ 'foobar', [ '123', '+' ] ],
+    #     [ 'boofar', [ '789', '+' ] ],
+    # ]
+    
+=head2 Skipping
+    
+Any rule can use the skip modifier (DOT) to completely skip the return from that
+rule (and any children below it).  The rule is still processed, but nothing is put
+into the tree.  (This is different from, say, putting C<undef> into the return.)
+This can also affect the number of values returned, and thus, whether a value
+comes as an array:
+
+    r: (a .b)+ % ~~
+    a: /( <ALPHA>+ )/
+    b: /( <DIGIT>+ )(<PLUS>)/
+    
+    # input = foobar123+ boofar789+
+    # output (using Pegex::Tree) = [
+    #     'foobar', 
+    #     'boofar',
+    # ]
+
+The skip modifier can also be used with groups.  (This is the only group
+modifier allowed so far.)
+
+    r: .(a b)+ % ~~
+    a: /( <ALPHA>+ )/
+    b: /( <DIGIT>+ )(<PLUS>)/
+    
+    # output (using Pegex::Tree) = []
+
+=head2 Wrapping
+    
+You can also turn on "wrapping" with the L<Pegex::Tree::Wrap> receiver.
+This will wrap all match values in a hash with the rule name, like so:
+
+    { rule_A => $match }
+    { rule_B => [ @matches ] }
+
+Note that this behavior can be "hard set" with the C<+/-> rule modifiers:
+
+    -<rule>  # Never wrap  (even if using Pegex::Tree::Wrap)
+    +<rule>  # Always wrap (even if using Pegex::Tree)
+
+This is simply a check in the C<gotrule> for the receiver.  So, any specific
+C<got_*> receiver methods will override even these settings, and choose to pass
+the match as-is.  In this case, the C<got_*> sub return value dictates what
+ultimately gets put into the tree object:
+
+    +rule_A   # in this case, the + is useless here
+    
+    sub got_rule_A {
+        my ($self, $matches_arrayref) = @_;
+        return $matches_arrayref;
+        # will be received as [ @matches ]
+    }
+
+You can "correct" this behavior by passing it back to C<gotrule>:
+
+    +rule_A   # now + is honored
+    
+    sub got_rule_A {
+        my ($self, $matches_arrayref) = @_;
+        return $self->gotrule($matches_arrayref);
+        # will be received as { rule_A => [ @matches ] }
+    }
+    
 =head1 See Also
 
 =over
