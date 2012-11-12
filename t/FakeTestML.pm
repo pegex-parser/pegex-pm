@@ -8,7 +8,17 @@ use XXX;
 my $data;
 my $label = '$label';
 
-our @EXPORT = qw'require_or_skip data label loop test plan done_testing';
+our @EXPORT = qw'
+    require_or_skip
+    data
+    label
+    loop
+    test
+    assert_equal
+    assert_match
+    plan
+    done_testing
+';
 
 sub require_or_skip {
     eval "use $_[0]; 1"
@@ -16,9 +26,14 @@ sub require_or_skip {
 }
 
 sub data {
-    open my $input, '<', $_[0]
-        or die "Can't open $_[0] for input";
-    $data = parse_tml(do {local $/; <$input>});
+    if ($_[0] =~ /\n/) {
+        $data = parse_tml($_[0]);
+    }
+    else {
+        open my $input, '<', $_[0]
+            or die "Can't open $_[0] for input";
+        $data = parse_tml(do {local $/; <$input>});
+    }
 }
 
 sub label {
@@ -37,14 +52,19 @@ sub test {
     my ($block, $expr) = @_;
     ($block) = @{get_blocks($expr, [$block])};
     return unless $block;
-    my ($left, $op, $right) = @$expr;
-    die "Invalid operator '$op'" if $op ne '==';
-    my $got = evaluate($left, $block);
-    my $want = evaluate($right, $block);
+    evaluate($expr, $block);
+}
+
+sub assert_equal {
+    my ($got, $want, $block) = @_;
     my $title = $label;
     $title =~ s/\$label/$block->{title}/;
     $title =~ s/\$BlockLabel/$block->{title}/;
     is $got, $want, $title;
+}
+
+sub is_match {
+    die;
 }
 
 sub evaluate {
@@ -57,6 +77,7 @@ sub evaluate {
         $_;
     } @{$expr}[1..$#{$expr}];
     return $args[0] unless $func;
+    push @args, $block if $func =~ /^assert_/;
     no strict 'refs';
     return &{"main::$func"}(@args);
 }
@@ -84,6 +105,7 @@ sub parse_tml {
     my ($string) = @_;
     $string =~ s/^#.*\n//gm;
     $string =~ s/^\\//gm;
+    $string =~ s/^\s*\n//;
     my @blocks = map {
         s/\n+\z/\n/;
         $_;
@@ -96,20 +118,18 @@ sub parse_tml {
             $str =~ s/^===\ +(.*?)\ *\n// or die;
             $block->{title} = $1;
             while ($str) {
-                if ($str =~ s/^---\ +(\w+):\ +(.*)\n//) {
-                    $block->{points}{$1} = $2;
-                }
-                elsif ($str =~ s/^---\ +(\w+)\n(.*?)(?=^---|\z)//sm) {
-                    my ($key, $value) = ($1, $2);
-                    if ($key =~ /^(ONLY|SKIP|LAST)$/) {
-                        $block->{$key} = 1;
-                    }
-                    else {
-                        $block->{points}{$key} = $value;
-                    }
+                my ($key, $value);
+                if ($str =~ s/^---\ +(\w+):\ +(.*)\n// or
+                    $str =~ s/^---\ +(\w+)\n(.*?)(?=^---|\z)//sm
+                ) {
+                    ($key, $value) = ($1, $2);
                 }
                 else {
                     die "Failed to parse FakeTestML string:\n$str";
+                }
+                $block->{points}{$key} = $value;
+                if ($key =~ /^(ONLY|SKIP|LAST)$/) {
+                    $block->{$key} ||= 1;
                 }
             }
             $block;

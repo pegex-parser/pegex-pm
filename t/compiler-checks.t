@@ -1,14 +1,24 @@
+use t::FakeTestML;
+
+require_or_skip('YAML::XS');
+
+data do { local $/; <DATA> };
+
+loop([ assert_equal =>
+    [clean => [yaml => [bootstrap_compile => '*grammar']]],
+    '*yaml',
+]);
+
+done_testing;
+
 # BEGIN { $TestML::Test::Differences = 1 }
 # BEGIN { $Pegex::Parser::Debug = 1 }
-
-use TestML -run,
-    -require_or_skip => 'YAML::XS';
 
 use Pegex::Bootstrap;
 use YAML::XS;
 
 sub bootstrap_compile {
-    my $grammar_text = (shift)->value;
+    my $grammar_text = shift;
     my $compiler = Pegex::Bootstrap->new;
     my $tree = $compiler->parse($grammar_text)->combinate->tree;
     delete $tree->{'+toprule'};
@@ -16,22 +26,16 @@ sub bootstrap_compile {
 }
 
 sub yaml {
-    return YAML::XS::Dump((shift)->value);
+    return YAML::XS::Dump(shift);
 }
 
 sub clean {
-    my $yaml = (shift)->value;
+    my $yaml = shift;
     $yaml =~ s/^---\s//;
     return $yaml;
 }
 
 __DATA__
-%TestML 1.0
-
-Plan = 18;
-
-*grammar.bootstrap_compile.yaml.clean == *yaml;
-
 === Empty Grammar
 --- grammar
 --- yaml

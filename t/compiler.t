@@ -1,43 +1,44 @@
 use strict;
 use t::FakeTestML;
 
+require_or_skip('YAML::XS');
+
 plan tests => 63;
 
 data 't/compiler.tml';
-loop ['*grammar'], \&run_tests;
+loop '*grammar', \&run_tests;
 
 sub run_tests {
     my ($block) = @_;
-    label '$BlockLabel - Does the compiler output match the bootstrap?';
+    label '$BlockLabel - Compiler output matches bootstrap?';
     test(
         $block,
-        [
-            ['yaml', ['pegex_compile', '*grammar']],
-            '==',
-            ['yaml', ['bootstrap_compile', '*grammar']],
+        [ assert_equal =>
+            [yaml => [pegex_compile => '*grammar']],
+            [yaml => [bootstrap_compile => '*grammar']],
         ],
     );
 
-    label '$BlockLabel - Does the compressed grammar compile the same?';
+    label '$BlockLabel - Compressed grammar compiles the same?';
     test(
         $block,
-        [
-            ['yaml', ['pegex_compile', ['compress', '*grammar']]],
-            '==',
-            ['yaml', ['bootstrap_compile', ['compress', '*grammar']]],
+        [ assert_equal =>
+            [yaml => [pegex_compile => [compress => '*grammar']]],
+            [yaml => [bootstrap_compile => [compress => '*grammar']]],
         ],
     );
 
-    label '$BlockLabel - Does the compressed grammar match the uncompressed?';
+    label '$BlockLabel - Compressed grammar matches uncompressed?';
     test(
         $block,
-        [
-            ['yaml', ['pegex_compile', ['compress', '*grammar']]],
-            '==',
-            ['yaml', ['pegex_compile', '*grammar']],
+        [ assert_equal =>
+            [yaml => [pegex_compile => [compress => '*grammar']]],
+            [yaml => [pegex_compile => '*grammar']],
         ],
     );
 }
+
+done_testing;
 
 use Pegex::Compiler;
 use Pegex::Bootstrap;

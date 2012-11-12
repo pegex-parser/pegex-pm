@@ -1,28 +1,32 @@
+use t::FakeTestML;
+
+require_or_skip('YAML::XS');
+
+data do { local $/; <DATA> };
+
+loop([ assert_equal =>
+    [yaml => [compile => '*grammar1']],
+    [yaml => [ compile => '*grammar2' ]]
+]);
+
+done_testing;
+
 # BEGIN { $TestML::Test::Differences = 1 }
 # BEGIN { $Pegex::Parser::Debug = 1 }
-
-use TestML -run,
-    -require_or_skip => 'YAML::XS';
 
 use Pegex::Compiler;
 use YAML::XS;
 
 sub compile {
-    my $grammar_text = (shift)->value;
+    my $grammar_text = shift;
     Pegex::Compiler->new->parse($grammar_text)->tree;
 }
 
 sub yaml {
-    return YAML::XS::Dump((shift)->value);
+    return YAML::XS::Dump(shift);
 }
 
 __DATA__
-%TestML 1.0
-
-Plan = 5;
-
-*grammar1.compile.yaml == *grammar2.compile.yaml;
-
 === Simple Test Case
 --- grammar1
 a: /x/

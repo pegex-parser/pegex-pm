@@ -11,27 +11,29 @@ my @files = qw(
     t/tree.tml
     t/tree-pegex.tml
 );
+
 for my $file (@files) {
     data($file);
+    loop '*grammar', \&run_tests;
+}
 
-    label('Pegex::Tree - $label');
-    loop([
-        ['yaml',['parse', 'Pegex::Tree', '*grammar', '*input']],
-        '==',
+sub run_tests {
+    my ($block) = @_;
+    label('$BlockLabel - Pegex::Tree');
+    test($block, [ assert_equal =>
+        [yaml => [parse => 'Pegex::Tree', '*grammar', '*input']],
         '*tree'
     ]);
 
-    label('Pegex::Tree::Wrap - $label');
-    loop([
-        ['yaml',['parse', 'Pegex::Tree::Wrap', '*grammar', '*input']],
-        '==',
+    label('$BlockLabel - Pegex::Tree::Wrap');
+    test($block, [ assert_equal =>
+        [yaml => [parse => 'Pegex::Tree::Wrap', '*grammar', '*input']],
         '*wrap'
     ]);
 
-    label('t::TestPegex::AST - $label');
-    loop([
-        ['yaml',['parse', 't::TestPegex::AST', '*grammar', '*input']],
-        '==',
+    label('$BlockLabel - t::TestPegex::AST');
+    test($block, [ assert_equal =>
+        [yaml => [parse => 't::TestPegex::AST', '*grammar', '*input']],
         '*ast'
     ]);
 }
