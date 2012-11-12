@@ -29,12 +29,12 @@ sub loop {
     my ($expr, $callback) = @_;
     $callback //= \&test;
     for my $block (@{get_blocks($expr)}) {
-        $callback->($expr, $block);
+        $callback->($block, $expr);
     }
 }
 
 sub test {
-    my ($expr, $block) = @_;
+    my ($block, $expr) = @_;
     ($block) = @{get_blocks($expr, [$block])};
     return unless $block;
     my ($left, $op, $right) = @$expr;

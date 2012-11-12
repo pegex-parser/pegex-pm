@@ -7,35 +7,35 @@ data 't/compiler.tml';
 loop ['*grammar'], \&run_tests;
 
 sub run_tests {
-    my ($selector, $block) = @_;
+    my ($block) = @_;
     label '$BlockLabel - Does the compiler output match the bootstrap?';
     test(
+        $block,
         [
             ['yaml', ['pegex_compile', '*grammar']],
             '==',
             ['yaml', ['bootstrap_compile', '*grammar']],
         ],
-        $block,
     );
 
     label '$BlockLabel - Does the compressed grammar compile the same?';
     test(
+        $block,
         [
             ['yaml', ['pegex_compile', ['compress', '*grammar']]],
             '==',
             ['yaml', ['bootstrap_compile', ['compress', '*grammar']]],
         ],
-        $block,
     );
 
     label '$BlockLabel - Does the compressed grammar match the uncompressed?';
     test(
+        $block,
         [
             ['yaml', ['pegex_compile', ['compress', '*grammar']]],
             '==',
             ['yaml', ['pegex_compile', '*grammar']],
         ],
-        $block,
     );
 }
 
