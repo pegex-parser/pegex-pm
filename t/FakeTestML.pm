@@ -35,12 +35,15 @@ sub loop {
 
 sub test {
     my ($expr, $block) = @_;
+    ($block) = @{get_blocks($expr, [$block])};
+    return unless $block;
     my ($left, $op, $right) = @$expr;
     die "Invalid operator '$op'" if $op ne '==';
     my $got = evaluate($left, $block);
     my $want = evaluate($right, $block);
     my $title = $label;
     $title =~ s/\$label/$block->{title}/;
+    $title =~ s/\$BlockLabel/$block->{title}/;
     is $got, $want, $title;
 }
 
@@ -59,8 +62,9 @@ sub evaluate {
 }
 
 sub get_blocks {
-    my @want = grep s/^\*//, flatten(@_);
-    my $blocks = $data;
+    my ($expr, $blocks) = @_;
+    $blocks //= $data;
+    my @want = grep s/^\*//, flatten($expr);
     my @only = grep $_->{ONLY}, @$blocks;
     $blocks = \@only if @only;
     my $final = [];

@@ -1,27 +1,63 @@
-# BEGIN { $TestML::Test::Differences = 1 }
-# BEGIN { $Pegex::Parser::Debug = 1 }
+use strict;
+use t::FakeTestML;
 
-use TestML -run,
-    -require_or_skip => 'YAML::XS';
+plan tests => 63;
+
+data 't/compiler.tml';
+loop ['*grammar'], \&run_tests;
+
+sub run_tests {
+    my ($selector, $block) = @_;
+    label '$BlockLabel - Does the compiler output match the bootstrap?';
+    test(
+        [
+            ['yaml', ['pegex_compile', '*grammar']],
+            '==',
+            ['yaml', ['bootstrap_compile', '*grammar']],
+        ],
+        $block,
+    );
+
+    label '$BlockLabel - Does the compressed grammar compile the same?';
+    test(
+        [
+            ['yaml', ['pegex_compile', ['compress', '*grammar']]],
+            '==',
+            ['yaml', ['bootstrap_compile', ['compress', '*grammar']]],
+        ],
+        $block,
+    );
+
+    label '$BlockLabel - Does the compressed grammar match the uncompressed?';
+    test(
+        [
+            ['yaml', ['pegex_compile', ['compress', '*grammar']]],
+            '==',
+            ['yaml', ['pegex_compile', '*grammar']],
+        ],
+        $block,
+    );
+}
 
 use Pegex::Compiler;
 use Pegex::Bootstrap;
 use YAML::XS;
 
-# BEGIN { XXX \%INC}
+# BEGIN { $TestML::Test::Differences = 1 }
+# BEGIN { $Pegex::Parser::Debug = 1 }
 
 sub pegex_compile {
-    my $grammar_text = (shift)->value;
+    my $grammar_text = shift;
     Pegex::Compiler->new->parse($grammar_text)->tree;
 }
 
 sub bootstrap_compile {
-    my $grammar_text = (shift)->value;
+    my $grammar_text = shift;
     Pegex::Bootstrap->new->parse($grammar_text)->tree;
 }
 
 sub compress {
-    my $grammar_text = (shift)->value;
+    my $grammar_text = shift;
     chomp($grammar_text);
     $grammar_text =~ s/(?<!;)\n(\w+\s*:)/;$1/g;
     $grammar_text =~ s/\s//g;
@@ -33,139 +69,5 @@ sub compress {
 }
 
 sub yaml {
-    return YAML::XS::Dump((shift)->value);
+    return YAML::XS::Dump(shift);
 }
-
-__DATA__
-%TestML 1.0
-
-Plan = 63;
-
-test = (grammar) {
-    Label = '$BlockLabel - Does the compiler output match the bootstrap?';
-    grammar.pegex_compile.yaml
-      == grammar.bootstrap_compile.yaml;
-
-    Label = '$BlockLabel - Does the compressed grammar compile the same?';
-    grammar.compress.pegex_compile.yaml
-      == grammar.compress.bootstrap_compile.yaml;
-
-    Label =
-        '$BlockLabel - Does the compressed grammar match the uncompressed?';
-    grammar.compress.pegex_compile.yaml
-      == grammar.pegex_compile.yaml;
-};
-
-test(*grammar);
-
-
-=== Single Regex
---- grammar
-a: /x/
-
-=== Single Reference
---- grammar
-a: <b>
-
-=== Single Error
---- grammar
-a: `b`
-
-=== Simple All Group
---- grammar
-a: /b/ <c>
-
-=== Simple Any Group
---- grammar
-a: <b> | <c>
-
-=== Bracketed All Group
---- grammar
-a: ( <b> /c/ )
-
-=== Bracketed Any Group
---- grammar
-a: ( <b> | /c/ | `d` )
-
-=== Bracketed Group in Unbracketed Group
---- grammar
-a: <b> ( <c> | <d> )
-
-=== And over Or Precedence
---- grammar
-a: <b> <c> | <d> <e> | <f> % <g>
-
-=== Multiple Rules
---- grammar
-a: <b>
-b: <c>
-
-=== Simple Grammar
---- grammar
-a: ( <b> <c>* )
-b: /x/
-c: /y+/
-
-=== Semicolons OK
---- grammar
-a: <b>;
-b: <c>
-c: /d/;
-
-=== Unbracketed
---- grammar
-a: <b> <c> <d>
-b: <c> | <d>
-
-=== Not Rule
---- grammar
-a: !<b> <c>
-
-=== Multiline
---- grammar
-a: <b>
-   <c>
-b:
-    /c/ <d>
-    <e>;
-c:
-    <d> |
-    ( /e/ <f> )
-    | `g`
-
-=== Various Groups
---- grammar
-a: <b> ( <c> | <d> )
-b: ( <c> | <d> ) <e>
-c: <d> | ( <e> <f>) | <g>
-d: <e> | (<f> <g>) | <h> | ( `i` )
-e: ( <f> )
-
-=== Modifiers
---- grammar
-a: !<a> =<b>
-b: ( /c/ <d> )+
-c: ( /c/ <d> )+
-
-=== Any Group Plus Rule
---- grammar
-a: /w/ ( <x>+ | <y>* ) <z>?
-
-=== Equivalent
---- grammar
-a: <b>
-c: !<d>
-
-=== Regex and Rule
---- grammar
-a_b: /c/ <d>
-
-=== Quantified group
---- grammar
-a: <b> ( <c>* | <d>+ )+
-e: ( <f> !<g> )?
-
-=== Failures to test later
---- SKIP
---- grammar
-b: ( /x/ )+
