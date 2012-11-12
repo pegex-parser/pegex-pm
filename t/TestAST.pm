@@ -1,4 +1,4 @@
-package t::TestPegex::AST;
+package t::TestAST;
 use Pegex::Base;
 extends 'Pegex::Tree';
 

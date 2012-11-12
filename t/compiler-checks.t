@@ -32,6 +32,7 @@ sub yaml {
 sub clean {
     my $yaml = shift;
     $yaml =~ s/^---\s//;
+    $yaml =~ s/'(\d+)'/$1/g;
     return $yaml;
 }
 
@@ -59,7 +60,7 @@ b:
 c:
   .ref: x
 
-=== Single Rule
+=== Single Rule Reference
 --- grammar
 a: <x>
 --- yaml
@@ -97,6 +98,17 @@ a:
   +asr: 1
   .ref: x
 
+=== Negative and Positive Assertion
+--- grammar
+a: !<b> =<c>
+--- yaml
+a:
+  .all:
+  - +asr: -1
+    .ref: b
+  - +asr: 1
+    .ref: c
+
 === Single Regex
 --- grammar
 a: /x/
@@ -111,13 +123,28 @@ a: `x`
 a:
   .err: x
 
-=== Unbracketed All Group
+=== Skip and Wrap Marker
 --- grammar
-a: <x> <y>
+a: .<b> +<c>+ -<d>?
 --- yaml
 a:
   .all:
-  - .ref: x
+  - -skip: 1
+    .ref: b
+  - +min: 1
+    -wrap: 1
+    .ref: c
+  - +max: 1
+    -pass: 1
+    .ref: d
+
+=== Unbracketed All Group
+--- grammar
+a: /x/ <y>
+--- yaml
+a:
+  .all:
+  - .rgx: x
   - .ref: y
 
 === Unbracketed Any Group
@@ -173,6 +200,60 @@ a:
     - .ref: z
     - .rgx: '...'
 
+=== List Separator
+--- grammar
+a: <b> | <c>? %% /d/
+--- yaml
+a:
+  .any:
+  - .ref: b
+  - +max: 1
+    .ref: c
+    .sep:
+      +eok: 1
+      .rgx: d
+
+=== Separators with Quantifiers
+--- grammar
+a: <b>2+ % <c>* <d>* %% <e>2-3
+--- yaml
+a:
+  .all:
+  - +min: 2
+    .ref: b
+    .sep:
+      +min: 0
+      .ref: c
+  - +min: 0
+    .ref: d
+    .sep:
+      +eok: 1
+      +max: 3
+      +min: 2
+      .ref: e
+
+=== All Quantifier Forms
+--- grammar
+a: <b> <c>? <d>* <e>+ <f>55 <g>5+ <h>5-55
+--- yaml
+a:
+  .all:
+  - .ref: b
+  - +max: 1
+    .ref: c
+  - +min: 0
+    .ref: d
+  - +min: 1
+    .ref: e
+  - +max: 55
+    +min: 55
+    .ref: f
+  - +min: 5
+    .ref: g
+  - +max: 55
+    +min: 5
+    .ref: h
+
 === Whitespace in Regex
 --- grammar
 a: /<DOT>* (<DASH>{3})
@@ -202,3 +283,18 @@ a:
 +include:
 - bar
 - baz
+
+=== Meta Lines
+--- grammar
+%grammar        foo
+%version    1.1.1
+%extends bar bar  
+%include   bazzy 
+a: /b/
+--- yaml
++extends: bar bar
++grammar: foo
++include: bazzy
++version: 1.1.1
+a:
+  .rgx: b

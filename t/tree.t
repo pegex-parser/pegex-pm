@@ -31,9 +31,9 @@ sub run_tests {
         '*wrap'
     ]);
 
-    label('$BlockLabel - t::TestPegex::AST');
+    label('$BlockLabel - t::TestAST');
     test($block, [ assert_equal =>
-        [yaml => [parse => 't::TestPegex::AST', '*grammar', '*input']],
+        [yaml => [parse => 't::TestAST', '*grammar', '*input']],
         '*ast'
     ]);
 }
