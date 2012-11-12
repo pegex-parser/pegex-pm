@@ -6,7 +6,7 @@ data do { local $/; <DATA> };
 
 loop([ assert_equal =>
     [yaml => [compile => '*grammar1']],
-    [yaml => [ compile => '*grammar2' ]]
+    [yaml => [ compile => '*grammar2' ]],
 ]);
 
 done_testing;

@@ -3,10 +3,10 @@ package t::FakeTestML;
 use Test::More;
 
 use Exporter 'import';
-use XXX;
 
 my $data;
 my $label = '$label';
+my $Error;
 
 our @EXPORT = qw'
     require_or_skip
@@ -16,6 +16,7 @@ our @EXPORT = qw'
     test
     assert_equal
     assert_match
+    Catch
     plan
     done_testing
 ';
@@ -44,7 +45,9 @@ sub loop {
     my ($expr, $callback) = @_;
     $callback //= \&test;
     for my $block (@{get_blocks($expr)}) {
+        $Error = undef;
         $callback->($block, $expr);
+        die $Error if $Error;
     }
 }
 
@@ -63,8 +66,19 @@ sub assert_equal {
     is $got, $want, $title;
 }
 
-sub is_match {
-    die;
+sub assert_match {
+    my ($got, $want, $block) = @_;
+    $want =~ s/\\/\\\\/g;
+    my $title = $label;
+    $title =~ s/\$label/$block->{title}/;
+    $title =~ s/\$BlockLabel/$block->{title}/;
+    like $got, qr/$want/, $title;
+}
+
+sub Catch {
+    my $error = $Error;
+    $Error = undef;
+    return $error;
 }
 
 sub evaluate {
@@ -76,10 +90,19 @@ sub evaluate {
         /^\*(\w+)$/ ? $block->{points}->{$1} :
         $_;
     } @{$expr}[1..$#{$expr}];
+    return if $Error and $func ne 'Catch';
     return $args[0] unless $func;
     push @args, $block if $func =~ /^assert_/;
     no strict 'refs';
-    return &{"main::$func"}(@args);
+    my $value;
+    eval {
+        $value = &{"main::$func"}(@args);
+    };
+    if ($@) {
+        $Error = $@;
+        return;
+    }
+    return $value;
 }
 
 sub get_blocks {

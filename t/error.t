@@ -1,25 +1,27 @@
+use t::FakeTestML;
+
+data do { local $/; <DATA> };
+
+loop([ assert_match =>
+    [Catch => [parse => '*grammar', '*input']],
+    '*error',
+]);
+
+done_testing;
+
 # BEGIN { $TestML::Test::Differences = 1 }
 # BEGIN { $Pegex::Parser::Debug = 1 }
-
-use TestML -run;
 
 use Pegex;
 
 sub parse {
-    my $grammar = (shift)->value;
-    my $input = (shift)->value;
+    my $grammar = shift;
+    my $input = shift;
     my $parser = pegex($grammar);
     return $parser->parse($input);
 }
 
-
 __DATA__
-%TestML 1.0
-
-Plan = 16;
-
-*grammar.parse(*input).Catch ~~ *error;
-
 === Error fails at furthest match
 # XXX This one not testing much.
 --- grammar

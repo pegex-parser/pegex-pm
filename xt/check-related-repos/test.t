@@ -2,7 +2,7 @@ use strict;
 use Test::More;
 use Cwd 'cwd';
 use Capture::Tiny 'capture_merged';
-use Devel::Local '.', '../testml-pm';
+use Devel::Local '.';
 # use XXX;
 
 my $home = cwd;
