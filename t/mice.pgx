@@ -1,7 +1,7 @@
-phrase: !<one> <number> /<WS>*/ <things> <EOL>
+phrase: !one number ~ things EOL
 
 one: /1/
 
-number: /<DIGIT>/
+number: DIGIT
 
 things: /blind<SPACE>mice/
