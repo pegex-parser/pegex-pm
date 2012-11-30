@@ -156,7 +156,7 @@ all the objects ourselves.
 =head2 Precompiled Grammars
 
 If you ship a Pegex grammar as part of a CPAN distribution, you'll want it to
-be precompiled into a module. Pegex make that easy.
+be precompiled into a module. Pegex makes that easy.
 
 Say the grammar_text about is stored in a file called C<share/expr.pgx>. If you
 create a module called C<lib/MyThing/Grammar.pm> with content like this:
