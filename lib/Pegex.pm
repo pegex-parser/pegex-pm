@@ -1,6 +1,6 @@
 ##
 # name:      Pegex
-# abstract:  Acmeist PEG Parsing Framework
+# abstract:  Acmeist PEG Parser Framework
 # author:    Ingy döt Net <ingy@cpan.org>
 # license:   perl
 # copyright: 2010, 2011, 2012
@@ -33,10 +33,9 @@ sub pegex {
     my $grammar_text = shift;
     die "pegex() requires at least 1 argument, a pegex grammar string"
         unless $grammar_text;
-    my ($receiver) = _get_options(@_);
     return Pegex::Parser->new(
         grammar => Pegex::Grammar->new(text => $grammar_text),
-        receiver => $receiver,
+        _get_options(@_),
     );
 }
 
@@ -47,14 +46,14 @@ sub _get_options {
         if (not ref $receiver) {
             eval "require $receiver";
             die $@ if $@ and $@ !~ /Can't locate/;
-            $receiver = $receiver->new;
+            $options->{receiver} = $receiver->new;
         }
     }
     else {
         require Pegex::Tree::Wrap;
-        $receiver = Pegex::Tree::Wrap->new;
+        $options->{receiver} = Pegex::Tree::Wrap->new;
     }
-    return ($receiver);
+    return %$options;
 }
 
 1;

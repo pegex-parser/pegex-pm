@@ -352,8 +352,8 @@ sub trace {
 
 sub throw_error {
     my ($self, $msg) = @_;
-    $self->format_error($msg);
-    return 0 unless $self->{throw_on_error};
+    $@ = $self->{error} = $self->format_error($msg);
+    return undef unless $self->{throw_on_error};
     require Carp;
     Carp::croak($self->{error});
 }
@@ -376,7 +376,7 @@ sub format_error {
     $pretext =~ s/.*\n//gs;
     $context =~ s/\n/\\n/g;
 
-    $@ = $self->{error} = <<"...";
+    return <<"...";
 Error parsing Pegex document:
   msg:      $msg
   line:     $line

@@ -50,7 +50,7 @@ sub open {
         $self->{_buffer} = \$self->{string};
     }
     else {
-        die "Pegex::open failed. No source to open";
+        die "Pegex::Input::open failed. No source to open";
     }
     $self->{_is_open} = 1;
     return $self;
@@ -65,17 +65,6 @@ sub close {
     $self->{_is_close} = 1;
     $self->{_buffer} = undef;
     return $self;
-}
-
-sub _guess_input {
-    my ($self, $input) = @_;
-    return ref($input)
-        ? (ref($input) eq 'SCALAR')
-            ? 'stringref'
-            : 'handle'
-        : (length($input) and ($input !~ /\n/) and -f $input)
-            ? 'file'
-            : 'string';
 }
 
 1;

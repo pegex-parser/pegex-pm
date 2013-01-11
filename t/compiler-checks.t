@@ -4,6 +4,7 @@ require_or_skip('YAML::XS');
 
 data do { local $/; <DATA> };
 
+# *grammar.bootstrap_compile.yaml.clean == *yaml;
 loop([ assert_equal =>
     [clean => [yaml => [bootstrap_compile => '*grammar']]],
     '*yaml',
