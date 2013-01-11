@@ -439,3 +439,14 @@ a:
 - b: bb
 - c: cc
 - d: dd
+
+=== 2 + 1
+--- ONLY
+--- grammar
+a: <b>2 b
+b: /(b)/
+--- input: bbb
+--- ast
+- b
+- b
+- b
