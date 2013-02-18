@@ -1,0 +1,40 @@
+23:57 <ingy> hi
+23:58 <ingy> I wanted to ask you some parsing advice...
+23:58 <ingy> pegex is recdescent as you know.
+23:59 <ingy> and some in #pegex have been wanting tokenized precedence parsing...
+23:59 <ingy> so I decided to make some example precedence parsers in pegex
+--- Day changed Thu Nov 01 2012
+00:00 <ingy> I'll get back to that in a sec
+00:00 <ingy> but first I will say that lex/parse style parsing doesn't appeal to me
+00:00 <ingy> and I think it might serve no real advantage
+00:01 <ingy> so I am kind of out to prove or disprove that
+00:01 <ingy> in tokyo jnthn and lwall talked about perl6 switching from top-down to bottom-up for expressions
+00:02 <ingy> so I've been thinking how to do that with pegex
+00:02 <ingy> and I think I've come quite a ways
+00:02 <ingy> let me show you
+00:03 <ingy> first I wrote this: https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator.pl
+00:04 <ingy> this is a calulator that parse/evals exprs like '2 + 3 ^ (4 - -1)'
+00:04 <ingy> so it is full recdescent
+00:05 <ingy> but uses the Precedence Climbing Method: http://en.wikipedia.org/wiki/Operator-precedence_parser#Precedence_climbing_method
+00:06 <ingy> which is neato, but inefficient as you add levels of precedence
+00:07 <ingy> what would be neat is to switch to a tokenizing precedence parser for expressions only.
+00:07 <ingy> so last night a (re)made this: https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator2.pl
+00:08 <ingy> it does the same thing but using a different strategy
+00:08 <ingy> https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator2.pl#L9 is effectively a tokenizing grammar rule
+00:09 <ingy> it turns '2 + 3 * 4' into ['2', '+', ['3', '*', '4']]
+00:11 <ingy> which is just as good as a real tokenization with the '()' tokens instead of the []
+00:12 <ingy> now the receiver action for 'expr' calls this: https://github.com/ingydotnet/pegex-pm/blob/master/examples/lib/Precedence.pm#L4
+00:13 <ingy> which you can think of as a specialized "parser" that takes the array above and turns it into a more formal AST (RPN is the form I chose)
+00:14 <ingy> the the calc2 program calls this simple rpn evaluator program (https://github.com/ingydotnet/pegex-pm/blob/master/examples/lib/RPN.pm#L4)
+00:14 <ingy> which has nothing to do with parsing
+00:14 <ingy> but makes the calculator work
+00:15 <ingy> I my mind lexing is a wasted step
+00:15 <ingy> lexers are where you add all this extra complexity
+00:15 <ingy> look at coffeescript which adds a third "rewriter" step
+00:15 <ingy> to make the parser more simple
+00:16 <ingy> and by the time the parser gets it's turn, all the context, and ability to re-lex is lost
+00:16 <ingy> unless you add a lot of complexity
+00:17 <ingy> I'm looking for an *elegant* way to get the best of all worlds
+00:17 <ingy> and I think I've solved this part of the problem
+00:18 <ingy> but you are much better parser theorist than I, so I want to know your thoughts...
+00:18 <ingy> ...

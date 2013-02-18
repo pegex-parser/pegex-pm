@@ -1,3 +1,15 @@
+# Release 0.23
+- perl -MTestML -e 'TestML->compile($file, $class)';
+- TestML
+  - %include
+  - %extends
+  - %require
+- Make YAML Awesome
+  - YAML Test Suite Driven
+  - Consistent implementations
+    - Single-sourced UniScript
+  - Ruby leads the way
+
 # Release 0.22
 - Remove TestML dependency
   - Consolidate boot and testml tests

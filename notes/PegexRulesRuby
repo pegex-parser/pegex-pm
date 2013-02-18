@@ -1,0 +1,1 @@
+ruby -e 'require "pegex"; p pegex("pegex_rules: /(<ANY>*)/").parse "O YEAH!"'
