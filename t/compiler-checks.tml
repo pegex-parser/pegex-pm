@@ -1,0 +1,267 @@
+# %TestML 1.0
+# 
+# Plan = 50;
+# 
+# *grammar.compile.yaml.clean == *yaml;
+# 
+=== Empty Grammar
+--- grammar
+--- yaml
+{}
+
+=== Simple Grammar
+--- grammar
+a: ( <b> <c>* )+
+b: /x/
+c: <x>
+
+--- yaml
+a:
+  +min: 1
+  .all:
+  - .ref: b
+  - +min: 0
+    .ref: c
+b:
+  .rgx: x
+c:
+  .ref: x
+
+=== Single Rule Reference
+--- grammar
+a: <x>
+--- yaml
+a:
+  .ref: x
+
+=== Single Rule with no brackets
+--- grammar
+a: x
+--- yaml
+a:
+  .ref: x
+
+=== Single Rule With Trailing Quantifier
+--- grammar
+a: <x>*
+--- yaml
+a:
+  +min: 0
+  .ref: x
+
+=== Single Rule With Trailing Quantifier (no angles)
+--- grammar
+a: x*
+--- yaml
+a:
+  +min: 0
+  .ref: x
+
+=== Single Rule With Leading Assertion
+--- grammar
+a: =<x>
+--- yaml
+a:
+  +asr: 1
+  .ref: x
+
+=== Negative and Positive Assertion
+--- grammar
+a: !<b> =<c>
+--- yaml
+a:
+  .all:
+  - +asr: -1
+    .ref: b
+  - +asr: 1
+    .ref: c
+
+=== Single Regex
+--- grammar
+a: /x/
+--- yaml
+a:
+  .rgx: x
+
+=== Single Error
+--- grammar
+a: `x`
+--- yaml
+a:
+  .err: x
+
+=== Skip and Wrap Marker
+--- grammar
+a: .<b> +<c>+ -<d>?
+--- yaml
+a:
+  .all:
+  - -skip: 1
+    .ref: b
+  - +min: 1
+    -wrap: 1
+    .ref: c
+  - +max: 1
+    -pass: 1
+    .ref: d
+
+=== Unbracketed All Group
+--- grammar
+a: /x/ <y>
+--- yaml
+a:
+  .all:
+  - .rgx: x
+  - .ref: y
+
+=== Unbracketed Any Group
+--- grammar
+a: /x/ | <y> | `z`
+--- yaml
+a:
+  .any:
+  - .rgx: x
+  - .ref: y
+  - .err: z
+
+=== Bracketed All Group
+--- grammar
+a: ( <x> <y> )
+--- yaml
+a:
+  .all:
+  - .ref: x
+  - .ref: y
+
+=== Bracketed Group With Trailing Modifier
+--- grammar
+a: ( <x> <y> )?
+--- yaml
+a:
+  +max: 1
+  .all:
+  - .ref: x
+  - .ref: y
+
+=== Bracketed Group With Leading Modifier
+--- grammar
+a: .( =<x> <y> )
+--- yaml
+a:
+  -skip: 1
+  .all:
+  - +asr: 1
+    .ref: x
+  - .ref: y
+
+=== Multiple Groups
+--- grammar
+a: ( <x> <y> ) ( <z> | /zzz/ )
+--- yaml
+a:
+  .all:
+  - .all:
+    - .ref: x
+    - .ref: y
+  - .any:
+    - .ref: z
+    - .rgx: zzz
+
+=== List Separator
+--- grammar
+a: <b> | <c>? %% /d/
+--- yaml
+a:
+  .any:
+  - .ref: b
+  - +max: 1
+    .ref: c
+    .sep:
+      +eok: 1
+      .rgx: d
+
+=== Separators with Quantifiers
+--- grammar
+a: <b>2+ % <c>* <d>* %% <e>2-3
+--- yaml
+a:
+  .all:
+  - +min: 2
+    .ref: b
+    .sep:
+      +min: 0
+      .ref: c
+  - +min: 0
+    .ref: d
+    .sep:
+      +eok: 1
+      +max: 3
+      +min: 2
+      .ref: e
+
+=== All Quantifier Forms
+--- grammar
+a: <b> <c>? <d>* <e>+ <f>55 <g>5+ <h>5-55
+--- yaml
+a:
+  .all:
+  - .ref: b
+  - +max: 1
+    .ref: c
+  - +min: 0
+    .ref: d
+  - +min: 1
+    .ref: e
+  - +max: 55
+    +min: 55
+    .ref: f
+  - +min: 5
+    .ref: g
+  - +max: 55
+    +min: 5
+    .ref: h
+
+=== Whitespace in Regex
+--- grammar
+a: /<DOT>* (<DASH>{3})
+    <BANG>   <BANG>
+   /
+--- yaml
+a:
+  .rgx: \.*(\-{3})!!
+
+=== Directives
+--- grammar
+\%grammar foo
+\%version 1.2.3
+
+--- yaml
++grammar: foo
++version: 1.2.3
+
+=== Multiple Duplicate Directives
+--- grammar
+\%grammar foo
+\%include bar
+\%include baz
+
+--- yaml
++grammar: foo
++include:
+- bar
+- baz
+
+=== Meta Lines
+--- grammar
+%grammar        foo
+%version    1.1.1
+%extends bar bar  
+%include   bazzy 
+a: /b/
+--- yaml
++extends: bar bar
++grammar: foo
++include: bazzy
++version: 1.1.1
+a:
+  .rgx: b

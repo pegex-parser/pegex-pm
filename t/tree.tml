@@ -441,7 +441,7 @@ a:
 - d: dd
 
 === 2 + 1
---- ONLY
+--- SKIP
 --- grammar
 a: <b>2 b
 b: /(b)/
