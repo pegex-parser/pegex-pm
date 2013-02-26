@@ -1,8 +1,0 @@
-sources:
-- Test-Common
-t:
-- test: use_ok.t
-  skip:
-  - Pegex::Regex
-  - Pegex::Mo
-clean: all
