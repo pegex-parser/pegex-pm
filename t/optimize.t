@@ -1,7 +1,7 @@
 use TestML;
 
 TestML->new(
-    testml => 'testml/tree.tml',
+    testml => 'testml/optimize.tml',
     bridge => 't::Bridge',
     compiler => 'TestML::Compiler::Lite',
 )->run;

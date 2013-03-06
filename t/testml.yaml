@@ -1,0 +1,10 @@
+source_testml_dir: ../../pegex-tml
+local_testml_dir: ./testml
+test_file_template: |
+  use TestML;
+
+  TestML->new(
+      testml => '[% file %]',
+      bridge => 't::Bridge',
+      compiler => 'TestML::Compiler::Lite',
+  )->run;

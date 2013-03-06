@@ -1,9 +1,10 @@
-# %TestML 1.0
-# 
-# Plan = 50;
-# 
-# *grammar.compile.yaml.clean == *yaml;
-# 
+%TestML 0.1.0
+
+Plan = 48
+
+*grammar.bootstrap_compile.yaml.clean == *yaml
+*grammar.compile.yaml.clean == *yaml
+
 === Empty Grammar
 --- grammar
 --- yaml
@@ -253,10 +254,10 @@ a:
 
 === Meta Lines
 --- grammar
-%grammar        foo
-%version    1.1.1
-%extends bar bar  
-%include   bazzy 
+\%grammar        foo
+\%version    1.1.1
+\%extends bar bar  
+\%include   bazzy 
 a: /b/
 --- yaml
 +extends: bar bar
