@@ -1,7 +1,6 @@
-# BEGIN { $TestML::Test::Differences = 1 }
 # BEGIN { $Pegex::Parser::Debug = 1 }
 use strict; use warnings;
-package t::Bridge;
+package TestMLBridge;
 use base 'TestML::Bridge';
 use TestML::Util;
 
