@@ -3,6 +3,7 @@ local_testml_dir: ./testml
 test_file_template: |
   use lib 't/lib';
   use TestML;
+  use TestML::Compiler::Lite;
   use TestMLBridge;
 
   TestML->new(

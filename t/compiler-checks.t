@@ -1,5 +1,6 @@
 use lib 't/lib';
 use TestML;
+use TestML::Compiler::Lite;
 use TestMLBridge;
 
 TestML->new(
