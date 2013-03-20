@@ -9,7 +9,7 @@ use Pegex::Compiler;
 use Pegex::Bootstrap;
 use Pegex::Tree;
 use Pegex::Tree::Wrap;
-use t::TestAST;
+use TestAST;
 use YAML::XS;
 
 sub parse_input {
@@ -34,7 +34,7 @@ sub parse_to_tree_wrap {
 sub parse_to_tree_test {
     my ($self, $grammar, $input) = @_;
     pegex($grammar->value,
-        receiver => 't::TestAST',
+        receiver => 'TestAST',
     )->parse($input->value);
 }
 
