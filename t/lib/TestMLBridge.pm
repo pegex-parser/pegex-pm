@@ -1,9 +1,9 @@
 # BEGIN { $Pegex::Parser::Debug = 1 }
 use strict; use warnings;
+
 package TestMLBridge;
 use base 'TestML::Bridge';
 use TestML::Util;
-
 use Pegex;
 use Pegex::Compiler;
 use Pegex::Bootstrap;
@@ -12,63 +12,35 @@ use Pegex::Tree::Wrap;
 use TestAST;
 use YAML::XS;
 
-sub parse_input {
-    my ($self, $grammar, $input) = @_;
-    pegex($grammar->value)->parse($input->value);
-}
-
-sub parse_to_tree {
-    my ($self, $grammar, $input) = @_;
-    pegex($grammar->value,
-        receiver => 'Pegex::Tree',
-    )->parse($input->value);
-}
-
-sub parse_to_tree_wrap {
-    my ($self, $grammar, $input) = @_;
-    pegex($grammar->value,
-        receiver => 'Pegex::Tree::Wrap',
-    )->parse($input->value);
-}
-
-sub parse_to_tree_test {
-    my ($self, $grammar, $input) = @_;
-    pegex($grammar->value,
-        receiver => 'TestAST',
-    )->parse($input->value);
-}
-
 sub compile {
     my ($self, $grammar) = @_;
-    my $compiler = Pegex::Compiler->new;
-    my $tree = $compiler->parse($grammar->value)->combinate->tree;
+    my $tree = Pegex::Compiler->new->parse($grammar->value)->combinate->tree;
     delete $tree->{'+toprule'};
-    return $tree;
+    return native $tree;
 }
 
 sub bootstrap_compile {
     my ($self, $grammar) = @_;
-    my $compiler = Pegex::Bootstrap->new;
-    my $tree = $compiler->parse($grammar->value)->combinate->tree;
+    my $tree = Pegex::Bootstrap->new->parse($grammar->value)->combinate->tree;
     delete $tree->{'+toprule'};
-    return $tree;
+    return native $tree;
 }
+
 sub compress {
     my ($self, $grammar) = @_;
-    my $grammar_text = $grammar->value;
-    chomp($grammar_text);
-    $grammar_text =~ s/(?<!;)\n(\w+\s*:)/;$1/g;
-    $grammar_text =~ s/\s//g;
+    $grammar = $grammar->value;
+    $grammar =~ s/(?<!;)\n(\w+\s*:)/;$1/g;
+    $grammar =~ s/\s//g;
 
-    # XXX mod/quant ERROR rules are too prtective here:
-    $grammar_text =~ s/>%</> % </g;
+    # XXX mod/quant ERROR rules are too protective here:
+    $grammar =~ s/>%</> % </g;
 
-    return "$grammar_text\n";
+    return str "$grammar\n";
 }
 
 sub yaml {
     my ($self, $data) = @_;
-    return YAML::XS::Dump($data->value);
+    return str YAML::XS::Dump($data->value);
 }
 
 sub clean {
@@ -77,7 +49,31 @@ sub clean {
     $yaml =~ s/^---\s//;
     $yaml =~ s/'(\d+)'/$1/g;
     $yaml =~ s/^- ~$/- /gm;
-    return $yaml;
+    return str $yaml;
+}
+
+sub parse_input {
+    my ($self, $grammar, $input) = @_;
+    my $parser = pegex($grammar->value);
+    return native $parser->parse($input->value);
+}
+
+sub parse_to_tree {
+    my ($self, $grammar, $input) = @_;
+    my $parser = pegex($grammar->value, receiver => 'Pegex::Tree');
+    return native $parser->parse($input->value);
+}
+
+sub parse_to_tree_wrap {
+    my ($self, $grammar, $input) = @_;
+    my $parser = pegex($grammar->value, receiver => 'Pegex::Tree::Wrap');
+    return native $parser->parse($input->value);
+}
+
+sub parse_to_tree_test {
+    my ($self, $grammar, $input) = @_;
+    my $parser = pegex($grammar->value, receiver => 'TestAST');
+    return native $parser->parse($input->value);
 }
 
 1;
