@@ -227,21 +227,14 @@ sub match_next_with_sep {
         $count++;
         push @$match, @$return;
         $return = $self->match_next($sep) or last;
-        my @return = @$return;
-        if (@return) {
-            @return = @{$return[0]} if $smax != 1;
-            push @$match, @return;
-        }
+        push @$match, $smax == 1 ? @$return : @{$return->[0]} if @$return;
         $scount++;
     }
-    if ($max != 1) {
-        $match = [$match];
-    }
+    $match = [$match] if $max != 1;
     my $result = (($count >= $min and (not $max or $count <= $max)) ? 1 : 0);
     if ($count == $scount and not $sep->{'+eok'}) {
-        if (($self->{position} = $position) > $self->{farthest}) {
-            $self->{farthest} = $position;
-        }
+        $self->{farthest} = $position
+          if ($self->{position} = $position) > $self->{farthest};
     }
 
     return ($result ? $next->{'-skip'} ? [] : $match : 0);
