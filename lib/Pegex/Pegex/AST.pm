@@ -1,10 +1,3 @@
-##
-# name:      Pegex::Pegex::AST
-# abstract:  Pegex Pegex AST
-# author:    Ingy döt Net <ingy@cpan.org>
-# license:   perl
-# copyright: 2011, 2012
-
 package Pegex::Pegex::AST;
 use Pegex::Base;
 extends 'Pegex::Tree';

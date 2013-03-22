@@ -1,13 +1,3 @@
-##
-# name:      Pegex::Parser
-# abstract:  Pegex Parser Runtime
-# author:    Ingy döt Net <ingy@cpan.org>
-# license:   perl
-# copyright: 2011, 2012
-# see:
-# - Pegex::Grammar
-# - Pegex::Receiver
-
 package Pegex::Parser;
 use Pegex::Base;
 
@@ -381,30 +371,3 @@ Error parsing Pegex document:
 }
 
 1;
-
-=head1 SYNOPSIS
-
-    use Pegex::Parser;
-    use SomeGrammarClass;
-    use SomeReceiverClass;
-
-    my $parser = Pegex::Parser->new(
-        grammar => SomeGrammarClass->new,
-        receiver => SomeReceiverClass->new,
-    );
-
-    my $result = $parser->parse($SomeInputText);
-
-=head1 DESCRIPTION
-
-Pegex::Parser is the Pegex component that provides the parsing engine runtime.
-It requires a Grammar object and a Receiver object. It's C<parse()> method
-takes an input that is expected to be matched by the grammar, and applies the
-grammar rules to the input. As the grammar is applied, the receiver is notified
-of matches. The receiver is free to do whatever it wishes, but often times it
-builds the data into a structure that is commonly known as a Parse Tree.
-
-When the parse method is complete it returns whatever object the receiver has
-provided as the final result. If the grammar fails to match the input along
-the way, the parse method will throw an error with much information about the
-failure.

@@ -1,10 +1,3 @@
-##
-# name:      Pegex::Grammar::Pegex
-# abstract:  Pegex Grammar for the Pegex Grammar Language
-# author:    Ingy döt Net <ingy@cpan.org>
-# license:   perl
-# copyright: 2010, 2011, 2012
-
 package Pegex::Pegex::Grammar;
 use Pegex::Base;
 extends 'Pegex::Grammar';
@@ -419,13 +412,3 @@ sub make_tree {
 }
 
 1;
-
-=head1 SYNOPSIS
-
-    use Pegex::Pegex::Grammar;
-
-=head1 DESCRIPTION
-
-This is the precompiled grammar class for parsing Pegex itself.
-
-It is not normally used idirectly by end users.

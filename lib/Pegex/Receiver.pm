@@ -5,9 +5,9 @@
 # license:   perl
 # copyright: 2011, 2012
 # see:
-# Pegex::Tree
-# Pegex::Tree::Wrap
-# Pegex::Pegex::AST
+# - Pegex::Tree
+# - Pegex::Tree::Wrap
+# - Pegex::Pegex::AST
 
 package Pegex::Receiver;
 use Pegex::Base;

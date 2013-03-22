@@ -1,13 +1,3 @@
-##
-# name:      Pegex::Regex
-# abstract:  Use Pegex Like a Regex
-# author:    Ingy döt Net <ingy@cpan.org>
-# license:   perl
-# copyright: 2011, 2012
-# see:
-# - Pegex
-# - Regexp::Grammars
-
 package Pegex::Regex;
 
 use Pegex::Parser;
@@ -69,59 +59,3 @@ sub _module_is_active {
 }
 
 1;
-
-=head1 NOTE
-
-This module is just for experimental fun. See L<Pegex> for the right way to use
-the Pegex parsing framework.
-
-=head1 SYNOPSIS
-
-    {
-        # Turn on Pegex regular expressions in lexical scope.
-        use Pegex::Regex;
-        my $grammar = qr{$grammar_text}x;
-        $text =~ $grammar;
-        my $result = \%/;
-
-        # Turn off Pegex in this scope.
-        no Pegex::Regex;
-    }
-
-=head1 DESCRIPTION
-
-This is a trivial sugar module that lets you use Pegex parser grammars like
-regular expressions, if you're into that kind of thing.
-
-This is basically a clone of Damian Conway's L<Regexp::Grammars> module API.
-You put a grammar into a C<qr{...}x> and apply it the input string you want to
-parse. If the parse is successful, you get a data structure of the content in
-C<%/>.
-
-IMHO, building a recursive decscent parser entirely inside of a regular
-expression, is not the clearest way to code. But, of course, TMTOWTDI. :)
-
-=head1 TMTOWTDI
-
-Here's a Pegex::Regex code snippet:
-
-    use Pegex::Regex;
-    $text =~ qr{... Pegex grammar text ...};
-    $data = \%/;
-
-And the equivalent Pegex code:
-
-    use Pegex;
-    my $data = pegex('... Pegex grammar text ...')->parse($text);
-
-=head1 WARNING
-
-This gateway drug, er, module, technically should not even work.
-
-It turns your "grammar inside a regexp" into a Pegex::Grammar using qr{}
-overloading, and then turns your regexp itself into a shim that calls the
-parse method for you. This is highly magical and technically makes a reentrant
-call to the regex engine, which is not supported yet.  Use at your own risk.
-
-Better yet, do yourself a favor and learn how to use the Pegex toolset without
-this ::Regex sugar.  C<:-)>
