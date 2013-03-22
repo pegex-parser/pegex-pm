@@ -64,24 +64,22 @@ assignment_statement:
     variable_name
     /<WS>+ <EQUAL> <WS>+/
     code_expression
-    semicolon
+    ending
 
 variable_name: /(<ALPHA><WORD>*)/
 
 code_statement:
     code_expression
     assertion_call?
-    semicolon
+    ending
 
-semicolon:
-    /<SEMI>/ |
-    `You seem to be missing a semicolon`
+ending: /(: <SEMI> | <EOL> )/
 
 code_expression:
     code_object
-    unit_call*
+    call_call*
 
-unit_call:
+call_call:
     !assertion_call_test
     call_indicator
     code_object
@@ -91,7 +89,7 @@ code_object:
     point_object |
     string_object |
     number_object |
-    transform_object
+    call_object
 
 function_object:
     function_signature?
@@ -106,7 +104,7 @@ function_signature:
     function_variables?
     /~<RPAREN>/
 
-function_variables: 
+function_variables:
     function_variable+ % / ~ <COMMA> ~ /
 
 function_variable: /(<ALPHA><WORD>*)/
@@ -117,24 +115,24 @@ string_object: quoted_string
 
 number_object: number
 
-transform_object:
-    transform_name
-    transform_argument_list?
+call_object:
+    call_name
+    call_argument_list?
 
-transform_name: user_transform | core_transform
+call_name: user_call | core_call
 
-user_transform: /(<LOWER><WORD>*)/
+user_call: /(<LOWER><WORD>*)/
 
-core_transform: /(<UPPER><WORD>*)/
+core_call: /(<UPPER><WORD>*)/
 
 call_indicator: /(: <DOT> ~ | ~ <DOT> )/
 
-transform_argument_list:
+call_argument_list:
     / <LPAREN> ~ /
-    transform_argument* % / ~ <COMMA> ~ /
+    call_argument* % / ~ <COMMA> ~ /
     / ~ <RPAREN> /
 
-transform_argument: code_expression
+call_argument: code_expression
 
 assertion_call_test: / <call_indicator> (: EQ|OK|HAS ) /
 
