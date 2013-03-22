@@ -1,5 +1,5 @@
 NAME
-    Pegex - Acmeist PEG Parsing Framework
+    Pegex - Acmeist PEG Parser Framework
 
 SYNOPSIS
         use Pegex;
@@ -100,7 +100,7 @@ AUTHOR
     Ingy döt Net <ingy@cpan.org>
 
 COPYRIGHT AND LICENSE
-    Copyright (c) 2010, 2011, 2012. Ingy döt Net.
+    Copyright (c) 2010, 2011, 2012, 2013. Ingy döt Net.
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.
