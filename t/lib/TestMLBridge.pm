@@ -60,19 +60,20 @@ sub parse_input {
 
 sub parse_to_tree {
     my ($self, $grammar, $input) = @_;
-    my $parser = pegex($grammar->value, receiver => 'Pegex::Tree');
+    require Pegex::Tree;
+    my $parser = pegex($grammar->value, 'Pegex::Tree');
     return native $parser->parse($input->value);
 }
 
 sub parse_to_tree_wrap {
     my ($self, $grammar, $input) = @_;
-    my $parser = pegex($grammar->value, receiver => 'Pegex::Tree::Wrap');
+    my $parser = pegex($grammar->value, 'Pegex::Tree::Wrap');
     return native $parser->parse($input->value);
 }
 
 sub parse_to_tree_test {
     my ($self, $grammar, $input) = @_;
-    my $parser = pegex($grammar->value, receiver => 'TestAST');
+    my $parser = pegex($grammar->value, 'TestAST');
     return native $parser->parse($input->value);
 }
 

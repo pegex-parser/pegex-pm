@@ -26,7 +26,7 @@ d: /y/
     }
 }
 
-my $parser = pegex($grammar, {receiver => 'R'});
+my $parser = pegex($grammar, 'R');
 my $got = $parser->parse('xxx');
 
 is join('', @$got), 'xxx', 'Array was flattened';
