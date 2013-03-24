@@ -55,12 +55,14 @@ my $want = <<'...';
 ...
 
 use Pegex::Grammar;
+use Pegex::Receiver;
 use Pegex::Compiler;
 my $grammar = Pegex::Grammar->new(
     tree => Pegex::Compiler->new->compile($grammar_text)->tree,
 );
 my $parser = Pegex::Parser->new(
     grammar => $grammar,
+    receiver => Pegex::Receiver->new,
 );
 my $ast1 = $parser->parse($input);
 
