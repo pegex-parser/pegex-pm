@@ -189,7 +189,7 @@ sub match_next_with_sep {
         $scount++;
     }
     $match = [$match] if $max != 1;
-    my $result = $count >= $min and ($max == 0 or $count <= $max);
+    my $result = ($count >= $min and ($max == 0 or $count <= $max));
     if ($count == $scount and not $sep->{'+eok'}) {
         $self->{farthest} = $position
             if ($self->{position} = $position) > $self->{farthest};

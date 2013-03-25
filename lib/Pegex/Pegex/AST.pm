@@ -4,43 +4,35 @@ extends 'Pegex::Tree';
 
 use Pegex::Grammar::Atoms;
 
-has toprule => ();
+has atoms => Pegex::Grammar::Atoms->new->atoms;
 has extra_rules => {};
-
-my %prefixes = (
+has prefixes => {
     '!' => ['+asr', -1],
     '=' => ['+asr', 1],
     '.' => '-skip',
     '-' => '-pass',
     '+' => '-wrap',
-);
-
-# Uncomment this to debug. See entire raw AST.
-# sub final {
-#     my ($self, $match) = @_;
-#     XXX $match;
-# }
-# __END__
+  };
 
 sub got_grammar {
-    my ($self, $rules) = @_;
-    my ($meta_section, $rule_section) = @$rules;
+    my ($self, $got) = @_;
+    my ($meta_section, $rule_section) = @$got;
     my $grammar = {
         '+toprule' => $self->{toprule},
         %{$self->{extra_rules}},
         %$meta_section,
     };
-    for (@$rule_section) {
-        my ($key, $value) = %$_;
+    for my $rule (@$rule_section) {
+        my ($key, $value) = %$rule;
         $grammar->{$key} = $value;
     }
     return $grammar;
 }
 
 sub got_meta_section {
-    my ($self, $directives) = @_;
+    my ($self, $got) = @_;
     my $meta = {};
-    for my $next (@$directives) {
+    for my $next (@$got) {
         my ($key, $val) = @$next;
         $key = "+$key";
         my $old = $meta->{$key};
@@ -60,37 +52,36 @@ sub got_meta_section {
 }
 
 sub got_rule_definition {
-    my ($self, $match) = @_;
-    my $name = $match->[0];
+    my ($self, $got) = @_;
+    my ($name, $value) = @$got;
     $self->{toprule} = $name if $name eq 'TOP';
     $self->{toprule} ||= $name;
-    my $value = $match->[1];
     return +{ $name => $value };
 }
 
 sub got_bracketed_group {
-    my ($self, $match) = @_;
-    my $group = $match->[1];
-    if (my $prefix = $match->[0]) {
-        $group->{$prefixes{$prefix}} = 1;
+    my ($self, $got) = @_;
+    my ($prefix, $group, $suffix) = @$got;
+    if ($prefix) {
+        $group->{$self->prefixes->{$prefix}} = 1;
     }
-    if (my $suffix = $match->[2]) {
+    if ($suffix) {
         $self->set_quantity($group, $suffix);
     }
     return $group;
 }
 
 sub got_all_group {
-    my ($self, $match) = @_;
-    my $list = $self->get_group($match);
+    my ($self, $got) = @_;
+    my $list = $self->get_group($got);
     die unless @$list;
     return $list->[0] if @$list == 1;
     return { '.all' => $list };
 }
 
 sub got_any_group {
-    my ($self, $match) = @_;
-    my $list = $self->get_group($match);
+    my ($self, $got) = @_;
+    my $list = $self->get_group($got);
     die unless @$list;
     return $list->[0] if @$list == 1;
     return { '.any' => $list };
@@ -115,29 +106,28 @@ sub get_group {
 }
 
 sub got_rule_part {
-    my ($self, $part) = @_;
-    my ($rule, $sep_op, $sep_rule) = @$part;
+    my ($self, $got) = @_;
+    my ($rule, $sep_op, $sep_rule) = @$got;
     if ($sep_rule) {
-        $sep_rule->{'+eok'} = 1
-            if $sep_op eq '%%';
+        $sep_rule->{'+eok'} = 1 if $sep_op eq '%%';
         $rule->{'.sep'} = $sep_rule;
     }
     return $rule;
 }
 
 sub got_rule_reference {
-    my ($self, $match) = @_;
-    my ($prefix, $ref1, $ref2, $suffix) = @$match;
+    my ($self, $got) = @_;
+    my ($prefix, $ref1, $ref2, $suffix) = @$got;
     my $ref = $ref1 || $ref2;
     my $node = +{ '.ref' => $ref };
-    if (my $regex = Pegex::Grammar::Atoms->atoms->{$ref}) {
+    if (my $regex = $self->atoms->{$ref}) {
         $self->{extra_rules}{$ref} = +{ '.rgx' => $regex };
     }
     if ($suffix) {
         $self->set_quantity($node, $suffix);
     }
     if ($prefix) {
-        my ($key, $val) = ($prefixes{$prefix}, 1);
+        my ($key, $val) = ($self->prefixes->{$prefix}, 1);
         ($key, $val) = @$key if ref $key;
         $node->{$key} = $val;
     }
@@ -145,22 +135,21 @@ sub got_rule_reference {
 }
 
 sub got_regular_expression {
-    my ($self, $match) = @_;
-    $match =~ s/\s*#.*\n//g;
-    $match =~ s/\s+//g;
-    $match =~ s!\((\:|\=|\!)!(?$1!g;
-    return +{ '.rgx' => $match };
+    my ($self, $got) = @_;
+    $got =~ s/\s*#.*\n//g;
+    $got =~ s/\s+//g;
+    $got =~ s!\((\:|\=|\!)!(?$1!g;
+    return +{ '.rgx' => $got };
 }
 
 sub got_whitespace_token {
-    my ($self, $match) = @_;
-    my $regex = '<ws' . length($match) . '>';
-    return +{ '.rgx' => $regex };
+    my ($self, $got) = @_;
+    return +{ '.rgx' => "<ws${\ length($got)}>" };
 }
 
 sub got_error_message {
-    my ($self, $match) = @_;
-    return +{ '.err' => $match };
+    my ($self, $got) = @_;
+    return +{ '.err' => $got };
 }
 
 sub set_quantity {
