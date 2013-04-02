@@ -1,7 +1,8 @@
 source_testml_dir: ../../pegex-tml
 local_testml_dir: ./testml
+test_file_prefix: testml-
 test_file_template: |
-  use lib 't/lib';
+  use lib 't';
   use TestML;
   use TestML::Compiler::Lite;
   use TestMLBridge;
