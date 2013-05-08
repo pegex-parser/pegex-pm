@@ -73,7 +73,9 @@ code_statement:
     assertion_call?
     ending
 
-ending: /(: <SEMI> | <EOL> )/
+ending: /(: <SEMI> | <EOL> )/ | =ending2
+
+ending2: /~ <RCURLY>/
 
 code_expression:
     code_object

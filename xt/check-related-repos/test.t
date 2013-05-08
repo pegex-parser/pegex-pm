@@ -34,7 +34,9 @@ my $repos = [
 
 for my $repo (@$repos) {
     chdir($home) or die;
-    chdir("../$repo") or die "Can't find '$repo' repo";
+    chdir("../$repo") or
+        chdir("$ENV{HOME}/src/$repo") or
+        die "Can't find '$repo' repo";
     assert_git_ok($repo) or next;
     if ($repo =~ /-pm$/) {
         make_test($repo) or next;

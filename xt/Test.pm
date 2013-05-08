@@ -32,9 +32,11 @@ use constant TEST_GRAMMARS => [
 sub pegex_parser {
     require Pegex::Parser;
     require Pegex::Pegex::Grammar;
+    require Pegex::Tree::Wrap;
     my ($grammar) = @_;
     return Pegex::Parser->new(
         grammar => Pegex::Pegex::Grammar->new,
+        receiver => Pegex::Tree::Wrap->new,
     );
 }
 
