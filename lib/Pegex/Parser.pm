@@ -54,9 +54,9 @@ sub parse {
         ($self->{tree}->{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
 
-    $self->optimize_grammar($start_rule_ref);
-
     die "No 'receiver'. Can't parse" unless $self->{receiver};
+
+    $self->optimize_grammar($start_rule_ref);
 
     # Add circular ref and weaken it.
     $self->{receiver}{parser} = $self;
