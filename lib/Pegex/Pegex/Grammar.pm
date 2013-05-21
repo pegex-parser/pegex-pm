@@ -265,6 +265,9 @@ sub make_tree {
     'any_group' => {
       '.all' => [
         {
+          '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\|?(?:\s|\#.*(?:\n|\z))*/
+        },
+        {
           '.ref' => 'all_group'
         },
         {

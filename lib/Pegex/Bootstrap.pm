@@ -140,6 +140,7 @@ sub wilt {
     if (grep {$_ eq '|'} @$wilted) {
         my @group;
         my @grouped = shift @$wilted;   # '('
+        shift @$wilted if $wilted->[0] eq '|';
         for (@$wilted) {
             if (/^(?:\||\)$quantifier?)$/) {
                 push @grouped, (

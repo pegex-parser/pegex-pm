@@ -1,6 +1,6 @@
 %TestML 0.1.0
 
-Plan = 48
+Plan = 50
 
 *grammar.bootstrap_compile.yaml.clean == *yaml
 *grammar.compile.yaml.clean == *yaml
@@ -124,6 +124,18 @@ a:
   - .rgx: x
   - .ref: y
   - .err: z
+
+=== Any Group with Leading Pipe
+--- grammar
+a: (
+  | b
+  | c
+)
+--- yaml
+a:
+  .any:
+  - .ref: b
+  - .ref: c
 
 === Bracketed All Group
 --- grammar

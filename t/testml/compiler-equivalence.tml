@@ -1,5 +1,7 @@
 %TestML 0.1.0
 
+Plan = 7
+
 *grammar1.compile.yaml == *grammar2.compile.yaml
 
 === Simple Test Case
@@ -32,6 +34,21 @@ a:
    )
 --- grammar2
 a: ( b c ) | ( d | e | ( f g h i ) )
+
+=== Extra Leading Pipe
+--- grammar1
+a: | b | c
+--- grammar2
+a: b | c
+
+=== Extra Leading Pipe w/ Parens
+--- grammar1
+a: (
+  | b
+  | c
+)
+--- grammar2
+a: b | c
 
 === In-Line Comments
 --- grammar1
