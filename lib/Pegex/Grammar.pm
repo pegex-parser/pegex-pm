@@ -70,6 +70,8 @@ sub compile_into_module {
     $module =~ s!::!/!g;
     $module = "$module.pm";
     my $file = $INC{$module} or return;
+#     require Pegex::Bootstrap;
+#     my $perl = Pegex::Bootstrap->new->compile($grammar_text)->to_perl;
     require Pegex::Compiler;
     my $perl = Pegex::Compiler->new->compile($grammar_text)->to_perl;
     open IN, $file or die $!;

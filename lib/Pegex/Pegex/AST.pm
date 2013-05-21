@@ -54,6 +54,7 @@ sub got_meta_section {
 sub got_rule_definition {
     my ($self, $got) = @_;
     my ($name, $value) = @$got;
+    $name =~ s/-/_/g;
     $self->{toprule} = $name if $name eq 'TOP';
     $self->{toprule} ||= $name;
     return +{ $name => $value };
@@ -119,6 +120,7 @@ sub got_rule_reference {
     my ($self, $got) = @_;
     my ($prefix, $ref1, $ref2, $suffix) = @$got;
     my $ref = $ref1 || $ref2;
+    $ref =~ s/-/_/g;
     my $node = +{ '.ref' => $ref };
     if (my $regex = $self->atoms->{$ref}) {
         $self->{extra_rules}{$ref} = +{ '.rgx' => $regex };

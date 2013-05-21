@@ -2,6 +2,7 @@
 
 %grammar pegex
 %version 0.2.0
+%include pegex-atoms
 
 
 grammar: meta_section rule_section (
@@ -22,18 +23,18 @@ rule_start: / ( <rule_name> ) <BLANK>* <COLON> ~ /
 
 rule_group: any_group
 
-any_group: all_group ( / ~ <PIPE> ~ / all_group )*
+any_group: / ~ <PIPE>? ~ / all_group ( / ~ <PIPE> ~ / all_group )*
 
 all_group: rule_part (~ rule_part)*
 
 rule_part: <rule_item>1-2 % / ~~ ( <PERCENT>{1,2} ) ~~ /
 
 rule_item:
-    rule_reference |
-    regular_expression |
-    bracketed_group |
-    whitespace_token |
-    error_message
+  | rule_reference
+  | regular_expression
+  | bracketed_group
+  | whitespace_token
+  | error_message
 
 rule_reference:
     /
@@ -81,9 +82,24 @@ meta_value:
         <ending>
     /
 
-rule_name: / <ALPHA> <WORD>* \b /
+rule_name: /
+  (:
+    <ALPHA> <ALNUM>* (:[<DASH><UNDER>] <ALNUM>+)* |
+    <DASH>+ |
+    <UNDER>+
+  )
+  (= [^<WORD><DASH>])
+/
 
-ending: / ~? (: <BREAK> ~ <SEMI>? ~ | <comment> ~ <SEMI>? ~ | <SEMI> ~ | <EOS> ) /
+ending: /
+  ~?
+  (:
+    <BREAK> ~ <SEMI>? ~ |
+    <comment> ~ <SEMI>? ~ |
+    <SEMI> ~ |
+    <EOS>
+  )
+/
 
 ws: / (: <WS> | <comment> ) /
 

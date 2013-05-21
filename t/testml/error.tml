@@ -76,7 +76,8 @@ a: /a+/
 b: !a1-2
 --- input
 aaa
---- error: Rule ending syntax error
+--- error: Parse document failed for some reason
+# --- error: Rule ending syntax error
 # --- error: Unprotected rule name with numeric quantifier
 
 === Pegex: Runaway regular expression

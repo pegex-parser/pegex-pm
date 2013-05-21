@@ -7,9 +7,15 @@ extends 'Pegex::Grammar';
 
 use constant file => '../pegex-pgx/pegex.pgx';
 
+# sub make_tree {
+#     use Pegex::Bootstrap;
+#     Pegex::Bootstrap->new->compile(file)->tree;
+# }
+
 sub make_tree {
   {
     '+grammar' => 'pegex',
+    '+include' => 'pegex-atoms',
     '+toprule' => 'grammar',
     '+version' => '0.2.0',
     'ERROR_all_group' => {
@@ -181,7 +187,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?<[a-zA-Z]\w*\b(?!>))/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])(?!>))/
             },
             {
               '.err' => 'Missing > in rule reference'
@@ -191,7 +197,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?[a-zA-Z]\w*\b>)/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])>)/
             },
             {
               '.err' => 'Missing < in rule reference'
@@ -201,7 +207,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:[a-zA-Z]\w*\b|<[a-zA-Z]\w*\b>)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])>)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
             },
             {
               '.err' => 'Illegal character in rule quantifier'
@@ -211,7 +217,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?[a-zA-Z]\w*\b\-)/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\-)/
             },
             {
               '.err' => 'Unprotected rule name with numeric quantifier; please use <rule>#-# syntax!'
@@ -225,7 +231,7 @@ sub make_tree {
               '.ref' => 'rule_modifier'
             },
             {
-              '.rgx' => qr/\G(?=[^\w\(\)<\/\~\|`\s](?:[a-zA-Z]\w*\b|<[a-zA-Z]\w*\b>)(?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?(?![\ \t]*:))/
+              '.rgx' => qr/\G(?=[^\w\(\)<\/\~\|`\s](?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])>)(?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?(?![\ \t]*:))/
             },
             {
               '.err' => 'Illegal rule modifier (must be [=!.-+]?)'
@@ -237,7 +243,7 @@ sub make_tree {
     'ERROR_rule_start' => {
       '.any' => [
         {
-          '.rgx' => qr/\G([a-zA-Z]\w*\b)[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
+          '.rgx' => qr/\G((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
         },
         {
           '.err' => 'Rule header syntax error'
@@ -392,7 +398,7 @@ sub make_tree {
       }
     },
     'rule_reference' => {
-      '.rgx' => qr/\G([!=\+\-\.]?)(?:([a-zA-Z]\w*\b)|(?:<([a-zA-Z]\w*\b)>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?![\ \t]*:)/
+      '.rgx' => qr/\G([!=\+\-\.]?)(?:((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?![\ \t]*:)/
     },
     'rule_section' => {
       '+min' => 0,
@@ -406,7 +412,7 @@ sub make_tree {
       ]
     },
     'rule_start' => {
-      '.rgx' => qr/\G([a-zA-Z]\w*\b)[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
+      '.rgx' => qr/\G((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
     },
     'whitespace_token' => {
       '.rgx' => qr/\G(\~+)/
