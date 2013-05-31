@@ -100,14 +100,16 @@ sub combinate_re {
     my $atoms = Pegex::Grammar::Atoms->atoms;
     my $re = $regexp->{'.rgx'};
     while (1) {
+        # XXX reconsider tilde handling.
         $re =~ s[(?<!\\)(~+)]['<ws' . length($1) . '>']ge;
-        $re =~ s[<(\w+)>][
-            $self->{tree}->{$1} and (
-                $self->{tree}->{$1}{'.rgx'} or
-                die "'$1' not defined as a single RE"
+        $re =~ s[<([\w\-]+)>][
+            (my $key = $1) =~ s/-/_/g;
+            $self->{tree}->{$key} and (
+                $self->{tree}->{$key}{'.rgx'} or
+                die "'$key' not defined as a single RE"
             )
-            or $atoms->{$1}
-            or die "'$1' not defined in the grammar"
+            or $atoms->{$key}
+            or die "'$key' not defined in the grammar"
         ]e;
         last if $re eq $regexp->{'.rgx'};
         $regexp->{'.rgx'} = $re;

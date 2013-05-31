@@ -75,9 +75,9 @@ sub parse {
         }
     }
 
-    for my $rule (split /(?=^\w+:\s*)/m, $grammar_text) {
-        (my $value = $rule) =~ s/^(\w+):// or die "$rule";
-        my $key = $1;
+    for my $rule (split /(?=^[\w\-]+:\s*)/m, $grammar_text) {
+        (my $value = $rule) =~ s/^([\w-]+):// or die "$rule";
+        (my $key = $1) =~ s/-/_/g;
         $value =~ s/\s+/ /g;
         $value =~ s/^\s*(.*?)\s*$/$1/;
         $self->{tree}->{$key} = $value;
@@ -88,14 +88,17 @@ sub parse {
     for my $rule (sort keys %{$self->{tree}}) {
         next if $rule =~ /^\+/;
         my $text = $self->{tree}->{$rule};
-        my @tokens = grep $_,
+        my @tokens = map {
+            s/-(?!\d)/_/g unless /^[\`\/]/;
+            $_;
+        } grep $_,
         ($text =~ m{(
             `[^`\n]*` |
             /[^/\n]*/ |
             ~+ |
             %%? |
-            $modifier?<\w+>$quantifier? |
-            $modifier?\w+$quantifier? |
+            $modifier?<[\w\-]+>$quantifier? |
+            $modifier?[\w\-]+$quantifier? |
             \| |
             $group_modifier?\( |
             \)$quantifier? |
@@ -173,7 +176,7 @@ sub compile_next {
         $node =~ m!^`! ? $self->compile_error($node) :
         $node =~ m!/! ? $self->compile_re($node) :
         $node =~ m!<! ? $self->compile_rule($node) :
-        $node =~ m!^$modifier?\w+$quantifier?$!
+        $node =~ m!^$modifier?[\w\-]+$quantifier?$!
             ? $self->compile_rule($node) :
             die $node;
 
