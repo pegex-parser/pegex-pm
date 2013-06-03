@@ -1,6 +1,6 @@
 %TestML 0.1.0
 
-Plan = 8
+Plan = 9
 
 *grammar1.compile.yaml == *grammar2.compile.yaml
 
@@ -62,11 +62,11 @@ a: b c /q/ % e
 
 === Dashes in names
 --- grammar1
-a-a: b-b+ - c-c
+a-a: b-b+ c-c
 b_b: c_c-c /d/
 c-c_c: e
 --- grammar2
-a_a: b_b+ _ c_c
+a_a: b_b+ c_c
 b-b: c-c_c /d/
 c_c_c: e
 
@@ -78,6 +78,14 @@ a: /b/
 a
 :
 /b/
+
+=== Whitespace Tokens
+--- grammar1
+a: - b + c -
+b: /- cat + dog -/
+--- grammar2
+a: _ b __ c _
+b: /~ cat ~~ dog ~/
 
 === Regex Combination
 --- SKIP: TODO

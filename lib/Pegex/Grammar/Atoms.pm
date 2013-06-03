@@ -10,6 +10,10 @@ my $atoms = {
     ws1     => '<ws>*',
     ws2     => '<ws>+',
 
+    # Default whitespace rules for that use '-' and '+'
+    _       => '\s*',
+    __      => '\s+',
+
     # Special rules
     ALWAYS  => '',
     NEVER   => '(?!)',

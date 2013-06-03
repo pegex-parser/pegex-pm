@@ -22,7 +22,7 @@ sub make_tree {
       '+min' => 1,
       '.ref' => 'ERROR_rule_part',
       '.sep' => {
-        '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*/
+        '.ref' => '_'
       }
     },
     'ERROR_any_group' => {
@@ -250,6 +250,12 @@ sub make_tree {
         }
       ]
     },
+    '_' => {
+      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*/
+    },
+    '__' => {
+      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+/
+    },
     'all_group' => {
       '.all' => [
         {
@@ -259,7 +265,7 @@ sub make_tree {
           '+min' => 0,
           '.all' => [
             {
-              '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*/
+              '.ref' => '_'
             },
             {
               '.ref' => 'rule_part'
@@ -341,7 +347,7 @@ sub make_tree {
           '.ref' => 'meta_definition'
         },
         {
-          '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+/
+          '.ref' => '__'
         },
         {
           '.ref' => 'ERROR_meta_definition'
@@ -370,6 +376,9 @@ sub make_tree {
     'rule_item' => {
       '.any' => [
         {
+          '.ref' => 'whitespace_token'
+        },
+        {
           '.ref' => 'rule_reference'
         },
         {
@@ -377,9 +386,6 @@ sub make_tree {
         },
         {
           '.ref' => 'bracketed_group'
-        },
-        {
-          '.ref' => 'whitespace_token'
         },
         {
           '.ref' => 'error_message'
@@ -407,7 +413,7 @@ sub make_tree {
           '.ref' => 'rule_definition'
         },
         {
-          '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+/
+          '.ref' => '__'
         }
       ]
     },
@@ -415,7 +421,7 @@ sub make_tree {
       '.rgx' => qr/\G((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
     },
     'whitespace_token' => {
-      '.rgx' => qr/\G(\~+)/
+      '.rgx' => qr/\G(\~+|(?:\++|\-+)(?=\s+|\z))/
     }
   }
 }

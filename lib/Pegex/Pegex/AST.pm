@@ -138,6 +138,9 @@ sub got_rule_reference {
 
 sub got_regular_expression {
     my ($self, $got) = @_;
+    # replace - or + with space next to it
+    $got =~ s/(?:^|\s)(\-+)(?:\s|$)/${\ ('<' . '_' x length($1) . '>') }/ge;
+    $got =~ s/(?:^|\s)(\++)(?:\s|$)/${\ ('<' . '__' x length($1) . '>') }/ge;
     $got =~ s/\s*#.*\n//g;
     $got =~ s/\s+//g;
     $got =~ s!\((\:|\=|\!)!(?$1!g;
@@ -146,7 +149,20 @@ sub got_regular_expression {
 
 sub got_whitespace_token {
     my ($self, $got) = @_;
-    return +{ '.rgx' => "<ws${\ length($got)}>" };
+    my $token;
+    if ($got =~ /^\~+$/) {
+        $token = +{ '.rgx' => "<ws${\ length($got)}>" };
+    }
+    elsif ($got =~ /^\-+$/) {
+        $token = +{ '.ref' => ('_' x length($got)) };
+    }
+    elsif ($got =~ /^\++$/) {
+        $token = +{ '.ref' => ('__' x length($got)) };
+    }
+    else {
+        die;
+    }
+    return $token;
 }
 
 sub got_error_message {

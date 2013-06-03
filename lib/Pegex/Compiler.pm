@@ -100,7 +100,6 @@ sub combinate_re {
     my $atoms = Pegex::Grammar::Atoms->atoms;
     my $re = $regexp->{'.rgx'};
     while (1) {
-        # XXX reconsider tilde handling.
         $re =~ s[(?<!\\)(~+)]['<ws' . length($1) . '>']ge;
         $re =~ s[<([\w\-]+)>][
             (my $key = $1) =~ s/-/_/g;

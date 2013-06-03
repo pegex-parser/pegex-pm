@@ -89,13 +89,16 @@ sub parse {
         next if $rule =~ /^\+/;
         my $text = $self->{tree}->{$rule};
         my @tokens = map {
-            s/-(?!\d)/_/g unless /^[\`\/]/;
+            s/-(?!\d)/_/g if /^\-+$/ or not /^[\`\/\-]/;
+            s/(?<![\w\>])\++/__/g if /^\++$/ or not /^[\)\`\/\+]/;
             $_;
         } grep $_,
         ($text =~ m{(
             `[^`\n]*` |
             /[^/\n]*/ |
             ~+ |
+            \-+(?=\s|$) |
+            \++(?=\s|$) |
             %%? |
             $modifier?<[\w\-]+>$quantifier? |
             $modifier?[\w\-]+$quantifier? |
@@ -217,6 +220,8 @@ sub compile_re {
     my ($self, $node) = @_;
     my $object = {};
     $node =~ s!^/(.*)/$!$1! or die $node;
+    $node =~ s/(?:^|\s)(\-+)(?:\s|$)/'<' . '_' x length($1) . '>'/ge;
+    $node =~ s/(?:^|\s)(\++)(?:\s|$)/'<' . '__' x length($1) . '>'/ge;
     $node =~ s!\s+!!g;
     $node =~ s!\((\:|\=|\!)!(?$1!g;
     $object->{'.rgx'} = $node;

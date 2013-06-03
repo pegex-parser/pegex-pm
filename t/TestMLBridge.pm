@@ -12,11 +12,13 @@ use Pegex::Tree::Wrap;
 use TestAST;
 use YAML::XS;
 
-# use XXX;
+use XXX;
 sub compile {
     my ($self, $grammar) = @_;
     my $tree = Pegex::Compiler->new->parse($grammar->value)->combinate->tree;
     delete $tree->{'+toprule'};
+    delete $tree->{'_'};
+    delete $tree->{'__'};
     return native $tree;
 }
 
@@ -24,6 +26,8 @@ sub bootstrap_compile {
     my ($self, $grammar) = @_;
     my $tree = Pegex::Bootstrap->new->parse($grammar->value)->combinate->tree;
     delete $tree->{'+toprule'};
+    delete $tree->{'_'};
+    delete $tree->{'__'};
     return native $tree;
 }
 
@@ -41,7 +45,8 @@ sub compress {
 
 sub yaml {
     my ($self, $data) = @_;
-    return str YAML::XS::Dump($data->value);
+    my $tree = $data->value;
+    return str YAML::XS::Dump($tree);
 }
 
 sub clean {

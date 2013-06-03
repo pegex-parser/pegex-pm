@@ -1,6 +1,6 @@
 %TestML 0.1.0
 
-Plan = 50
+Plan = 54
 
 *grammar.bootstrap_compile.yaml.clean == *yaml
 *grammar.compile.yaml.clean == *yaml
@@ -9,6 +9,22 @@ Plan = 50
 --- grammar
 --- yaml
 {}
+
+=== Whitespace Tokens
+--- grammar
+a: - b+ + c -
+b: /- cat + dog -/
+--- yaml
+a:
+  .all:
+  - .ref: _
+  - +min: 1
+    .ref: b
+  - .ref: __
+  - .ref: c
+  - .ref: _
+b:
+  .rgx: \s*cat\s+dog\s*
 
 === Simple Grammar
 --- grammar
@@ -278,3 +294,10 @@ a: /b/
 +version: 1.1.1
 a:
   .rgx: b
+
+=== Dash and Plus as whitespace tokens
+--- grammar
+a: / - foo + bar+ -- baz /
+--- yaml
+a:
+  .rgx: \s*foo\s+bar+\s+baz
