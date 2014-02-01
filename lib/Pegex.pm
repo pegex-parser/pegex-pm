@@ -5,7 +5,8 @@ package Pegex;
 use Pegex::Parser;
 use Pegex::Grammar;
 
-our $VERSION = '0.21';
+# VERSION
+# ABSTRACT: Acmeist PEG Parsing Framework 
 
 use Exporter 'import';
 our @EXPORT = 'pegex';
