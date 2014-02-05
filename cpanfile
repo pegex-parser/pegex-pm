@@ -1,2 +1,4 @@
 requires 'perl' => 5.010000;
-requires 'YAML::XS';
+on test => {
+   requires 'YAML::XS';
+};
