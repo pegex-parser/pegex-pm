@@ -1,26 +1,28 @@
 language: perl
 perl:
-   - "5.18"
-   - "5.16"
-   - "5.14"
-   - "5.12"
-   - "5.10"
+- "5.18"
+- "5.16"
+- "5.14"
+- "5.12"
+- "5.10"
 
 install:
-   - git clone --depth=50 --branch=master git://github.com/ingydotnet/testml-pm ../testml-pm
-   - git clone --depth=50 --branch=master git://github.com/ingydotnet/dist-zilla-plugin-testmlincluder-pm ../dist-zilla-plugin-testmlincluder
-   - cd ../dist-zilla-plugin-testmlincluder
-   - dzil authordeps | cpanm --quiet --notest
-   - dzil install
-   - cd ../pegex-pm
-   - cpanm --quiet --notest Dist::Zilla
-   - dzil authordeps | cpanm --quiet --notest | true
-   - export RELEASE_TESTING=1 AUTOMATED_TESTING=1 AUTHOR_TESTING=1 HARNESS_OPTIONS=j10:c HARNESS_TIMER=1
-   - cpanm --quiet --notest Devel::Cover::Report::Coveralls
-   - cpanm --quiet --notest --installdeps .
+- git clone --depth=50 --branch=master git://github.com/ingydotnet/testml-pm ../testml-pm
+# - git clone --depth=50 --branch=master git://github.com/ingydotnet/dist-zilla-plugin-testmlincluder-pm ../dist-zilla-plugin-testmlincluder
+# - cd ../dist-zilla-plugin-testmlincluder
+# - dzil authordeps | cpanm --quiet --notest
+# - dzil install
+# - cd ../pegex-pm
+# - cpanm --quiet --notest Dist::Zilla
+# - dzil authordeps | cpanm --quiet --notest | true
+# - export RELEASE_TESTING=1 AUTOMATED_TESTING=1 AUTHOR_TESTING=1 HARNESS_OPTIONS=j10:c HARNESS_TIMER=1
+# - cpanm --quiet --notest Devel::Cover::Report::Coveralls
+# - cpanm --quiet --notest --installdeps .
 
 script:
-   - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine dzil smoke
-   - cover
+- PERL5LIB=../testml-pm/lib prove -lv t/
+# - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine dzil smoke
+- cover
+
 after_success:
-  - cover -report coveralls
+- cover -report coveralls
