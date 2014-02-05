@@ -1,4 +1,4 @@
-use lib 't';
+use lib 't', 'inc';
 use TestML;
 use TestML::Compiler::Lite;
 use TestMLBridge;
