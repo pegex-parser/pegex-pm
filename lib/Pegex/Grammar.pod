@@ -73,8 +73,6 @@ directory.
 
 This method is called when the grammar needs the compiled version.
 
-=over
-
 =back
 
 =head1 AUTHOR
