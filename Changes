@@ -1,4 +1,11 @@
 ---
+version: 0.22
+date:    Wed Feb  5 11:26:05 PST 2014
+changes:
+- Release under dzil (thanks frew++!!)
+- travis testing (frew++)
+
+---
 version: 0.21
 date:    Thu Nov  8 10:47:42 PST 2012
 changes:
