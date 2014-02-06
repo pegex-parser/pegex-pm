@@ -1,4 +1,5 @@
 package Pegex::Input;
+
 use Pegex::Base;
 
 has string => ();

@@ -1,4 +1,5 @@
 package Pegex::Pegex::Grammar;
+
 use Pegex::Base;
 extends 'Pegex::Grammar';
 

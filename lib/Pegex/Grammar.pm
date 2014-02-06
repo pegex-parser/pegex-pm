@@ -1,4 +1,5 @@
 package Pegex::Grammar;
+
 use Pegex::Base;
 
 # Grammar can be in text or tree form. Tree will be compiled from text.

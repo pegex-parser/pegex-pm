@@ -11,6 +11,7 @@ use Scalar::Util;
 }
 
 package Pegex::Parser;
+
 use Pegex::Base;
 
 has grammar => (required => 1);

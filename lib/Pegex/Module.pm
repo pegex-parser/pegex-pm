@@ -1,4 +1,5 @@
 package Pegex::Module;
+
 use Pegex::Base;
 
 has parser_class => 'Pegex::Parser';

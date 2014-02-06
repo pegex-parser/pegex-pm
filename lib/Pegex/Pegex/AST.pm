@@ -1,4 +1,5 @@
 package Pegex::Pegex::AST;
+
 use Pegex::Base;
 extends 'Pegex::Tree';
 
