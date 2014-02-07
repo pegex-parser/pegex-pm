@@ -7,16 +7,16 @@ Pegex::Tree::Wrap - Pegex Wrapper Parse Tree Receiver
 =head1 SYNOPSIS
 
     use Pegex;
-    $tree = pegex($grammar, receiver => 'Pegex::Tree::Wrap')->parse($input);
+    $tree = pegex($grammar, 'Pegex::Tree::Wrap')->parse($input);
 
 =head1 DESCRIPTION
 
-L<Pegex::Tree> is receiver class that will shape the captured data from a Pegex
-parse operation into a tree made out of hashes. The keys of the hashes are the
-rule names that matched, and the values are arrays of captured data.
+L<Pegex::Tree::Wrap> is receiver class that will shape the captured data from a
+Pegex parse operation into a tree made out of hashes. The keys of the hashes
+are the rule names that matched, and the values are arrays of captured data.
 
 This module is not often used as a receiver base class, but it is the default
-receiver for a Pegex parse. That's because the tree is very readble with all
+receiver for a Pegex parse. That's because the tree is very readable with all
 the rule keys in it.
 
 =head1 SEE ALSO

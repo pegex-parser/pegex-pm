@@ -11,7 +11,7 @@ or with options:
 
     use Pegex;
     use ReceiverClass;
-    my $parser = pegex($grammar, receiver => 'ReceiverClass');
+    my $parser = pegex($grammar, 'ReceiverClass');
     my $result = $parser->parse($input);
 
 or more explicitly:
@@ -73,9 +73,9 @@ The `Pegex.pm` module itself (this module) is just a trivial way to use the
 Pegex framework. It is only intended for the simplest of uses.
 
 This module exports a single function, `pegex`, which takes a Pegex grammar
-string as input. You may also pass named parameters after the grammar.
+string as input. You may also pass a receiver class name after the grammar.
 
-    my $parser = pegex($grammar, receiver => 'MyReceiver');
+    my $parser = pegex($grammar, 'MyReceiver');
 
 The `pegex` function returns a [Pegex::Parser](http://search.cpan.org/perldoc?Pegex::Parser) object, on which you would
 typically call the `parse()` method, which (on success) will return a data

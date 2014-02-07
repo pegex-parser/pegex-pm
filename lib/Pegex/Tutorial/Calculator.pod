@@ -149,7 +149,7 @@ Our runner code looks like this:
 
     sub calc {
         my $expr = shift;
-        my $calculator = pegex($grammar, receiver => 'Calculator');
+        my $calculator = pegex($grammar, 'Calculator');
         my $result = eval { $calculator->parse($expr) };
         print $@ || "$expr = $result\n";
     }
@@ -234,7 +234,7 @@ changed the runner code to look like this:
 
     sub calc {
         my $expr = shift;
-        my $calculator = pegex($grammar, receiver => 'Calculator');
+        my $calculator = pegex($grammar, 'Calculator');
         my $rpn = eval { $calculator->parse($expr) };
         my $result = RPN::evaluate($rpn);
         print $@ || "$expr = $result\n";

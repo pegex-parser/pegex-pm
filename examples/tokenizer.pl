@@ -32,6 +32,4 @@ expr: token+
 token: /~(<WORD>+)~/
 ...
 
-XXX pegex($grammar, receiver => 'TokenReceiver')->parse("LOVE true hate FALSE");
-
-
+XXX pegex($grammar, 'TokenReceiver')->parse("LOVE true hate FALSE");

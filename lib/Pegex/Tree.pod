@@ -7,7 +7,7 @@ Pegex::Tree - Pegex Parse Tree Receiver
 =head1 SYNOPSIS
 
     use Pegex;
-    $tree = pegex($grammar, receiver => 'Pegex::Tree')->parse($input);
+    $tree = pegex($grammar, 'Pegex::Tree')->parse($input);
 
 =head1 DESCRIPTION
 
