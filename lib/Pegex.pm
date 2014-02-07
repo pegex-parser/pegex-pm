@@ -5,7 +5,6 @@ package Pegex;
 use Pegex::Parser;
 use Pegex::Grammar;
 
-# VERSION
 # ABSTRACT: Acmeist PEG Parsing Framework 
 
 use Exporter 'import';

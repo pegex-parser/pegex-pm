@@ -1,4 +1,10 @@
 ---
+version: 0.24
+date:    Thu Feb  6 22:56:23 PST 2014
+changes:
+- tweak some dzil settings
+
+---
 version: 0.23
 date:    Thu Feb  6 17:16:39 PST 2014
 changes:
