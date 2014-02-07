@@ -64,7 +64,8 @@ achieve a task.
 The L<Pegex> module exports a function called C<pegex> that you can use for
 smaller tasks. Here is an example:
 
-    use Pegex; use YAML;
+    use Pegex;
+    use YAML;
 
     $grammar = "
     expr: num PLUS num
@@ -91,7 +92,7 @@ So how was the data structure created? By the receiver object, of course! But
 we didn't specify one, did we? Nope. It used the default receiver,
 L<Pegex::Tree::Wrap>. We could have said:
 
-    print Dump pegex($grammar, receiver => 'Pegex::Tree::Wrap')->parse('2+2');
+    print Dump pegex($grammar, 'Pegex::Tree::Wrap')->parse('2+2');
 
 This receiver basically generates a mapping, where rule names of matches are
 the keys, and the leaf values are the regex captures.
@@ -99,7 +100,7 @@ the keys, and the leaf values are the regex captures.
 The more basic receiver called L<Pegex::Tree> generates a tree of sequences
 that contain just the data (without the rule names). This code:
 
-    print Dump pegex($grammar, receiver => 'Pegex::Receiver')->parse('2+2');
+    print Dump pegex($grammar, 'Pegex::Tree')->parse('2+2');
 
 would produce:
 
@@ -109,7 +110,7 @@ would produce:
 If we wrote our own receiver class called C<Calculator> like this:
 
     package Calculator;
-    use base 'Pegex.Receiver';
+    use base 'Pegex::Tree';
 
     sub got_expr {
         my ($receiver, $data) = @_;
@@ -119,7 +120,7 @@ If we wrote our own receiver class called C<Calculator> like this:
 
 Then, this:
 
-    print pegex(grammar, receiver => 'Calculator')->parse('2+2');
+    print pegex(grammar, 'Calculator')->parse('2+2');
 
 would print:
 
@@ -220,6 +221,8 @@ separated by commas.
 =item L<Pegex::Receiver>
 
 =item L<Pegex::Tree>
+
+=item L<Pegex::Tree::Wrap>
 
 =item L<Pegex::Input>
 
