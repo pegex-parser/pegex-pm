@@ -6,6 +6,7 @@ use Scalar::Util;
 
 {
     package Pegex::Constant;
+
     our $Null = [];
     our $Dummy = [];
 }
