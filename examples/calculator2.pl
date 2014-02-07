@@ -40,7 +40,7 @@ while (1) {
 
 sub calc {
     my $expr = shift;
-    my $calculator = pegex($grammar, receiver => 'Calculator');
+    my $calculator = pegex($grammar, 'Calculator');
     my $rpn = eval { $calculator->parse($expr) };
     my $result = RPN::evaluate($rpn);
     print $@ || "$expr = $result\n";
