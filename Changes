@@ -1,4 +1,12 @@
 ---
+version: 0.23
+date:    Thu Feb  6 17:16:39 PST 2014
+changes:
+- https://rt.cpan.org/Ticket/Display.html?id=82587
+- Doc and example fixes
+- Add 2014 to all copyrights
+
+---
 version: 0.22
 date:    Wed Feb  5 11:26:05 PST 2014
 changes:
