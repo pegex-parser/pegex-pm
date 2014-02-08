@@ -1,4 +1,10 @@
 ---
+version: 0.25
+date:    Sat Feb  8 14:14:59 PST 2014
+changes:
+- Support 5.8.1+
+
+---
 version: 0.24
 date:    Thu Feb  6 22:56:23 PST 2014
 changes:
