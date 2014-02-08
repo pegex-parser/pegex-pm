@@ -5,12 +5,14 @@ perl:
 - "5.14"
 - "5.12"
 - "5.10"
+- "5.8"
 
 install:
 - git clone --depth=1 --branch=master
   git://github.com/ingydotnet/testml-pm ../testml-pm
-- cpanm --quiet --notest Devel::Cover::Report::Coveralls
-- cpanm --quiet --notest YAML::XS
+- cpanm --quiet --notest
+  YAML::XS
+  Devel::Cover::Report::Coveralls
 
 script:
 - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
