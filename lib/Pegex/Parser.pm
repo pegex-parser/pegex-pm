@@ -38,6 +38,7 @@ has throw_on_error => 1;
 sub parse {
     my ($self, $input, $start) = @_;
     $self->{position} = 0;
+    $self->{farthest} = 0;
 
     if (not UNIVERSAL::isa($input, 'Pegex::Input')) {
         $input = Pegex::Input->new(string => $input);
