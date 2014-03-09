@@ -6,10 +6,81 @@ extends 'Pegex::Compiler';
 
 use Pegex::Grammar::Atoms;
 
+my $grammar = {
+    'TOP' => 'grammar',
+    'grammar' => [
+        '=pegex-start',
+        'meta-section',
+        'rule-section',
+        '=pegex-end',
+    ],
+    'meta-section' => [
+        'meta-directive*',
+    ],
+    'meta-directive' => [
+        '=directive-start',
+        '=directive-value',
+        '=directive-end',
+    ],
+    'rule-section' => [
+        'rule-definition*',
+    ],
+    'rule-definition' => [
+        '=rule-start',
+        '=rule-sep',
+        'rule-group',
+        '=rule-end',
+    ],
+    'rule-group' => [
+        'any-group',
+    ],
+    'any-group' => [
+        '=list-alt?',
+        'all-group',
+        [
+            '=list-alt',
+            'all-group',
+            '*',
+        ],
+    ],
+    'all-group' => [
+        'rule-part+',
+    ],
+    'rule-part' => [
+        'rule-item',
+        ['=list-sep', 'rule-item', '?'],
+    ],
+    'rule-item' => [
+        '|',
+        '=rule-reference',
+        'regular-expression',
+        'bracketed-group',
+        'whitespace-token',
+        '=error-message',
+    ],
+    'regular-expression' => [
+        '=regex-start',
+        [ '!=regex-end', '*' ],
+        '=regex-end',
+    ],
+    'bracketed-group' => [
+        '=group-start',
+        'rule-group',
+        '=group-end',
+    ],
+    'whitespace-token' => [
+        '|',
+        '=whitespace-maybe',
+        '=whitespace-must',
+    ],
+};
+
 sub parse {
     my ($self, $grammar_text) = @_;
 
     my @tokens = $self->lex($grammar_text);
+
+    return $self;
 }
 
 my $ALPHA = 'A-Za-z';
@@ -30,21 +101,21 @@ has regexes => {
         [qr/\A($NAME)(?=$SPACE*\:)/,
             'rule-start'],
         [qr/\A([\:])/,
-            'separator'],
+            'rule-sep'],
         [qr/\A(?:;\s+|$EOL)(?=$NAME$SPACE*\:|\z)/,
             'rule-end'],
 
         [qr/\A(?:\+|\~\~|\-\-)/,
-            'ws2'],
+            'whitespace-must'],
         [qr/\A(?:\-|\~)/,
-            'ws1'],
+            'whitespace-maybe'],
 
         [qr/\A($MOD)?($NAME|<$NAME>)($QUANT)?/,
-            'rule-ref'],
+            'rule-reference'],
         [qr/\A\//,
             'regex-start', 'regex'],
         [qr/\A\`([^\`\n]*?)\`/,
-            'error-msg'],
+            'error-message'],
 
         [qr/\A($GMOD)?\(/,
             'group-start'],
@@ -63,15 +134,15 @@ has regexes => {
     ],
     directive => [
         [qr/\A(\S.*)/,
-            'value'],
+            'directive-value'],
         [qr/\A$EOL/,
             'directive-end', 'end']
     ],
     regex => [
         [qr/\A(?:\+|\~\~|\-\-)/,
-            'ws2'],
+            'whitespace-must'],
         [qr/\A(?:\-|~)/,
-            'ws1'],
+            'whitespace-maybe'],
         [qr/\A([^\s\/]+)/,
             'raw'],
         [qr/\A$SPACE+/],
@@ -89,12 +160,10 @@ sub lex {
     my $pos = 0;
 
     OUTER: while (1) {
-        # XXX $self if $main::x++ > 20;
         my $state = $stack->[-1];
         my $set = $self->{regexes}->{$state} or die "Invalid state '$state'";
         for my $entry (@$set) {
             my ($regex, $name, $scope) = @$entry;
-            YYY $state, $self->phrase($grammar, $pos), $regex;
             if (substr($grammar, $pos) =~ $regex) {
                 $pos += length($&);
                 if ($name) {
@@ -120,14 +189,8 @@ sub lex {
 Failed to lex $state here-->$text
 ...
     }
-    YYY $tokens;
-}
-
-sub phrase {
-    my ($self, $grammar, $pos) = @_;
-    my $text = substr($grammar, $pos, 50);
-    $text =~ s/\n/\\n/g;
-    return $text;
 }
 
 1;
+
+# vim: set lisp:
