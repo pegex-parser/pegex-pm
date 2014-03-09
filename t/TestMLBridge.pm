@@ -6,6 +6,7 @@ use base 'TestML::Bridge';
 use TestML::Util;
 use Pegex;
 use Pegex::Compiler;
+use Pegex::Boot;
 use Pegex::Bootstrap;
 use Pegex::Tree;
 use Pegex::Tree::Wrap;
@@ -24,7 +25,7 @@ sub compile {
 
 sub bootstrap_compile {
     my ($self, $grammar) = @_;
-    my $tree = Pegex::Bootstrap->new->parse($grammar->value)->combinate->tree;
+    my $tree = Pegex::Boot->new->parse($grammar->value)->combinate->tree;
     delete $tree->{'+toprule'};
     delete $tree->{'_'};
     delete $tree->{'__'};
