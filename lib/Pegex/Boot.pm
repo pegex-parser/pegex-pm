@@ -222,12 +222,21 @@ sub got_rule_end {
     my $rule = [];
 
     my $type = 'all';
+    # XXX: dedup this loop.
     while (@$stack and $stack->[-1] ne '(') {
         my $item = pop(@$stack);
         if ($item eq '|') {
             $type = 'any';
         }
+        elsif (not(ref($item)) and $item =~ /^%%?$/) {
+            $rule->[0]{'+eok'} = 1 if $item eq '%%';
+            $self->{separator} = shift(@$rule);
+        }
         else {
+            if ($self->{separator}) {
+                $item->{'.sep'} = $self->{separator};
+                delete $self->{separator};
+            }
             unshift(@$rule, $item)
         }
     }
@@ -263,7 +272,15 @@ sub got_group_end {
         if ($item eq '|') {
             $type = 'any';
         }
+        elsif (not(ref($item)) and $item =~ /^%%?$/) {
+            $rule->[0]{'+eok'} = 1 if $item eq '%%';
+            $self->{separator} = shift(@$rule);
+        }
         else {
+            if ($self->{separator}) {
+                $item->{'.sep'} = $self->{separator};
+                delete $self->{separator};
+            }
             unshift(@$rule, $item)
         }
     }
@@ -295,6 +312,12 @@ sub got_list_alt {
     my ($self, $token) = @_;
     my $stack = $self->{stack};
     push @$stack, '|';
+}
+
+sub got_list_sep {
+    my ($self, $token) = @_;
+    my $stack = $self->{stack};
+    push @$stack, $token->[1];
 }
 
 sub got_rule_reference {
