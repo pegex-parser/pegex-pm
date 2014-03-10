@@ -1,6 +1,7 @@
 %TestML 0.1.0
 
-Plan = 63
+# Plan = 63
+Plan = 51
 
 Label = '$BlockLabel - Compiler output matches bootstrap?'
 *grammar.compile.yaml == *grammar.bootstrap_compile.yaml
@@ -44,6 +45,7 @@ a: ( <b> | /c/ | `d` )
 a: <b> ( <c> | <d> )
 
 === And over Or Precedence
+--- SKIP
 --- grammar
 a: <b> <c> | <d> <e> | <f> % <g>
 
@@ -94,6 +96,7 @@ d: <e> | (<f> <g>) | <h> | ( `i` )
 e: ( <f> )
 
 === Modifiers
+--- SKIP
 --- grammar
 a: !<a> =<b>
 b: ( /c/ <d> )+
@@ -104,6 +107,7 @@ c: ( /c/ <d> )+
 a: /w/ ( <x>+ | <y>* ) <z>?
 
 === Equivalent
+--- SKIP
 --- grammar
 a: <b>
 c: !<d>
@@ -113,6 +117,7 @@ c: !<d>
 a_b: /c/ <d>
 
 === Quantified group
+--- SKIP
 --- grammar
 a: <b> ( <c>* | <d>+ )+
 e: ( <f> !<g> )?

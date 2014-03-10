@@ -1,6 +1,7 @@
 %TestML 0.1.0
 
-Plan = 52
+# Plan = 54
+Plan = 46
 
 *grammar.bootstrap_compile.yaml.clean == *yaml
 *grammar.compile.yaml.clean == *yaml
@@ -28,9 +29,9 @@ b:
 
 === Simple Grammar
 --- grammar
-a: ( b c* )+
+a: ( <b> <c>* )+
 b: /x/
-c: x
+c: <x>
 
 --- yaml
 a:
@@ -46,6 +47,13 @@ c:
 
 === Single Rule Reference
 --- grammar
+a: <x>
+--- yaml
+a:
+  .ref: x
+
+=== Single Rule with no brackets
+--- grammar
 a: x
 --- yaml
 a:
@@ -53,7 +61,7 @@ a:
 
 === Single Rule With Trailing Quantifier
 --- grammar
-a: x*
+a: <x>*
 --- yaml
 a:
   +min: 0
@@ -69,7 +77,7 @@ a:
 
 === Single Rule With Leading Assertion
 --- grammar
-a: =x
+a: =<x>
 --- yaml
 a:
   +asr: 1
@@ -77,7 +85,7 @@ a:
 
 === Negative and Positive Assertion
 --- grammar
-a: !b =c
+a: !<b> =<c>
 --- yaml
 a:
   .all:
@@ -102,7 +110,7 @@ a:
 
 === Skip and Wrap Marker
 --- grammar
-a: .b +c+ -d?
+a: .<b> +<c>+ -<d>?
 --- yaml
 a:
   .all:
@@ -117,7 +125,7 @@ a:
 
 === Unbracketed All Group
 --- grammar
-a: /x/ y
+a: /x/ <y>
 --- yaml
 a:
   .all:
@@ -126,7 +134,7 @@ a:
 
 === Unbracketed Any Group
 --- grammar
-a: /x/ | y | `z`
+a: /x/ | <y> | `z`
 --- yaml
 a:
   .any:
@@ -148,7 +156,7 @@ a:
 
 === Bracketed All Group
 --- grammar
-a: ( x y )
+a: ( <x> <y> )
 --- yaml
 a:
   .all:
@@ -157,7 +165,7 @@ a:
 
 === Bracketed Group With Trailing Modifier
 --- grammar
-a: ( x y )?
+a: ( <x> <y> )?
 --- yaml
 a:
   +max: 1
@@ -167,7 +175,7 @@ a:
 
 === Bracketed Group With Leading Modifier
 --- grammar
-a: .( =x y )
+a: .( =<x> <y> )
 --- yaml
 a:
   -skip: 1
@@ -178,7 +186,7 @@ a:
 
 === Multiple Groups
 --- grammar
-a: ( x y ) ( z | /zzz/ )
+a: ( <x> <y> ) ( <z> | /zzz/ )
 --- yaml
 a:
   .all:
@@ -190,8 +198,9 @@ a:
     - .rgx: zzz
 
 === List Separator
+--- SKIP
 --- grammar
-a: b | c? %% /d/
+a: <b> | <c>? %% /d/
 --- yaml
 a:
   .any:
@@ -203,8 +212,9 @@ a:
       .rgx: d
 
 === Separators with Quantifiers
+--- SKIP
 --- grammar
-a: (b)2+ % c* d* %% (e)2-3
+a: <b>2+ % <c>* <d>* %% <e>2-3
 --- yaml
 a:
   .all:
@@ -222,6 +232,7 @@ a:
       .ref: e
 
 === All Quantifier Forms
+--- SKIP
 --- grammar
 a: <b> <c>? <d>* <e>+ <f>55 <g>5+ <h>5-55
 --- yaml
@@ -244,6 +255,7 @@ a:
     .ref: h
 
 === Whitespace in Regex
+--- SKIP
 --- grammar
 a: /<DOT>* (<DASH>{3})
     <BANG>   <BANG>
