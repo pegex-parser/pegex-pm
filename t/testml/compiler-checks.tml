@@ -1,7 +1,7 @@
 %TestML 0.1.0
 
 # Plan = 54
-Plan = 46
+Plan = 48
 
 *grammar.bootstrap_compile.yaml.clean == *yaml
 *grammar.compile.yaml.clean == *yaml
@@ -232,7 +232,6 @@ a:
       .ref: e
 
 === All Quantifier Forms
---- SKIP
 --- grammar
 a: <b> <c>? <d>* <e>+ <f>55 <g>5+ <h>5-55
 --- yaml

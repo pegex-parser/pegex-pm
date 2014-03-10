@@ -282,17 +282,7 @@ sub got_group_end {
         $rule = $rule->[0];
     }
 
-    if (my $quant = $token->[1]) {
-        if ($quant eq '?') {
-            $rule->{'+max'} = 1;
-        }
-        elsif ($quant eq '*') {
-            $rule->{'+min'} = 0;
-        }
-        elsif ($quant eq '+') {
-            $rule->{'+min'} = 1;
-        }
-    }
+    $self->set_quantity($token->[1], $rule);
 
     if ($gmod eq '.') {
         $rule->{'-skip'} = 1;
@@ -314,35 +304,8 @@ sub got_rule_reference {
     $name =~ s/^<(.*)>$/$1/;
     my $rule = { '.ref' => $name };
 
-    if (my $mod = $token->[1]) {
-        if ($mod eq '=') {
-            $rule->{'+asr'} = 1;
-        }
-        elsif ($mod eq '!') {
-            $rule->{'+asr'} = -1;
-        }
-        elsif ($mod eq '.') {
-            $rule->{'-skip'} = 1;
-        }
-        elsif ($mod eq '+') {
-            $rule->{'-wrap'} = 1;
-        }
-        elsif ($mod eq '-') {
-            $rule->{'-pass'} = 1;
-        }
-    }
-
-    if (my $quant = $token->[3]) {
-        if ($quant eq '?') {
-            $rule->{'+max'} = 1;
-        }
-        elsif ($quant eq '*') {
-            $rule->{'+min'} = 0;
-        }
-        elsif ($quant eq '+') {
-            $rule->{'+min'} = 1;
-        }
-    }
+    $self->set_modifier($token->[1], $rule);
+    $self->set_quantity($token->[3], $rule);
 
     push @{$self->{stack}}, $rule;
 }
@@ -403,7 +366,57 @@ sub got_regex_raw {
     push @$stack, $token->[1];
 }
 
-# for my $method (qw(match_times match_next match_ref match_token match_any match_all)) {
+sub set_quantity {
+    my ($self, $quantity, $rule) = @_;
+    if ($quantity) {
+        if ($quantity eq '?') {
+            $rule->{'+max'} = 1;
+        }
+        elsif ($quantity eq '*') {
+            $rule->{'+min'} = 0;
+        }
+        elsif ($quantity eq '+') {
+            $rule->{'+min'} = 1;
+        }
+        elsif ($quantity =~ /^(\d+)$/) {
+            $rule->{'+min'} = $1;
+            $rule->{'+max'} = $1;
+        }
+        elsif ($quantity =~ /^(\d+)-(\d+)$/) {
+            $rule->{'+min'} = $1;
+            $rule->{'+max'} = $2;
+        }
+        elsif ($quantity =~ /^(\d+)\+$/) {
+            $rule->{'+min'} = $1;
+        }
+    }
+}
+
+sub set_modifier {
+    my ($self, $modifier, $rule) = @_;
+    if ($modifier) {
+        if ($modifier eq '=') {
+            $rule->{'+asr'} = 1;
+        }
+        elsif ($modifier eq '!') {
+            $rule->{'+asr'} = -1;
+        }
+        elsif ($modifier eq '.') {
+            $rule->{'-skip'} = 1;
+        }
+        elsif ($modifier eq '+') {
+            $rule->{'-wrap'} = 1;
+        }
+        elsif ($modifier eq '-') {
+            $rule->{'-pass'} = 1;
+        }
+    }
+}
+
+# DEBUG: wrap/trace parse methods:
+# for my $method (qw(
+#     match_times match_next match_ref match_token match_any match_all
+# )) {
 #     no strict 'refs';
 #     no warnings 'redefine';
 #     my $orig = \&$method;
@@ -419,6 +432,9 @@ sub got_regex_raw {
 #     };
 # }
 
+#------------------------------------------------------------------------------
+# Lexer
+#------------------------------------------------------------------------------
 my $ALPHA = 'A-Za-z';
 my $DIGIT = '0-9';
 my $DASH  = '\-';
