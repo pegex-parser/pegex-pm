@@ -393,7 +393,7 @@ sub got_regex_end {
         }
     } @$list;
 
-    push $stack, {'.rgx' => $regex};
+    push @$stack, {'.rgx' => $regex};
 }
 
 sub got_regex_raw {
