@@ -1,7 +1,6 @@
 %TestML 0.1.0
 
-# Plan = 54
-Plan = 52
+Plan = 54
 
 *grammar.bootstrap_compile.yaml.clean == *yaml
 *grammar.compile.yaml.clean == *yaml
@@ -252,7 +251,6 @@ a:
     .ref: h
 
 === Whitespace in Regex
---- SKIP
 --- grammar
 a: /<DOT>* (<DASH>{3})
     <BANG>   <BANG>

@@ -8,6 +8,9 @@ extends 'Pegex::Compiler';
 
 use Pegex::Grammar::Atoms;
 
+#------------------------------------------------------------------------------
+# The grammar. A DSL data structure. Things with '=' are tokens.
+#------------------------------------------------------------------------------
 has pointer => 0;
 has tokens => [];
 has ast => {};
@@ -76,16 +79,17 @@ has grammar => {
     ],
 };
 
+#------------------------------------------------------------------------------
+# Parser logic:
+#------------------------------------------------------------------------------
 sub parse {
     my ($self, $grammar_text) = @_;
 
     $self->lex($grammar_text);
-    # XXX $self->{tokens};
     $self->{pointer} = 0;
     $self->{tree} = {};
 
-    $self->match_ref('grammar') || XXX $self;
-    # XXX scalar(@{$self->{tokens}}), $self->{pointer};
+    $self->match_ref('grammar') || die "Bootstrap parse failed";
 
     return $self;
 }
@@ -188,6 +192,9 @@ sub match_token {
     return;
 }
 
+#------------------------------------------------------------------------------
+# Receiver/ast-generator methods:
+#------------------------------------------------------------------------------
 sub got_directive_start {
     my ($self, $token) = @_;
     $self->{directive_name} = $token->[1];
@@ -213,42 +220,15 @@ sub got_rule_start {
     my ($self, $token) = @_;
     my $stack = $self->{stack};
     $self->{rule_name} = $token->[1];
+    $self->{tree}{'+toprule'} ||= $token->[1];
     push @$stack, '(';
 }
 
 sub got_rule_end {
     my ($self, $token) = @_;
-    my $stack = $self->{stack};
-    my $rule = [];
 
-    my $type = 'all';
-    # XXX: dedup this loop.
-    while (@$stack and $stack->[-1] ne '(') {
-        my $item = pop(@$stack);
-        if ($item eq '|') {
-            $type = 'any';
-        }
-        elsif (not(ref($item)) and $item =~ /^%%?$/) {
-            $rule->[0]{'+eok'} = 1 if $item eq '%%';
-            $self->{separator} = shift(@$rule);
-        }
-        else {
-            if ($self->{separator}) {
-                $item->{'.sep'} = $self->{separator};
-                delete $self->{separator};
-            }
-            unshift(@$rule, $item)
-        }
-    }
-    die unless @$stack and $stack->[-1] eq '(';
-    pop(@$stack);
+    my ($type, $rule) = $self->process_stack_group;
 
-    if (@$rule > 1) {
-        $rule = { ".$type" => $rule };
-    }
-    else {
-        $rule = $rule->[0];
-    }
     $self->{tree}{$self->{rule_name}} = $rule;
 }
 
@@ -264,46 +244,10 @@ sub got_group_start {
 sub got_group_end {
     my ($self, $token) = @_;
     my $stack = $self->{stack};
-    my $rule = [];
 
-    my $type = 'all';
-    while (@$stack and $stack->[-1] ne '(') {
-        my $item = pop(@$stack);
-        if ($item eq '|') {
-            $type = 'any';
-        }
-        elsif (not(ref($item)) and $item =~ /^%%?$/) {
-            $rule->[0]{'+eok'} = 1 if $item eq '%%';
-            $self->{separator} = shift(@$rule);
-        }
-        else {
-            if ($self->{separator}) {
-                $item->{'.sep'} = $self->{separator};
-                delete $self->{separator};
-            }
-            unshift(@$rule, $item)
-        }
-    }
-    die unless @$stack and $stack->[-1] eq '(';
-    pop(@$stack);
-
-    my $gmod = '';
-    if ($rule->[0] eq '.') {
-        $gmod = shift @$rule;
-    }
-
-    if (@$rule > 1) {
-        $rule = { ".$type" => $rule };
-    }
-    else {
-        $rule = $rule->[0];
-    }
+    my ($type, $rule) = $self->process_stack_group('group');
 
     $self->set_quantity($token->[1], $rule);
-
-    if ($gmod eq '.') {
-        $rule->{'-skip'} = 1;
-    }
 
     push @$stack, $rule;
 }
@@ -389,6 +333,58 @@ sub got_regex_raw {
     push @$stack, $token->[1];
 }
 
+#------------------------------------------------------------------------------
+# Receiver helper methods:
+#------------------------------------------------------------------------------
+sub process_stack_group {
+    my ($self, $group) = @_;
+    my $stack = $self->{stack};
+    my $rule = [];
+    my $type = 'all';
+    while (@$stack and $stack->[-1] ne '(') {
+        my $item = pop(@$stack);
+        if ($item eq '|') {
+            $type = 'any';
+        }
+        elsif (not(ref($item)) and $item =~ /^%%?$/) {
+            $rule->[0]{'+eok'} = 1 if $item eq '%%';
+            $self->{separator} = shift(@$rule);
+        }
+        else {
+            if ($self->{separator}) {
+                $item->{'.sep'} = $self->{separator};
+                delete $self->{separator};
+            }
+            unshift(@$rule, $item)
+        }
+    }
+    die unless @$stack and $stack->[-1] eq '(';
+    pop(@$stack);
+
+    my $gmod;
+    if ($group) {
+        $gmod = '';
+        if ($rule->[0] eq '.') {
+            $gmod = shift @$rule;
+        }
+    }
+
+    if (@$rule > 1) {
+        $rule = { ".$type" => $rule };
+    }
+    else {
+        $rule = $rule->[0];
+    }
+
+    if ($group) {
+        if ($gmod eq '.') {
+            $rule->{'-skip'} = 1;
+        }
+    }
+
+    return ($type, $rule);
+}
+
 sub set_quantity {
     my ($self, $quantity, $rule) = @_;
     if ($quantity) {
@@ -456,7 +452,7 @@ sub set_modifier {
 # }
 
 #------------------------------------------------------------------------------
-# Lexer
+# Lexer logic:
 #------------------------------------------------------------------------------
 my $ALPHA = 'A-Za-z';
 my $DIGIT = '0-9';

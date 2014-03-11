@@ -13,7 +13,6 @@ use Pegex::Tree::Wrap;
 use TestAST;
 use YAML::XS;
 
-# use XXX;
 sub compile {
     my ($self, $grammar) = @_;
     my $tree = Pegex::Compiler->new->parse($grammar->value)->combinate->tree;
