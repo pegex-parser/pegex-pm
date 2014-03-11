@@ -15,7 +15,7 @@ use YAML::XS;
 # use XXX;
 sub compile {
     my ($self, $grammar) = @_;
-    my $tree = Pegex::Compiler->new->parse($grammar->value)->combinate->tree;
+    my $tree = Pegex::Compiler->new->parse($grammar->value)->tree;
     delete $tree->{'+toprule'};
     delete $tree->{'_'};
     delete $tree->{'__'};
@@ -24,7 +24,7 @@ sub compile {
 
 sub bootstrap_compile {
     my ($self, $grammar) = @_;
-    my $tree = Pegex::Bootstrap->new->parse($grammar->value)->combinate->tree;
+    my $tree = Pegex::Bootstrap->new->parse($grammar->value)->tree;
     delete $tree->{'+toprule'};
     delete $tree->{'_'};
     delete $tree->{'__'};
