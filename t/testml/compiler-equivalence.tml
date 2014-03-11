@@ -85,7 +85,7 @@ a: - b + c -
 b: /- cat + dog -/
 --- grammar2
 a: _ b __ c _
-b: /~ cat ~~ dog ~/
+b: /<_> cat <__> dog <_>/
 
 === Regex Combination
 --- SKIP: TODO

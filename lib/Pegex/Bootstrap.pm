@@ -314,9 +314,7 @@ sub got_regex_end {
     my $regex = join '', map {
         if (ref($_)) {
             my $part = $_->{'.ref'};
-            $part eq '__' ? '\s+' :
-            $part eq '_'  ? '\s*' :
-            $part;
+            "<$part>";
         }
         else {
             $_;
@@ -510,9 +508,9 @@ has regexes => {
             'directive-end', 'end']
     ],
     regex => [
-        [qr/\A(?:\+|\~\~|\-\-)(?=\s|\/)/,
+        [qr/\A(?:\+|\~\~|\-\-)(?=[\s\/])/,
             'whitespace-must'],
-        [qr/\A(?:\-|~)(?=\s|\/)/,
+        [qr/\A(?:\-|~)(?=[\s\/])/,
             'whitespace-maybe'],
         [qr/\A([^\s\/]+)/,
             'regex-raw'],
