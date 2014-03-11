@@ -24,7 +24,7 @@ a:
   - .ref: c
   - .ref: _
 b:
-  .rgx: \s*cat\s+dog\s*
+  .rgx: <_>cat<__>dog<_>
 
 === Simple Grammar
 --- grammar
@@ -257,7 +257,7 @@ a: /<DOT>* (<DASH>{3})
    /
 --- yaml
 a:
-  .rgx: \.*(\-{3})!!
+  .rgx: <DOT>*(<DASH>{3})<BANG><BANG>
 
 === Directives
 --- grammar
@@ -300,4 +300,4 @@ a:
 a: / - foo + bar+ -- baz /
 --- yaml
 a:
-  .rgx: \s*foo\s+bar+\s+baz
+  .rgx: <_>foo<__>bar+<__>baz
