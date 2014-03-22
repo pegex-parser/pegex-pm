@@ -1,15 +1,9 @@
 %TestML 0.1.0
 
-Plan = 63
+Plan = 22
 
 Label = '$BlockLabel - Compiler output matches bootstrap?'
 *grammar.compile.yaml == *grammar.bootstrap_compile.yaml
-
-# Label = '$BlockLabel - Compressed grammar compiles the same?'
-# *grammar.compress.compile.yaml == *grammar.compress.compile.yaml
-# 
-# Label = '$BlockLabel - Compressed grammar matches uncompressed?'
-# *grammar.compress.compile.yaml == *grammar.compile.yaml
 
 === Single Regex
 --- grammar
@@ -60,7 +54,6 @@ b: /x/
 c: /y+/
 
 === Semicolons OK
---- SKIP
 --- grammar
 a: <b>;
 b: <c>
@@ -76,7 +69,6 @@ b: <c> | <d>
 a: !<b> <c>
 
 === Multiline
---- SKIP
 --- grammar
 a: <b>
    <c>
@@ -120,7 +112,25 @@ a_b: /c/ <d>
 a: <b> ( <c>* | <d>+ )+
 e: ( <f> !<g> )?
 
-=== Failures to test later
+=== Multiple Regex
 --- grammar
 b: ( /x/ )+
 
+# XXX The \\# looks lie a testml bug. Should only need \#.
+=== Comments
+--- grammar
+\\# line comment
+
+a: b    # end of line comment
+
+b: /
+
+    foo  # regex comment
+
+    # regex line comment
+
+    bar
+
+    # regex line comment
+
+/

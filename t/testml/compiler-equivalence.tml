@@ -2,7 +2,7 @@
 
 Plan = 18
 
-# *grammar1.compile.yaml == *grammar2.compile.yaml
+*grammar1.compile.yaml == *grammar2.compile.yaml
 *grammar1.bootstrap_compile.yaml == *grammar2.bootstrap_compile.yaml
 
 === Simple Test Case
@@ -71,39 +71,10 @@ a_a: b_b+ c_c
 b-b: c-c_c /d/
 c_c_c: e
 
-=== Token Per Line
---- SKIP: TODO
---- grammar1
-a: /b/
---- grammar2
-a
-:
-/b/
-
 === Whitespace Tokens
 --- grammar1
 a: - b + c -
 b: /- cat + dog -/
 --- grammar2
-a: _ b __ c _
+a: _ b -- c _
 b: /<_> cat <__> dog <_>/
-
-=== Regex Combination
---- SKIP: TODO
---- grammar1: a: /b/ /c/
---- grammar2: a: /bc/
-
-=== Regex Combination by Reference
---- SKIP: TODO
---- grammar1
-a: b /c/
-b: /b/
---- grammar2: a: /bc/
-
-=== Multiple Rules Names per Definition
---- SKIP: TODO
---- grammar1
-a b: /O HAI/
---- grammar2
-a: /O HAI/
-b: /O HAI/

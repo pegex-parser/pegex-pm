@@ -1,6 +1,6 @@
 %TestML 0.1.0
 
-Plan = 60
+Plan = 62
 
 Label = "$BlockLabel (bootstrap compile)"
 *grammar.bootstrap_compile.yaml.clean == *yaml
@@ -76,7 +76,6 @@ a:
   - .ref: z
 
 === Complex All/Any Precedence
---- SKIP
 --- grammar
 a: b c | ( d | e | f % g h ) i
 --- yaml

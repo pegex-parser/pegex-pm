@@ -221,8 +221,10 @@ sub got_directive_value {
 sub got_rule_start {
     my ($self, $token) = @_;
     $self->{stack} = [];
-    $self->{rule_name} = $token->[1];
-    $self->{tree}{'+toprule'} ||= $self->{rule_name};
+    my $rule_name = $token->[1];
+    $rule_name =~ s/-/_/g;
+    $self->{rule_name} = $rule_name;
+    $self->{tree}{'+toprule'} ||= $rule_name;
     $self->{groups} = [[0, ':']];
 }
 
@@ -257,6 +259,7 @@ sub got_list_sep {
 sub got_rule_reference {
     my ($self, $token) = @_;
     my $name = $token->[2];
+    $name =~ s/-/_/g;
     $name =~ s/^<(.*)>$/$1/;
     my $rule = { '.ref' => $name };
     $self->set_modifier($token->[1], $rule);
@@ -306,65 +309,43 @@ sub got_regex_raw {
 #------------------------------------------------------------------------------
 # Receiver helper methods:
 #------------------------------------------------------------------------------
-
-# TODO Need to process group forwards instead of backwards
 sub group_ast {
     my ($self) = @_;
     my ($offset, $gmod) = @{pop $self->{groups}};
     $gmod ||= '';
-    my $group = [splice(@{$self->{stack}}, $offset)];
-    my $rule = [];
-    my $type = 'all';
-    if (@$group and $group->[0] eq '|') {
-        $type = 'any';
-        shift @$group;
+    my $rule = [splice(@{$self->{stack}}, $offset)];
+
+    for (my $i = 0; $i < @$rule-1; $i++) {
+        if ($rule->[$i + 1] =~ /^%%?$/) {
+            my $sep = splice @$rule, $i+1, 1;
+            $rule->[$i]->{'.sep'} = splice @$rule, $i+1, 1;
+            $rule->[$i]->{'.sep'}{'+eok'} = 1 if $sep eq '%%';
+        }
     }
-    while (@$group) {
-        # YYY [$type, $group, $rule];
-        my $item = shift(@$group);
-        if ($type eq 'all') {
-            if ($item eq '|') {
-                $rule = [{ ".all" => $rule }]
-                    if @$rule > 1;
-                unshift @$group, $item;
-                $type = 'any';
-            }
-            elsif (not(ref($item)) and $item =~ /^%%?$/) {
-                my $left = $rule->[-1];
-                if (ref $left eq 'HASH') {
-                    $left = $left->{'.any'} || $left->{'.all'} || $left;
-                }
-                $left = $left->[-1] if ref($left) eq 'ARRAY';
-                $left->{'.sep'} = shift @$group;
-                $left->{'.sep'}{'+eok'} = 1 if $item eq '%%';
-            }
-            else {
-                push @$rule, $item;
-            }
+    my $started = 0;
+    for (
+        my $i = (@$rule and $rule->[0] eq '|') ? 1 : 0;
+        $i < @$rule-1;
+        $i++
+    ) {
+        next if $rule->[$i] eq '|';
+        if ($rule->[$i+1] eq '|') {
+            $i++;
+            $started = 0;
         }
         else {
-            if ($item eq '|') {
-                push @$rule, shift(@$group);
-            }
-            else {
-                $rule = [{ ".any" => $rule }]
-                    if @$rule > 1;
-                unshift @$group, $item;
-                $type = 'all';
-            }
+            $rule->[$i] = {'.all' => [$rule->[$i]]}
+                unless $started++;
+            push @{$rule->[$i]{'.all'}}, splice @$rule, $i+1, 1;
+            $i--
         }
     }
-
-    if (@$rule > 1) {
-        $rule = { ".$type" => $rule };
-    }
-    else {
-        $rule = $rule->[0];
+    if (grep {$_ eq '|'} @$rule) {
+        $rule = [{'.any' => [ grep {$_ ne '|'} @$rule ]}];
     }
 
-    if ($gmod eq '.') {
-        $rule->{'-skip'} = 1;
-    }
+    $rule = $rule->[0] if @$rule <= 1;
+    $rule->{'-skip'} = 1 if $gmod eq '.';
 
     return $rule;
 }
@@ -443,24 +424,31 @@ my $DIGIT = '0-9';
 my $DASH  = '\-';
 my $SEMI  = '\;';
 my $UNDER  = '\_';
-my $WORD  = "$DASH$UNDER$ALPHA$DIGIT";
-my $SPACE = '(?:[\ \t]|\#.*\n)';
+my $HASH  = '\#';
 my $EOL   = '\n';
+my $WORD  = "$DASH$UNDER$ALPHA$DIGIT";
+my $SPACE = "(?:[\ \t]|$HASH.*$EOL)";
 my $MOD   = '[\!\=\-\+\.]';
 my $GMOD  = '[\.]';
 my $QUANT = '(?:[\?\*\+]|\d+(?:\+|\-\d+)?)';
-my $NAME  = "[$ALPHA](?:[$WORD]*[$ALPHA$DIGIT])?";
+my $NAME  = "[$UNDER$ALPHA](?:[$WORD]*[$ALPHA$DIGIT])?";
+my $REM   = "(?:$SPACE+|$EOL+)";
 has regexes => {
     pegex => [
         [qr/\A%(grammar|version|extends|include)$SPACE+/,
             'directive-start', 'directive'],
 
         [qr/\A($NAME)(?=$SPACE*\:)/,
-            'rule-start'],
+            'rule-start', 'rule'],
+
+        [qr/\A$REM/],
+
+        [qr/\A\z/,
+            'pegex-end', 'end'],
+    ],
+    rule => [
         [qr/\A\:/,
             'rule-sep'],
-        [qr/\A(?:$SEMI$SPACE+|$EOL)(?=$NAME$SPACE*\:|\z)/,
-            'rule-end'],
 
         [qr/\A(?:\+|\~\~|\-\-)(?=\s)/,
             'whitespace-must'],
@@ -483,11 +471,10 @@ has regexes => {
         [qr/\A(\%\%?)/,
             'list-sep'],
 
-        [qr/\A$SPACE+/],
-        [qr/\A$EOL+/],
+        [qr/\A(?:$SEMI$SPACE*$EOL?|\s*$EOL)(?=$NAME$SPACE*\:|\z)/,
+            'rule-end', 'end'],
 
-        [qr/\A\z/,
-            'pegex-end', 'end'],
+        [qr/\A$REM/],
     ],
     directive => [
         [qr/\A(\S.*)/,
@@ -506,6 +493,7 @@ has regexes => {
         [qr/\A$EOL+/],
         [qr/\A\//,
             'regex-end', 'end'],
+        [qr/\A$REM/],
     ],
 };
 
