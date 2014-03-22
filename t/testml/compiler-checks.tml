@@ -1,8 +1,11 @@
 %TestML 0.1.0
 
-Plan = 54
+Plan = 60
 
+Label = "$BlockLabel (bootstrap compile)"
 *grammar.bootstrap_compile.yaml.clean == *yaml
+
+Label = "$BlockLabel (pegex compile)"
 *grammar.compile.yaml.clean == *yaml
 
 === Empty Grammar
@@ -10,27 +13,11 @@ Plan = 54
 --- yaml
 {}
 
-=== Whitespace Tokens
---- grammar
-a: - b+ + c -
-b: /- cat + dog -/
---- yaml
-a:
-  .all:
-  - .ref: _
-  - +min: 1
-    .ref: b
-  - .ref: __
-  - .ref: c
-  - .ref: _
-b:
-  .rgx: <_>cat<__>dog<_>
-
 === Simple Grammar
 --- grammar
-a: ( <b> <c>* )+
+a: ( b c* )+
 b: /x/
-c: <x>
+c: x
 
 --- yaml
 a:
@@ -46,21 +33,72 @@ c:
 
 === Single Rule Reference
 --- grammar
-a: <x>
---- yaml
-a:
-  .ref: x
-
-=== Single Rule with no brackets
---- grammar
 a: x
 --- yaml
 a:
   .ref: x
 
+=== Single Rule brackets
+--- grammar
+a: <x>
+--- yaml
+a:
+  .ref: x
+
+=== All Rules
+--- grammar
+a: x y z
+--- yaml
+a:
+  .all:
+  - .ref: x
+  - .ref: y
+  - .ref: z
+
+=== Any Rules
+--- grammar
+a: x | y | z
+--- yaml
+a:
+  .any:
+  - .ref: x
+  - .ref: y
+  - .ref: z
+
+=== Any Rules with Leading Pipe
+--- grammar
+a: | x | y | z
+--- yaml
+a:
+  .any:
+  - .ref: x
+  - .ref: y
+  - .ref: z
+
+=== Complex All/Any Precedence
+--- SKIP
+--- grammar
+a: b c | ( d | e | f % g h ) i
+--- yaml
+a:
+  .any:
+  - .all:
+    - .ref: b
+    - .ref: c
+  - .all:
+    - .any:
+      - .ref: d
+      - .ref: e
+      - .all:
+        - .ref: f
+          .sep:
+            .ref: g
+        - .ref: h
+    - .ref: i
+
 === Single Rule With Trailing Quantifier
 --- grammar
-a: <x>*
+a: x*
 --- yaml
 a:
   +min: 0
@@ -76,7 +114,7 @@ a:
 
 === Single Rule With Leading Assertion
 --- grammar
-a: =<x>
+a: =x
 --- yaml
 a:
   +asr: 1
@@ -84,7 +122,7 @@ a:
 
 === Negative and Positive Assertion
 --- grammar
-a: !<b> =<c>
+a: !b =c
 --- yaml
 a:
   .all:
@@ -109,7 +147,7 @@ a:
 
 === Skip and Wrap Marker
 --- grammar
-a: .<b> +<c>+ -<d>?
+a: .b +c+ -d?
 --- yaml
 a:
   .all:
@@ -124,7 +162,7 @@ a:
 
 === Unbracketed All Group
 --- grammar
-a: /x/ <y>
+a: /x/ y
 --- yaml
 a:
   .all:
@@ -133,7 +171,7 @@ a:
 
 === Unbracketed Any Group
 --- grammar
-a: /x/ | <y> | `z`
+a: /x/ | y | `z`
 --- yaml
 a:
   .any:
@@ -155,7 +193,7 @@ a:
 
 === Bracketed All Group
 --- grammar
-a: ( <x> <y> )
+a: ( x y )
 --- yaml
 a:
   .all:
@@ -164,7 +202,7 @@ a:
 
 === Bracketed Group With Trailing Modifier
 --- grammar
-a: ( <x> <y> )?
+a: ( x y )?
 --- yaml
 a:
   +max: 1
@@ -174,7 +212,7 @@ a:
 
 === Bracketed Group With Leading Modifier
 --- grammar
-a: .( =<x> <y> )
+a: .( =x y )
 --- yaml
 a:
   -skip: 1
@@ -185,7 +223,7 @@ a:
 
 === Multiple Groups
 --- grammar
-a: ( <x> <y> ) ( <z> | /zzz/ )
+a: ( x y ) ( z | /zzz/ )
 --- yaml
 a:
   .all:
@@ -198,7 +236,7 @@ a:
 
 === List Separator
 --- grammar
-a: <b> | <c>? %% /d/
+a: b | c? %% /d/
 --- yaml
 a:
   .any:
@@ -211,7 +249,7 @@ a:
 
 === Separators with Quantifiers
 --- grammar
-a: <b>2+ % <c>* <d>* %% <e>2-3
+a: <b>2+ % c* d* %% <e>2-3
 --- yaml
 a:
   .all:
@@ -230,7 +268,7 @@ a:
 
 === All Quantifier Forms
 --- grammar
-a: <b> <c>? <d>* <e>+ <f>55 <g>5+ <h>5-55
+a: b c? d* e+ <f>55 <g>5+ <h>5-55
 --- yaml
 a:
   .all:
@@ -250,6 +288,22 @@ a:
     +min: 5
     .ref: h
 
+=== Whitespace Tokens
+--- grammar
+a: - b+ + c -
+b: /- cat + dog -/
+--- yaml
+a:
+  .all:
+  - .ref: _
+  - +min: 1
+    .ref: b
+  - .ref: __
+  - .ref: c
+  - .ref: _
+b:
+  .rgx: <_>cat<__>dog<_>
+
 === Whitespace in Regex
 --- grammar
 a: /<DOT>* (<DASH>{3})
@@ -258,6 +312,14 @@ a: /<DOT>* (<DASH>{3})
 --- yaml
 a:
   .rgx: <DOT>*(<DASH>{3})<BANG><BANG>
+
+# Drop support for --
+=== Dash and Plus as whitespace tokens
+--- grammar
+a: / - foo + bar+ -- baz /
+--- yaml
+a:
+  .rgx: <_>foo<__>bar+<__>baz
 
 === Directives
 --- grammar
@@ -294,10 +356,3 @@ a: /b/
 +version: 1.1.1
 a:
   .rgx: b
-
-=== Dash and Plus as whitespace tokens
---- grammar
-a: / - foo + bar+ -- baz /
---- yaml
-a:
-  .rgx: <_>foo<__>bar+<__>baz

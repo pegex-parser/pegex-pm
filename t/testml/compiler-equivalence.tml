@@ -1,8 +1,9 @@
 %TestML 0.1.0
 
-Plan = 9
+Plan = 18
 
-*grammar1.compile.yaml == *grammar2.compile.yaml
+# *grammar1.compile.yaml == *grammar2.compile.yaml
+*grammar1.bootstrap_compile.yaml == *grammar2.bootstrap_compile.yaml
 
 === Simple Test Case
 --- grammar1

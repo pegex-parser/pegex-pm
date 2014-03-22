@@ -12,6 +12,7 @@ use Pegex::Grammar::Atoms;
 # The grammar. A DSL data structure. Things with '=' are tokens.
 #------------------------------------------------------------------------------
 has pointer => 0;
+has groups => [];
 has tokens => [];
 has ast => {};
 has stack => [];
@@ -134,12 +135,12 @@ sub match_times {
         $quantity eq '+' ? (1, 0) : die "Bad quantity '$quantity'";
     my $stop = $max || 9999;
     my $count = 0;
-    my $position = $self->{position};
+    my $pointer = $self->{pointer};
     while ($stop-- and $self->$method(@args)) {
         $count++;
     }
     return 1 if $count >= $min and (not $max or $count <= $max);
-    $self->{position} = $position;
+    $self->{pointer} = $pointer;
     return;
 }
 
@@ -184,6 +185,7 @@ sub match_token {
         $token_got =~ s/-/_/g;
         my $method = "got_$token_got";
         if ($self->can($method)) {
+            # say $method;
             $self->$method($token);
         }
         $self->{pointer}++;
@@ -218,99 +220,72 @@ sub got_directive_value {
 
 sub got_rule_start {
     my ($self, $token) = @_;
-    my $stack = $self->{stack};
+    $self->{stack} = [];
     $self->{rule_name} = $token->[1];
-    $self->{tree}{'+toprule'} ||= $token->[1];
-    push @$stack, '(';
+    $self->{tree}{'+toprule'} ||= $self->{rule_name};
+    $self->{groups} = [[0, ':']];
 }
 
 sub got_rule_end {
-    my ($self, $token) = @_;
-
-    my ($type, $rule) = $self->process_stack_group;
-
-    $self->{tree}{$self->{rule_name}} = $rule;
+    my ($self) = @_;
+    $self->{tree}{$self->{rule_name}} = $self->group_ast;
 }
 
 sub got_group_start {
     my ($self, $token) = @_;
-    my $stack = $self->{stack};
-    push @$stack, '(';
-    if (my $gmod = $token->[1]) {
-        push @$stack, $gmod;
-    }
+    my $gmod = $token->[1];
+    push @{$self->{groups}}, [scalar(@{$self->{stack}}), $token->[1]];
 }
 
 sub got_group_end {
     my ($self, $token) = @_;
-    my $stack = $self->{stack};
-
-    my ($type, $rule) = $self->process_stack_group('group');
-
+    my $rule = $self->group_ast;
     $self->set_quantity($token->[1], $rule);
-
-    push @$stack, $rule;
+    push @{$self->{stack}}, $rule;
 }
 
 sub got_list_alt {
-    my ($self, $token) = @_;
-    my $stack = $self->{stack};
-    push @$stack, '|';
+    my ($self) = @_;
+    push @{$self->{stack}}, '|';
 }
 
 sub got_list_sep {
     my ($self, $token) = @_;
-    my $stack = $self->{stack};
-    push @$stack, $token->[1];
+    push @{$self->{stack}}, $token->[1];
 }
 
 sub got_rule_reference {
     my ($self, $token) = @_;
-    my $stack = $self->{stack};
     my $name = $token->[2];
     $name =~ s/^<(.*)>$/$1/;
     my $rule = { '.ref' => $name };
-
     $self->set_modifier($token->[1], $rule);
     $self->set_quantity($token->[3], $rule);
-
     push @{$self->{stack}}, $rule;
 }
 
 sub got_error_message {
     my ($self, $token) = @_;
-    my $stack = $self->{stack};
-    my $rule = { '.err' => $token->[1] };
-
-    push @{$self->{stack}}, $rule;
+    push @{$self->{stack}}, { '.err' => $token->[1] };
 }
 
 sub got_whitespace_maybe {
-    my ($self, $token) = @_;
+    my ($self) = @_;
     $self->got_rule_reference(['whitespace-maybe', undef, '_', undef]);
 }
 
 sub got_whitespace_must {
-    my ($self, $token) = @_;
+    my ($self) = @_;
     $self->got_rule_reference(['whitespace-maybe', undef, '__', undef]);
 }
 
 sub got_regex_start {
-    my ($self, $token) = @_;
-    my $stack = $self->{stack};
-    push @$stack, '/';
+    my ($self) = @_;
+    push @{$self->{groups}}, [scalar(@{$self->{stack}}), '/'];
 }
 
 sub got_regex_end {
-    my ($self, $token) = @_;
-    my $stack = $self->{stack};
-    my $list = [];
-
-    unshift(@$list, pop(@$stack))
-        while @$stack and $stack->[-1] ne '/';
-    die unless @$stack and $stack->[-1] eq '/';
-    pop(@$stack);
-
+    my ($self) = @_;
     my $regex = join '', map {
         if (ref($_)) {
             my $part = $_->{'.ref'};
@@ -319,51 +294,64 @@ sub got_regex_end {
         else {
             $_;
         }
-    } @$list;
-
-    push @$stack, {'.rgx' => $regex};
+    } splice(@{$self->{stack}}, (pop $self->{groups})->[0]);
+    push @{$self->{stack}}, {'.rgx' => $regex};
 }
 
 sub got_regex_raw {
     my ($self, $token) = @_;
-    my $stack = $self->{stack};
-
-    push @$stack, $token->[1];
+    push @{$self->{stack}}, $token->[1];
 }
 
 #------------------------------------------------------------------------------
 # Receiver helper methods:
 #------------------------------------------------------------------------------
-sub process_stack_group {
-    my ($self, $group) = @_;
-    my $stack = $self->{stack};
+
+# TODO Need to process group forwards instead of backwards
+sub group_ast {
+    my ($self) = @_;
+    my ($offset, $gmod) = @{pop $self->{groups}};
+    $gmod ||= '';
+    my $group = [splice(@{$self->{stack}}, $offset)];
     my $rule = [];
     my $type = 'all';
-    while (@$stack and $stack->[-1] ne '(') {
-        my $item = pop(@$stack);
-        if ($item eq '|') {
-            $type = 'any';
-        }
-        elsif (not(ref($item)) and $item =~ /^%%?$/) {
-            $rule->[0]{'+eok'} = 1 if $item eq '%%';
-            $self->{separator} = shift(@$rule);
+    if (@$group and $group->[0] eq '|') {
+        $type = 'any';
+        shift @$group;
+    }
+    while (@$group) {
+        # YYY [$type, $group, $rule];
+        my $item = shift(@$group);
+        if ($type eq 'all') {
+            if ($item eq '|') {
+                $rule = [{ ".all" => $rule }]
+                    if @$rule > 1;
+                unshift @$group, $item;
+                $type = 'any';
+            }
+            elsif (not(ref($item)) and $item =~ /^%%?$/) {
+                my $left = $rule->[-1];
+                if (ref $left eq 'HASH') {
+                    $left = $left->{'.any'} || $left->{'.all'} || $left;
+                }
+                $left = $left->[-1] if ref($left) eq 'ARRAY';
+                $left->{'.sep'} = shift @$group;
+                $left->{'.sep'}{'+eok'} = 1 if $item eq '%%';
+            }
+            else {
+                push @$rule, $item;
+            }
         }
         else {
-            if ($self->{separator}) {
-                $item->{'.sep'} = $self->{separator};
-                delete $self->{separator};
+            if ($item eq '|') {
+                push @$rule, shift(@$group);
             }
-            unshift(@$rule, $item)
-        }
-    }
-    die unless @$stack and $stack->[-1] eq '(';
-    pop(@$stack);
-
-    my $gmod;
-    if ($group) {
-        $gmod = '';
-        if ($rule->[0] eq '.') {
-            $gmod = shift @$rule;
+            else {
+                $rule = [{ ".any" => $rule }]
+                    if @$rule > 1;
+                unshift @$group, $item;
+                $type = 'all';
+            }
         }
     }
 
@@ -374,13 +362,11 @@ sub process_stack_group {
         $rule = $rule->[0];
     }
 
-    if ($group) {
-        if ($gmod eq '.') {
-            $rule->{'-skip'} = 1;
-        }
+    if ($gmod eq '.') {
+        $rule->{'-skip'} = 1;
     }
 
-    return ($type, $rule);
+    return $rule;
 }
 
 sub set_quantity {
@@ -455,11 +441,13 @@ sub set_modifier {
 my $ALPHA = 'A-Za-z';
 my $DIGIT = '0-9';
 my $DASH  = '\-';
-my $WORD  = "${DASH}_$ALPHA$DIGIT";
-my $SPACE = '[\ \t]';
+my $SEMI  = '\;';
+my $UNDER  = '\_';
+my $WORD  = "$DASH$UNDER$ALPHA$DIGIT";
+my $SPACE = '(?:[\ \t]|\#.*\n)';
 my $EOL   = '\n';
 my $MOD   = '[\!\=\-\+\.]';
-my $GMOD  = '\.';
+my $GMOD  = '[\.]';
 my $QUANT = '(?:[\?\*\+]|\d+(?:\+|\-\d+)?)';
 my $NAME  = "[$ALPHA](?:[$WORD]*[$ALPHA$DIGIT])?";
 has regexes => {
@@ -471,7 +459,7 @@ has regexes => {
             'rule-start'],
         [qr/\A\:/,
             'rule-sep'],
-        [qr/\A(?:;\s+|$EOL)(?=$NAME$SPACE*\:|\z)/,
+        [qr/\A(?:$SEMI$SPACE+|$EOL)(?=$NAME$SPACE*\:|\z)/,
             'rule-end'],
 
         [qr/\A(?:\+|\~\~|\-\-)(?=\s)/,
@@ -538,6 +526,8 @@ sub lex {
                 if ($name) {
                     no strict 'refs';
                     my @captures = map $$_, 1..$#+;
+                    pop @captures
+                        while @captures and not defined $captures[-1];
                     push @$tokens, [$name, @captures];
                     if ($scope) {
                         if ($scope eq 'end') {

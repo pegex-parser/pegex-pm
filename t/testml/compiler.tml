@@ -5,11 +5,11 @@ Plan = 63
 Label = '$BlockLabel - Compiler output matches bootstrap?'
 *grammar.compile.yaml == *grammar.bootstrap_compile.yaml
 
-Label = '$BlockLabel - Compressed grammar compiles the same?'
-*grammar.compress.compile.yaml == *grammar.compress.compile.yaml
-
-Label = '$BlockLabel - Compressed grammar matches uncompressed?'
-*grammar.compress.compile.yaml == *grammar.compile.yaml
+# Label = '$BlockLabel - Compressed grammar compiles the same?'
+# *grammar.compress.compile.yaml == *grammar.compress.compile.yaml
+# 
+# Label = '$BlockLabel - Compressed grammar matches uncompressed?'
+# *grammar.compress.compile.yaml == *grammar.compile.yaml
 
 === Single Regex
 --- grammar
@@ -60,6 +60,7 @@ b: /x/
 c: /y+/
 
 === Semicolons OK
+--- SKIP
 --- grammar
 a: <b>;
 b: <c>
@@ -75,6 +76,7 @@ b: <c> | <d>
 a: !<b> <c>
 
 === Multiline
+--- SKIP
 --- grammar
 a: <b>
    <c>
