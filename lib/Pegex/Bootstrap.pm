@@ -431,7 +431,7 @@ my $SPACE = "(?:[\ \t]|$HASH.*$EOL)";
 my $MOD   = '[\!\=\-\+\.]';
 my $GMOD  = '[\.]';
 my $QUANT = '(?:[\?\*\+]|\d+(?:\+|\-\d+)?)';
-my $NAME  = "[$UNDER$ALPHA](?:[$WORD]*[$ALPHA$DIGIT])?";
+my $NAME  = "$UNDER?[$UNDER$ALPHA](?:[$WORD]*[$ALPHA$DIGIT])?";
 my $REM   = "(?:$SPACE+|$EOL+)";
 has regexes => {
     pegex => [
@@ -446,11 +446,12 @@ has regexes => {
         [qr/\A\z/,
             'pegex-end', 'end'],
     ],
+
     rule => [
         [qr/\A\:/,
             'rule-sep'],
 
-        [qr/\A(?:\+|\~\~|\-\-)(?=\s)/,
+        [qr/\A(?:\+|\~\~)(?=\s)/,
             'whitespace-must'],
         [qr/\A(?:\-|\~)(?=\s)/,
             'whitespace-maybe'],
@@ -476,12 +477,14 @@ has regexes => {
 
         [qr/\A$REM/],
     ],
+
     directive => [
         [qr/\A(\S.*)/,
             'directive-value'],
         [qr/\A$EOL/,
             'directive-end', 'end']
     ],
+
     regex => [
         [qr/\A(?:\+|\~\~|\-\-)(?=[\s\/])/,
             'whitespace-must'],

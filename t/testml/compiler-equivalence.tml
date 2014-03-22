@@ -76,5 +76,5 @@ c_c_c: e
 a: - b + c -
 b: /- cat + dog -/
 --- grammar2
-a: _ b -- c _
+a: _ b __ c _
 b: /<_> cat <__> dog <_>/
