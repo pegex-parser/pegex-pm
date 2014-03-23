@@ -100,6 +100,7 @@ sub parse {
         WWW splice @$tokens, $far, 9;
         die "Bootstrap parse failed";
     };
+    # XXX $self->{tree};
 
     return $self;
 }
@@ -297,7 +298,7 @@ sub got_whitespace_must {
 sub got_quoted_regex {
     my ($self, $token) = @_;
     my $regex = $token->[1];
-    $regex =~ s/([^\w])/\\$1/g;
+    $regex =~ s/([^\w\`\%\:\<\/])/\\$1/g;
     push @{$self->{stack}}, { '.rgx' => $regex };
 }
 
@@ -313,7 +314,7 @@ sub got_regex_end {
             my $part;
             if ($part = $_->{'.rgx'}) {
                 $part;
-                }
+            }
             elsif ($part = $_->{'.ref'}) {
                 "<$part>";
             }
@@ -325,6 +326,7 @@ sub got_regex_end {
             $_;
         }
     } splice(@{$self->{stack}}, (pop $self->{groups})->[0]);
+    $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
     push @{$self->{stack}}, {'.rgx' => $regex};
 }
 
@@ -519,11 +521,13 @@ has regexes => {
     ],
 
     regex => [
-        [qr/\A(?:\+|\~\~|\-\-)(?=[\s\/])/,
+        [qr/\A$WS+(?:\+|\~\~|\-\-)(?=[\s\/])/,
             'whitespace-must'],
         [qr/\A(?:\-|~)(?=[\s\/])/,
             'whitespace-maybe'],
         $qr,
+        [qr/\A$WS+()($NAME|<$NAME>)/,
+            'rule-reference'],
         [qr/\A([^\s\'\/]+)/,
             'regex-raw'],
         [qr/\A$WS+/],
@@ -560,6 +564,13 @@ sub lex {
                         }
                         else {
                             push @$stack, $scope;
+                            # Hack to support /+ …/
+                            if ($scope eq 'regex') {
+                                if (substr($grammar, $pos) =~ /\A\+\s/) {
+                                    $pos += length($&);
+                                    push @$tokens, ['whitespace-must'];
+                                }
+                            }
                         }
                     }
                 }

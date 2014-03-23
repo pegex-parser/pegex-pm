@@ -142,7 +142,7 @@ a:
 a: '*** <foo>  + - bar '
 --- yaml
 a:
-  .rgx: '\*\*\*\ \<foo\>\ \ \+\ \-\ bar\ '
+  .rgx: '\*\*\*\ <foo\>\ \ \+\ \-\ bar\ '
 
 === Quoted String in Regex
 --- grammar
@@ -315,7 +315,7 @@ a:
   - .ref: c
   - .ref: _
 b:
-  .rgx: <_>cat<__>dog<_>
+  .rgx: <_><cat><__><dog><_>
 
 === Whitespace in Regex
 --- grammar
@@ -332,7 +332,7 @@ a:
 a: / - foo + bar+ -- baz /
 --- yaml
 a:
-  .rgx: <_>foo<__>bar+<__>baz
+  .rgx: <_><foo><__><bar>+<__><baz>
 
 === Directives
 --- grammar

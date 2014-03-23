@@ -118,6 +118,7 @@ b: ( /x/ )+
 
 # XXX The \\# looks lie a testml bug. Should only need \#.
 === Comments
+--- SKIP
 --- grammar
 \\# line comment
 

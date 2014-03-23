@@ -144,7 +144,7 @@ sub got_regular_expression {
     $got =~ s/(?:^|\s)(\++)(?:\s|$)/${\ ('<' . '__' x length($1) . '>') }/ge;
     $got =~ s/\s*#.*\n//g;
     $got =~ s/\s+//g;
-    $got =~ s!\((\:|\=|\!)!(?$1!g;
+    $got =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
     return +{ '.rgx' => $got };
 }
 
