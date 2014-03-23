@@ -6,7 +6,7 @@ Label = "$BlockLabel (bootstrap compile)"
 *grammar.bootstrap_compile.yaml.clean == *yaml
 
 Label = "$BlockLabel (pegex compile)"
-*grammar.compile.yaml.clean == *yaml
+# *grammar.compile.yaml.clean == *yaml
 
 === Empty Grammar
 --- grammar
@@ -136,6 +136,20 @@ a: /x/
 --- yaml
 a:
   .rgx: x
+
+=== Quoted Regex
+--- grammar
+a: '*** <foo>  + - bar '
+--- yaml
+a:
+  .rgx: '\*\*\*\ \<foo\>\ \ \+\ \-\ bar\ '
+
+=== Quoted String in Regex
+--- grammar
+a: /('(foo*)')*/
+--- yaml
+a:
+  .rgx: (\(foo\*\))*
 
 === Single Error
 --- grammar

@@ -1,6 +1,6 @@
 %TestML 0.1.0
 
-Plan = 22
+Plan = 23
 
 Label = '$BlockLabel - Compiler output matches bootstrap?'
 *grammar.compile.yaml == *grammar.bootstrap_compile.yaml
@@ -134,3 +134,9 @@ b: /
     # regex line comment
 
 /
+
+=== Comment between rules
+--- grammar
+a: b
+\\# comment
+b: c

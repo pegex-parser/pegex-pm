@@ -58,6 +58,7 @@ has grammar => {
     'rule-item' => [
         '|',
         '=rule-reference',
+        '=quoted-regex',
         'regular-expression',
         'bracketed-group',
         'whitespace-token',
@@ -87,10 +88,18 @@ sub parse {
     my ($self, $grammar_text) = @_;
 
     $self->lex($grammar_text);
+    # YYY $self->{tokens};
     $self->{pointer} = 0;
+    $self->{farthest} = 0;
     $self->{tree} = {};
 
-    $self->match_ref('grammar') || die "Bootstrap parse failed";
+    $self->match_ref('grammar') || do {
+        my $far = $self->{farthest};
+        my $tokens = $self->{tokens};
+        $far -= 4 if $far >= 4;
+        WWW splice @$tokens, $far, 9;
+        die "Bootstrap parse failed";
+    };
 
     return $self;
 }
@@ -141,6 +150,7 @@ sub match_times {
     }
     return 1 if $count >= $min and (not $max or $count <= $max);
     $self->{pointer} = $pointer;
+    $self->{farthest} = $pointer if $pointer > $self->{farthest};
     return;
 }
 
@@ -153,6 +163,7 @@ sub match_any {
         }
     }
     $self->{pointer} = $pointer;
+    $self->{farthest} = $pointer if $pointer > $self->{farthest};
     return;
 }
 
@@ -162,6 +173,7 @@ sub match_all {
     for (@$all) {
         if (not $self->match_next($_)) {
             $self->{pointer} = $pointer;
+            $self->{farthest} = $pointer if $pointer > $self->{farthest};
             return;
         }
     }
@@ -282,6 +294,13 @@ sub got_whitespace_must {
     $self->got_rule_reference(['whitespace-maybe', undef, '__', undef]);
 }
 
+sub got_quoted_regex {
+    my ($self, $token) = @_;
+    my $regex = $token->[1];
+    $regex =~ s/([^\w])/\\$1/g;
+    push @{$self->{stack}}, { '.rgx' => $regex };
+}
+
 sub got_regex_start {
     my ($self) = @_;
     push @{$self->{groups}}, [scalar(@{$self->{stack}}), '/'];
@@ -291,8 +310,16 @@ sub got_regex_end {
     my ($self) = @_;
     my $regex = join '', map {
         if (ref($_)) {
-            my $part = $_->{'.ref'};
-            "<$part>";
+            my $part;
+            if ($part = $_->{'.rgx'}) {
+                $part;
+                }
+            elsif ($part = $_->{'.ref'}) {
+                "<$part>";
+            }
+            else {
+                XXX $_;
+            }
         }
         else {
             $_;
@@ -425,29 +452,37 @@ my $DASH  = '\-';
 my $SEMI  = '\;';
 my $UNDER  = '\_';
 my $HASH  = '\#';
-my $EOL   = '\n';
+my $EOL   = '\r?\n';
 my $WORD  = "$DASH$UNDER$ALPHA$DIGIT";
-my $SPACE = "(?:[\ \t]|$HASH.*$EOL)";
+my $WS    = "(?:[\ \t]|$HASH.*$EOL)";
 my $MOD   = '[\!\=\-\+\.]';
 my $GMOD  = '[\.]';
 my $QUANT = '(?:[\?\*\+]|\d+(?:\+|\-\d+)?)';
 my $NAME  = "$UNDER?[$UNDER$ALPHA](?:[$WORD]*[$ALPHA$DIGIT])?";
-my $REM   = "(?:$SPACE+|$EOL+)";
+
+# Repeated Rules:
+my $rem   = [qr/\A(?:$WS+|$EOL+)/];
+my $qr    = [qr/\A\'((?:\\.|[^\'])*)\'/, 'quoted-regex'];
+
+# Lexer regex tree:
 has regexes => {
     pegex => [
-        [qr/\A%(grammar|version|extends|include)$SPACE+/,
+        [qr/\A%(grammar|version|extends|include)$WS+/,
             'directive-start', 'directive'],
 
-        [qr/\A($NAME)(?=$SPACE*\:)/,
+        [qr/\A($NAME)(?=$WS*\:)/,
             'rule-start', 'rule'],
 
-        [qr/\A$REM/],
+        $rem,
 
         [qr/\A\z/,
             'pegex-end', 'end'],
     ],
 
     rule => [
+        [qr/\A(?:$SEMI$WS*$EOL?|\s*$EOL|)(?=$NAME$WS*\:|\z)/,
+            'rule-end', 'end'],
+
         [qr/\A\:/,
             'rule-sep'],
 
@@ -456,7 +491,8 @@ has regexes => {
         [qr/\A(?:\-|\~)(?=\s)/,
             'whitespace-maybe'],
 
-        [qr/\A($MOD)?($NAME|<$NAME>)($QUANT)?/,
+        $qr,
+        [qr/\A($MOD)?($NAME|<$NAME>)($QUANT)?(?!$WS*$NAME\:)/,
             'rule-reference'],
         [qr/\A\//,
             'regex-start', 'regex'],
@@ -472,10 +508,7 @@ has regexes => {
         [qr/\A(\%\%?)/,
             'list-sep'],
 
-        [qr/\A(?:$SEMI$SPACE*$EOL?|\s*$EOL)(?=$NAME$SPACE*\:|\z)/,
-            'rule-end', 'end'],
-
-        [qr/\A$REM/],
+        $rem,
     ],
 
     directive => [
@@ -490,13 +523,14 @@ has regexes => {
             'whitespace-must'],
         [qr/\A(?:\-|~)(?=[\s\/])/,
             'whitespace-maybe'],
-        [qr/\A([^\s\/]+)/,
+        $qr,
+        [qr/\A([^\s\'\/]+)/,
             'regex-raw'],
-        [qr/\A$SPACE+/],
+        [qr/\A$WS+/],
         [qr/\A$EOL+/],
         [qr/\A\//,
             'regex-end', 'end'],
-        [qr/\A$REM/],
+        $rem,
     ],
 };
 
@@ -535,6 +569,7 @@ sub lex {
         }
         my $text = substr($grammar, $pos, 50);
         $text =~ s/\n/\\n/g;
+        WWW $tokens;
         die <<"...";
 Failed to lex $state here-->$text
 ...
