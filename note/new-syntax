@@ -1,0 +1,36 @@
+The following syntax changes were made:
+
+new: /foo/
+old: /foo/
+
+new: 'foo'
+old: /foo/
+
+new: /'foo'/
+old: /foo/
+
+new: / foo/
+old: /<foo>/
+
+new: foo
+old: <foo>
+
+new: a-b-c
+old: a_b_c
+
+new: + 'xyz' -
+old: ~~ /xyz/ ~
+
+new: - a + b ~ c -- d ~~ e
+old: <_> <a> <__> <b> <_> <c> <__> <d> <__> <e>
+
+General rules:
+
+* Use + and - for whitespace rules
+  * Inside regexes and outside
+* - means _ everywhere
+* Single quotes for literal text
+* <rule> still works but <> is almost never needed
+* Inside a regex, a bare rule ref must be preceded by a space
+  / ref*notref/  same as  / <ref>* 'notref' /
+
