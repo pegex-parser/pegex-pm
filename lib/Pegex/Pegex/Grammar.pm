@@ -3,14 +3,13 @@ package Pegex::Pegex::Grammar;
 use Pegex::Base;
 extends 'Pegex::Grammar';
 
-# TODO:
-# use re::engine::PCRE;
-
 use constant file => '../pegex-pgx/pegex.pgx';
 
 # sub make_tree {
 #     use Pegex::Bootstrap;
-#     Pegex::Bootstrap->new->compile(file)->tree;
+#     use IO::All;
+#     my $grammar = io->file(file)->all;
+#     Pegex::Bootstrap->new->compile($grammar)->tree;
 # }
 
 sub make_tree {
@@ -62,7 +61,7 @@ sub make_tree {
                       '.ref' => 'doc_ending'
                     },
                     {
-                      '.err' => 'Runaway rule group. No ending parens at EOF'
+                      '.err' => 'Runaway rule group; no ending parens at EOF'
                     }
                   ]
                 },
@@ -100,7 +99,7 @@ sub make_tree {
               '.rgx' => qr/\G(?=`[^`]*(?:\s|\#.*(?:\n|\z))*\z)/
             },
             {
-              '.err' => 'Runaway error message. No ending grave at EOF'
+              '.err' => 'Runaway error message; no ending grave at EOF'
             }
           ]
         }
@@ -122,7 +121,7 @@ sub make_tree {
           '.rgx' => qr/\G(?=\/([^\/]*)(?:\s|\#.*(?:\n|\z))*\z)/
         },
         {
-          '.err' => 'Runaway regular expression. No ending slash at EOF'
+          '.err' => 'Runaway regular expression; no ending slash at EOF'
         }
       ]
     },
@@ -188,7 +187,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])(?!>))/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])(?!\>))/
             },
             {
               '.err' => 'Missing > in rule reference'
@@ -198,7 +197,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])>)/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\>)/
             },
             {
               '.err' => 'Missing < in rule reference'
@@ -208,7 +207,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])>)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
+              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\>)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
             },
             {
               '.err' => 'Illegal character in rule quantifier'
@@ -221,7 +220,7 @@ sub make_tree {
               '.rgx' => qr/\G(?=[!=\+\-\.]?(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\-)/
             },
             {
-              '.err' => 'Unprotected rule name with numeric quantifier. Please use <rule>#-# syntax!'
+              '.err' => 'Unprotected rule name with numeric quantifier; please use <rule>#-# syntax!'
             }
           ]
         },
@@ -232,7 +231,7 @@ sub make_tree {
               '.ref' => 'rule_modifier'
             },
             {
-              '.rgx' => qr/\G(?=[^\w\(\)<\/\~\|`\s](?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])>)(?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?(?![\ \t]*:))/
+              '.rgx' => qr/\G(?=[^\w\(\)<\/\~\|`\s](?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\>)(?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?(?![\ \t]*:))/
             },
             {
               '.err' => 'Illegal rule modifier (must be [=!.-+]?)'
@@ -355,8 +354,51 @@ sub make_tree {
         }
       ]
     },
+    'quoted_regex' => {
+      '.rgx' => qr/\G'([^']*)'/
+    },
+    'regex_raw' => {
+      '.rgx' => qr/\G([^\s\/'<]+)/
+    },
+    'regex_rule_reference' => {
+      '.rgx' => qr/\G(?:(?:\s|\#.*(?:\n|\z))+((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))\>))(?![\ \t]*:)/
+    },
     'regular_expression' => {
-      '.rgx' => qr/\G\/([^\/]*)\//
+      '.all' => [
+        {
+          '.rgx' => qr/\G\//
+        },
+        {
+          '+max' => 1,
+          '.ref' => 'whitespace_must_start'
+        },
+        {
+          '+min' => 0,
+          '.any' => [
+            {
+              '.ref' => 'whitespace_must'
+            },
+            {
+              '.ref' => 'whitespace_maybe'
+            },
+            {
+              '.ref' => 'quoted_regex'
+            },
+            {
+              '.ref' => 'regex_rule_reference'
+            },
+            {
+              '.ref' => '__'
+            },
+            {
+              '.ref' => 'regex_raw'
+            }
+          ]
+        },
+        {
+          '.rgx' => qr/\G\//
+        }
+      ]
     },
     'rule_definition' => {
       '.all' => [
@@ -383,6 +425,9 @@ sub make_tree {
           '.ref' => 'rule_reference'
         },
         {
+          '.ref' => 'quoted_regex'
+        },
+        {
           '.ref' => 'regular_expression'
         },
         {
@@ -405,7 +450,7 @@ sub make_tree {
       }
     },
     'rule_reference' => {
-      '.rgx' => qr/\G([!=\+\-\.]?)(?:((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?![\ \t]*:)/
+      '.rgx' => qr/\G([!=\+\-\.]?)(?:((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))\>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?![\ \t]*:)/
     },
     'rule_section' => {
       '+min' => 0,
@@ -421,8 +466,17 @@ sub make_tree {
     'rule_start' => {
       '.rgx' => qr/\G((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
     },
+    'whitespace_maybe' => {
+      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\-(?=[\ \/])/
+    },
+    'whitespace_must' => {
+      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(?:\+|\-\-)(?=[\ \/])/
+    },
+    'whitespace_must_start' => {
+      '.rgx' => qr/\G\+(?=[\ \/])/
+    },
     'whitespace_token' => {
-      '.rgx' => qr/\G(\~+|(?:\++|\-+)(?=\s+|\z))/
+      '.rgx' => qr/\G((?:\+|\-|\-\-|\~|\~\~))(?=(?:\s|\#.*(?:\n|\z))+)/
     }
   }
 }

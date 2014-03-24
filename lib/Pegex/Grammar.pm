@@ -71,10 +71,15 @@ sub compile_into_module {
     $module =~ s!::!/!g;
     $module = "$module.pm";
     my $file = $INC{$module} or return;
-#     require Pegex::Bootstrap;
-#     my $perl = Pegex::Bootstrap->new->compile($grammar_text)->to_perl;
-    require Pegex::Compiler;
-    my $perl = Pegex::Compiler->new->compile($grammar_text)->to_perl;
+    my $perl;
+    if ($module eq 'Pegex/Pegex/Grammar.pm') {
+        require Pegex::Bootstrap;
+        $perl = Pegex::Bootstrap->new->compile($grammar_text)->to_perl;
+    }
+    else {
+        require Pegex::Compiler;
+        $perl = Pegex::Compiler->new->compile($grammar_text)->to_perl;
+    }
     open IN, $file or die $!;
     my $module_text = do {local $/; <IN>};
     close IN;

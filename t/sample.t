@@ -12,7 +12,7 @@ contact:
     address_section
 
 name_section:
-    / Name <COLON> <BLANK>+ /
+    / 'Name' <COLON> <BLANK>+ /
     name
     EOL
 

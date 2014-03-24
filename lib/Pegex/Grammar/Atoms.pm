@@ -61,6 +61,7 @@ my $atoms = {
 
     # Paired punctuation
     SINGLE  => "'",
+    TICK    => "'",
     DOUBLE  => '"',
     GRAVE   => '`',
     LPAREN  => '\(',

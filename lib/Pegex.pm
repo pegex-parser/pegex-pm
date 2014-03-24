@@ -1,4 +1,4 @@
-# ABSTRACT: Acmeist PEG Parsing Framework 
+# ABSTRACT: Acmeist PEG Parsing Framework
 use strict; use warnings;
 
 package Pegex;

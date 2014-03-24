@@ -1,134 +1,131 @@
 # This is the Pegex grammar for YAML 1.2.
 
-# It is currently in a fledgling state. It is only intended to pass the YAML
-# TestML Suite. Eventually it will be able to parse any valid YAML 1.2
-# document.
-
-# To Do:
-# - Comments (maybe as whitespace)
-# - Directives
-# - Tags
+# TODO:
+# Define regexes from spec productions
 
 %grammar yaml
-%version 1.2
+%version 0.1.2
+%include pegex-atoms
+%symrule >>> indent
+%symrule <<< undent
+%symrule === ondent
+%symrule >=< andent
 
-yaml_stream: yaml_document*
+yaml-stream: (
+| comment-line
+| blank-line
+| yaml-document
+)*
 
-yaml_document:
-    document_header?
-    (
-        flow_collection |
-        block_node |
-        block_scalar
-    )
-    document_footer?
+yaml-document:
+  document-header?
+  yaml-node
+  document-footer?
 
-document_header:
-    / ( <DASH><DASH><DASH> ) <ws> /
+document-header: '---' +
 
-document_footer:
-    / <DOT><DOT><DOT> <EOL> /
+document-footer: '...' EOL
 
-block_node:
-    block_seq |
-    block_map |
-    block_scalar
+block-node:
+|  block-seq
+|  block-map
+|  block-scalar
 
-block_map:
-    indent
-    block_pair+
-    undent
+block-map:
+  >>
+  block-pair+
+  <<
 
-block_seq:
-    indent
-    block_elem+
-    undent
+block-seq:
+  >>
+  block-elem+
+  <<
 
-block_scalar:
-    double_quoted |
-    single_quoted |
-    plain_string |
-    empty_string
+block-scalar:
+|  double-quoted
+|  single-quoted
+|  plain-string
+|  empty-string
 
-#     literal_string |
-#     folded_string |
+#   literal-string |
+#   folded-string |
 
-block_pair:
-    indentation block_key /~<COLON>~/ block_value BREAK
+block-pair:
+  == block-key - COLON - block-value BREAK
 
-block_elem:
-    indentation /<DASH><SPACE>/ block_value BREAK
+block-elem:
+  == '- ' block-value BREAK
 
-block_key:
-    double_quoted |
-    single_quoted |
-    plain_string
+block-key:
+| double-quoted
+| single-quoted
+| plain-string
 
-block_value:
-    flow_collection |
-    block_node
+block-value:
+| flow-collection
+| block-node
 
-flow_collection:
-    flow_map |
-    flow_seq
+flow-collection:
+| flow-map
+| flow-seq
 
-flow_node:
-    flow_collection |
-    flow_scalar
+flow-node:
+| flow-collection
+| flow-scalar
 
-flow_map:
-    / ~ <LCURLY> ~ /
-        flow_pair* % / ~ <COMMA> ~ /
-    / ~ <RCURLY> ~ /
+flow-map:
+  - '{' -
+    flow-pair* % /- COMMA -/
+  - '}' -
 
-flow_seq:
-    / ~ <LSQUARE> ~ /
-        flow_node* % / ~ <COMMA> ~ /
-    / ~ <RSQUARE> ~ /
+flow-seq:
+  - '[' -
+    flow-node* % /- COMMA -/
+  /- RSQUARE -/
 
-flow_scalar:
-    double_quoted |
-    single_quoted |
-    plain_string
+flow-scalar:
+| double-quoted |
+| single-quoted |
+| plain-string
 
-flow_pair:
-    flow_node / ~ <COLON> ~ / flow_node
+flow-pair:
+  flow-node /- COLON -/ flow-node
 
-double_quoted: /
-    <DOUBLE>
-        ((:
-            <BACK><BACK> |
-            <BACK><DOUBLE> |
-            [^<DOUBLE><BREAK>]
-        )*)
-    <DOUBLE>
+double-quoted: /
+  DOUBLE
+    ((:
+    |  BACK BACK
+    |  BACK DOUBLE
+    |  [^DOUBLE BREAK]
+    )*)
+  DOUBLE
 /
 
-single_quoted: /
-    <SINGLE>
-        ((:
-            <SINGLE><SINGLE> |
-            [^<SINGLE>]
-        )*)
-    <SINGLE>
+single-quoted: /
+  SINGLE
+    ((:
+    | SINGLE SINGLE
+    | [^ SINGLE ]
+    )*)
+  SINGLE
 /
 
-plain_string: / ( [^<non_starters>] [^<non_plain>]* ) /
+plain-string: / ( [^ non-starters ] [^ non-plain ]* ) /
 
-empty_string: //
+empty-string: //
 
-literal_string: `literal_string not yet supported`
+literal-string: `literal-string not yet supported`
 
-folded_string: `folded_string not yet supported`
+folded-string: `folded-string not yet supported`
 
-non_starters: /
-    <PERCENT>
-    <SINGLE>
-    <DOUBLE>
-    <SPACE>
+non-starters: /
+  PERCENT
+  SINGLE
+  DOUBLE
+  SPACE
 /
 
-non_plain: /
-    <COLON>
-    <BREAK>
+non-plain: /
+  COLON
+  BREAK
 /

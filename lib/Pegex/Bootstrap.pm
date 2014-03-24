@@ -16,6 +16,7 @@ has groups => [];
 has tokens => [];
 has ast => {};
 has stack => [];
+has tree => {};
 has grammar => {
     'grammar' => [
         '=pegex-start',
@@ -566,7 +567,7 @@ sub lex {
                             push @$stack, $scope;
                             # Hack to support /+ …/
                             if ($scope eq 'regex') {
-                                if (substr($grammar, $pos) =~ /\A\+\s/) {
+                                if (substr($grammar, $pos) =~ /\A\+(?=\s)/) {
                                     $pos += length($&);
                                     push @$tokens, ['whitespace-must'];
                                 }

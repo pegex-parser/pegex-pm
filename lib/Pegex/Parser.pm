@@ -207,7 +207,8 @@ sub match_next_with_sep {
 
 sub match_ref {
     my ($self, $ref, $parent) = @_;
-    my $rule = $self->{tree}{$ref};
+    my $rule = $self->{tree}{$ref}
+        or die "No rule defined for '$ref'";
     my $match = $self->match_next($rule) or return 0;
     return $Pegex::Constant::Dummy unless $rule->{action};
     @{$self}{'rule', 'parent'} = ($ref, $parent);

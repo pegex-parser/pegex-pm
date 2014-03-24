@@ -1,12 +1,12 @@
 %TestML 0.1.0
 
-Plan = 62
+Plan = 68
 
 Label = "$BlockLabel (bootstrap compile)"
 *grammar.bootstrap_compile.yaml.clean == *yaml
 
 Label = "$BlockLabel (pegex compile)"
-# *grammar.compile.yaml.clean == *yaml
+*grammar.compile.yaml.clean == *yaml
 
 === Empty Grammar
 --- grammar
@@ -30,6 +30,13 @@ b:
   .rgx: x
 c:
   .ref: x
+
+=== Dash in Rule Names
+--- grammar
+a-b: c-d
+--- yaml
+a_b:
+  .ref: c_d
 
 === Single Rule Reference
 --- grammar

@@ -137,28 +137,63 @@ sub got_rule_reference {
     return $node;
 }
 
+sub got_quoted_regex {
+    my ($self, $got) = @_;
+    $got =~ s/([^\w\`\%\:\<\/])/\\$1/g;
+    return +{ '.rgx' => $got };
+}
+
+sub got_regex_rule_reference {
+    my ($self, $got) = @_;
+    my $ref = $got->[0] || $got->[1];
+    return +{ '.ref' => $ref };
+}
+
+sub got_whitespace_maybe {
+    my ($self) = @_;
+    return +{ '.rgx' => '<_>'};
+}
+
+sub got_whitespace_must {
+    my ($self) = @_;
+    return +{ '.rgx' => '<__>'};
+}
+
 sub got_regular_expression {
     my ($self, $got) = @_;
-    # replace - or + with space next to it
-    $got =~ s/(?:^|\s)(\-+)(?:\s|$)/${\ ('<' . '_' x length($1) . '>') }/ge;
-    $got =~ s/(?:^|\s)(\++)(?:\s|$)/${\ ('<' . '__' x length($1) . '>') }/ge;
-    $got =~ s/\s*#.*\n//g;
-    $got =~ s/\s+//g;
-    $got =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
-    return +{ '.rgx' => $got };
+
+    my $regex = join '', map {
+        if (ref($_)) {
+            my $part;
+            if ($part = $_->{'.rgx'}) {
+                $part;
+            }
+            elsif ($part = $_->{'.ref'}) {
+                "<$part>";
+            }
+            else {
+                XXX $_;
+            }
+        }
+        else {
+            $_;
+        }
+    } @{$got->[0]};
+    $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
+    return +{ '.rgx' => $regex };
 }
 
 sub got_whitespace_token {
     my ($self, $got) = @_;
     my $token;
-    if ($got =~ /^\~+$/) {
-        $token = +{ '.rgx' => "<ws${\ length($got)}>" };
-    }
-    elsif ($got =~ /^\-+$/) {
+    if ($got =~ /^\~{1,2}$/) {
         $token = +{ '.ref' => ('_' x length($got)) };
     }
-    elsif ($got =~ /^\++$/) {
-        $token = +{ '.ref' => ('__' x length($got)) };
+    elsif ($got =~ /^\-{1,2}$/) {
+        $token = +{ '.ref' => ('_' x length($got)) };
+    }
+    elsif ($got eq '+') {
+        $token = +{ '.ref' => '__' };
     }
     else {
         die;

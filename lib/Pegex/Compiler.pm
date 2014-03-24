@@ -77,6 +77,12 @@ sub combinate_object {
         if (exists $self->{tree}{$rule}) {
             $self->combinate_rule($rule);
         }
+        else {
+            if (my $regex = (Pegex::Grammar::Atoms::atoms)->{$rule}) {
+                $self->{tree}{$rule} = { '.rgx' => $regex };
+                $self->combinate_rule($rule);
+            }
+        }
     }
     elsif (exists $object->{'.any'}) {
         for my $elem (@{$object->{'.any'}}) {
