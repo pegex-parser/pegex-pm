@@ -299,7 +299,7 @@ sub got_whitespace_must {
 sub got_quoted_regex {
     my ($self, $token) = @_;
     my $regex = $token->[1];
-    $regex =~ s/([^\w\`\%\:\<\/])/\\$1/g;
+    $regex =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
     push @{$self->{stack}}, { '.rgx' => $regex };
 }
 
@@ -567,7 +567,7 @@ sub lex {
                             push @$stack, $scope;
                             # Hack to support /+ …/
                             if ($scope eq 'regex') {
-                                if (substr($grammar, $pos) =~ /\A\+(?=\s)/) {
+                                if (substr($grammar, $pos) =~ /\A\+(?=[\s\/])/) {
                                     $pos += length($&);
                                     push @$tokens, ['whitespace-must'];
                                 }

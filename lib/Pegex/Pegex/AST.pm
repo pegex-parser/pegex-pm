@@ -139,7 +139,7 @@ sub got_rule_reference {
 
 sub got_quoted_regex {
     my ($self, $got) = @_;
-    $got =~ s/([^\w\`\%\:\<\/])/\\$1/g;
+    $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
     return +{ '.rgx' => $got };
 }
 
@@ -159,16 +159,25 @@ sub got_whitespace_must {
     return +{ '.rgx' => '<__>'};
 }
 
+sub got_whitespace_must_start {
+    my ($self) = @_;
+    return +{ '.rgx' => '<__>'};
+}
+
 sub got_regular_expression {
     my ($self, $got) = @_;
+    if (@$got == 2) {
+        my $part = shift @$got;
+        unshift @{$got->[0]}, $part;
+    }
 
     my $regex = join '', map {
         if (ref($_)) {
             my $part;
-            if ($part = $_->{'.rgx'}) {
+            if (defined($part = $_->{'.rgx'})) {
                 $part;
             }
-            elsif ($part = $_->{'.ref'}) {
+            elsif (defined($part = $_->{'.ref'})) {
                 "<$part>";
             }
             else {
