@@ -1,16 +1,4 @@
 # new-syntax
-- Whitespace:
-  - Deprecate ~
-    - ~ → _
-    - ~~ → __
-  - - → _
-  - + → __
-  - _ → ws*  (default)
-  - __ → ws+ (default)
-  - ws → atom:WS  (default)
-- Eliminate need for <>
-- Support regex literals
-  - 'literal'
 - Support new modifier forms
   - (rule)2-4
   - (rule)2+
@@ -23,11 +11,6 @@
   - %include
   - %extends
   - %require
-- Make YAML Awesome
-  - YAML Test Suite Driven
-  - Consistent implementations
-    - Single-sourced UniScript
-  - Ruby leads the way
 
 # Release 0.22
 - Remove TestML dependency

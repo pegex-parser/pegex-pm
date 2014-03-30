@@ -1,0 +1,6 @@
+- Update TestML grammar and Perl module
+- Make atoms a grammar
+- Support !() =()
+- Test (rule)2-3
+- Pegex::Optimizer
+  - or $grammar->optimize(a,b,c)
