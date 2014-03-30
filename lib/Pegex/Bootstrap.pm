@@ -313,10 +313,10 @@ sub got_regex_end {
     my $regex = join '', map {
         if (ref($_)) {
             my $part;
-            if ($part = $_->{'.rgx'}) {
+            if (defined($part = $_->{'.rgx'})) {
                 $part;
             }
-            elsif ($part = $_->{'.ref'}) {
+            elsif (defined($part = $_->{'.ref'})) {
                 "<$part>";
             }
             else {
