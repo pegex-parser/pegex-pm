@@ -1,5 +1,4 @@
 package Pegex::Bootstrap;
-use v5.10;
 
 use Carp qw(carp confess croak);
 
@@ -199,7 +198,7 @@ sub match_token {
         $token_got =~ s/-/_/g;
         my $method = "got_$token_got";
         if ($self->can($method)) {
-            # say $method;
+            # print "$method\n";
             $self->$method($token);
         }
         $self->{pointer}++;
@@ -440,7 +439,7 @@ sub set_modifier {
 #             ref($_) ? '[' . join(', ', @$_) . ']' :
 #             length($_) ? $_ : "''"
 #         } @_;
-#         say "$method($args)";
+#         print "$method($args)\n";
 #         die if $main::x++ > 250;
 #         $orig->($self, @_);
 #     };
