@@ -326,7 +326,7 @@ sub got_regex_end {
         else {
             $_;
         }
-    } splice(@{$self->{stack}}, (pop $self->{groups})->[0]);
+    } splice(@{$self->{stack}}, (pop @{$self->{groups}})->[0]);
     $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
     push @{$self->{stack}}, {'.rgx' => $regex};
 }
@@ -341,7 +341,7 @@ sub got_regex_raw {
 #------------------------------------------------------------------------------
 sub group_ast {
     my ($self) = @_;
-    my ($offset, $gmod) = @{pop $self->{groups}};
+    my ($offset, $gmod) = @{pop @{$self->{groups}}};
     $gmod ||= '';
     my $rule = [splice(@{$self->{stack}}, $offset)];
 
