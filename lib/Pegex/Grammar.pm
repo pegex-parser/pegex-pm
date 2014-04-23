@@ -13,6 +13,7 @@ has tree => (
     builder => 'make_tree',
     lazy => 1,
 );
+has start => ();
 
 sub make_text {
     my ($self) = @_;
@@ -29,7 +30,7 @@ sub make_tree {
         or die "Can't create a '" . ref($self) .
             "' grammar. No tree or text or file.";
     require Pegex::Compiler;
-    return Pegex::Compiler->new->compile($text)->tree;
+    return Pegex::Compiler->new->compile($text, $self->start)->tree;
 }
 
 # This import is to support: perl -MPegex::Grammar::Module=compile

@@ -37,6 +37,11 @@ has throw_on_error => 1;
 
 sub parse {
     my ($self, $input, $start) = @_;
+
+    if ($start) {
+        $start =~ s/-/_/g;
+    }
+
     $self->{position} = 0;
 
     if (not UNIVERSAL::isa($input, 'Pegex::Input')) {
@@ -278,16 +283,19 @@ sub match_err {
 # }
 
 sub match_ref_trace {
-    my ($self, $ref) = @_;
-    my $rule = $self->{tree}{$ref};
-    my $trace = not $rule->{'+asr'};
-    $self->trace("try_$ref") if $trace;
+    my ($self, $ref, $parent) = @_;
+    my $asr = $parent->{'+asr'};
+    my $note =
+        $asr == -1 ? '(!)' :
+        $asr == 1 ? '(=)' :
+        '';
+    $self->trace("try_$ref$note");
     my $result;
     if ($result = $self->match_ref($ref)) {
-        $self->trace("got_$ref") if $trace;
+        $self->trace("got_$ref$note");
     }
     else {
-        $self->trace("not_$ref") if $trace;
+        $self->trace("not_$ref$note");
     }
     return $result;
 }

@@ -10,7 +10,7 @@ use Pegex::Grammar::Atoms;
 has tree => ();
 
 sub compile {
-    my ($self, $grammar) = @_;
+    my ($self, $grammar, $start) = @_;
 
     # Global request to use the Pegex bootstrap compiler
     if ($Pegex::Bootstrap) {
@@ -18,8 +18,12 @@ sub compile {
         $self = Pegex::Bootstrap->new;
     }
 
+    if ($start) {
+        $start =~ s/-/_/g;
+    }
+
     $self->parse($grammar);
-    $self->combinate;
+    $self->combinate($start);
     $self->native;
 
     return $self;
@@ -66,6 +70,8 @@ sub combinate_rule {
 
 sub combinate_object {
     my ($self, $object) = @_;
+#     return if $self->{objects}{"$object"};
+#     $self->{objects}{"$object"} = 1;
     if (my $sub = $object->{'.sep'}) {
         $self->combinate_object($sub);
     }
