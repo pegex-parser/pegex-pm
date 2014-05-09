@@ -4,6 +4,8 @@ package MyGrammar1;
 use Pegex::Base;
 extends 'Pegex::Grammar';
 
+has start_rules => [];
+
 use constant text => <<'...';
 foo: /xyz/ <bar>
 bar:

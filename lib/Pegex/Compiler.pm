@@ -10,7 +10,7 @@ use Pegex::Grammar::Atoms;
 has tree => ();
 
 sub compile {
-    my ($self, $grammar, $start) = @_;
+    my ($self, $grammar, @rules) = @_;
 
     # Global request to use the Pegex bootstrap compiler
     if ($Pegex::Bootstrap) {
@@ -18,12 +18,10 @@ sub compile {
         $self = Pegex::Bootstrap->new;
     }
 
-    if ($start) {
-        $start =~ s/-/_/g;
-    }
+    @rules = map { s/-/_/g; $_ } @rules;
 
     $self->parse($grammar);
-    $self->combinate($start);
+    $self->combinate(@rules);
     $self->native;
 
     return $self;
@@ -48,13 +46,21 @@ sub parse {
 has _tree => ();
 
 sub combinate {
-    my ($self, $rule) = @_;
-    $rule ||= $self->{tree}->{'+toprule'}
-        or return $self;
+    my ($self, @rule) = @_;
+    if (not @rule) {
+        if (my $rule = $self->{tree}->{'+toprule'}) {
+            @rule = ($rule);
+        }
+        else {
+            return $self;
+        }
+    }
     $self->{_tree} = {
         map {($_, $self->{tree}->{$_})} grep { /^\+/ } keys %{$self->{tree}}
     };
-    $self->combinate_rule($rule);
+    for my $rule (@rule) {
+        $self->combinate_rule($rule);
+    }
     $self->{tree} = $self->{_tree};
     delete $self->{_tree};
     return $self;
