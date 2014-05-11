@@ -76,11 +76,6 @@ sub combinate_rule {
 
 sub combinate_object {
     my ($self, $object) = @_;
-#     return if $self->{objects}{"$object"};
-#     $self->{objects}{"$object"} = 1;
-    if (my $sub = $object->{'.sep'}) {
-        $self->combinate_object($sub);
-    }
     if (exists $object->{'.rgx'}) {
         $self->combinate_re($object);
     }

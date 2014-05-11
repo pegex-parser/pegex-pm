@@ -150,16 +150,10 @@ sub optimize_node {
     elsif ($node->{kind} eq 'rgx') {
       # XXX $node;
     }
-    if (my $sep = $node->{'.sep'}) {
-        $self->optimize_node($sep);
-    }
 }
 
 sub match_next {
     my ($self, $next) = @_;
-
-    return $self->match_next_with_sep($next)
-        if $next->{'.sep'};
 
     my ($rule, $method, $kind, $min, $max, $assertion) =
         @{$next}{'rule', 'method', 'kind', '+min', '+max', '+asr'};
@@ -189,33 +183,6 @@ sub match_next {
     }
 
     # YYY ($result ? $next->{'-skip'} ? [] : $match : 0) if $main::x;
-    return ($result ? $next->{'-skip'} ? [] : $match : 0);
-}
-
-sub match_next_with_sep {
-    my ($self, $next) = @_;
-
-    my ($rule, $method, $kind, $min, $max, $sep) =
-        @{$next}{'rule', 'method', 'kind', '+min', '+max', '.sep'};
-
-    my ($position, $match, $count, $scount, $smin, $smax) =
-        ($self->{position}, [], 0, 0, @{$sep}{'+min', '+max'});
-
-    while (my $return = $method->($self, $rule, $next)) {
-        $position = $self->{position};
-        $count++;
-        push @$match, @$return;
-        $return = $self->match_next($sep) or last;
-        push @$match, $smax == 1 ? @$return : @{$return->[0]} if @$return;
-        $scount++;
-    }
-    $match = [$match] if $max != 1;
-    my $result = ($count >= $min and ($max == 0 or $count <= $max));
-    if ($count == $scount and not $sep->{'+eok'}) {
-        $self->{farthest} = $position
-            if ($self->{position} = $position) > $self->{farthest};
-    }
-
     return ($result ? $next->{'-skip'} ? [] : $match : 0);
 }
 
@@ -292,13 +259,6 @@ sub match_err {
     my ($self, $error) = @_;
     $self->throw_error($error);
 }
-
-# TODO not supported yet
-# sub match_code {
-#     my ($self, $code) = @_;
-#     my $method = "match_rule_$code";
-#     return $self->$method();
-# }
 
 sub match_ref_trace {
     my ($self, $ref, $parent) = @_;
