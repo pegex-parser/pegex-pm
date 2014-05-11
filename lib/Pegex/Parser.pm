@@ -1,7 +1,7 @@
 package Pegex::Parser;
-
+use Pegex::Base;
 use Pegex::Input;
-
+use Pegex::Optimizer;
 use Scalar::Util;
 
 {
@@ -10,10 +10,6 @@ use Scalar::Util;
     our $Null = [];
     our $Dummy = [];
 }
-
-package Pegex::Parser;
-
-use Pegex::Base;
 
 has grammar => (required => 1);
 has receiver => ();
@@ -31,7 +27,6 @@ has 'debug' => (
 
 has position => 0;
 has farthest => 0;
-has optimized => 0;
 
 has throw_on_error => 1;
 
@@ -54,18 +49,21 @@ sub parse {
 
     die "No 'grammar'. Can't parse" unless $self->{grammar};
 
-    $self->{grammar}->{tree} = $self->{grammar}->make_tree
-        unless defined $self->{grammar}->{tree};
-    $self->{tree} = $self->{grammar}->{tree};
+    $self->{grammar}{tree} = $self->{grammar}->make_tree
+        unless defined $self->{grammar}{tree};
 
     my $start_rule_ref = $start ||
-        $self->{tree}->{'+toprule'} ||
-        ($self->{tree}->{'TOP'} ? 'TOP' : undef)
+        $self->{grammar}{tree}{'+toprule'} ||
+        ($self->{grammar}{tree}{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
 
     die "No 'receiver'. Can't parse" unless $self->{receiver};
 
-    $self->optimize_grammar($start_rule_ref);
+    Pegex::Optimizer->new(
+        parser => $self,
+        grammar => $self->{grammar},
+        receiver => $self->{receiver},
+    )->optimize_grammar($start_rule_ref);
 
     # Add circular ref and weaken it.
     $self->{receiver}{parser} = $self;
@@ -94,62 +92,6 @@ sub parse {
     }
 
     return $match->[0];
-}
-
-sub optimize_grammar {
-    my ($self, $start) = @_;
-    return if $self->{optimized};
-    while (my ($name, $node) = each %{$self->{tree}}) {
-        next unless ref($node);
-        $self->optimize_node($node);
-    }
-    $self->optimize_node({'.ref' => $start});
-    $self->{optimized} = 1;
-}
-
-sub optimize_node {
-    my ($self, $node) = @_;
-
-    my ($min, $max) = @{$node}{'+min', '+max'};
-    $node->{'+min'} = defined($max) ? 0 : 1
-        unless defined $node->{'+min'};
-    $node->{'+max'} = defined($min) ? 0 : 1
-        unless defined $node->{'+max'};
-    $node->{'+asr'} = 0
-        unless defined $node->{'+asr'};
-
-    for my $kind (qw(ref rgx all any err code xxx)) {
-        die if $kind eq 'xxx';
-        if ($node->{rule} = $node->{".$kind"}) {
-            $node->{kind} = $kind;
-            if ($node->{-flat} and $kind eq 'all') {
-                $node->{method} = $self->can('match_all_flat');
-            }
-            else {
-                $node->{method} = $self->can("match_$kind") or die;
-            }
-            last;
-        }
-    }
-
-    if ($node->{kind} =~ /^(?:all|any)$/) {
-        $self->optimize_node($_) for @{$node->{rule}};
-    }
-    elsif ($node->{kind} eq 'ref') {
-        my $ref = $node->{rule};
-        my $rule = $self->{tree}{$ref};
-        if (my $action = $self->{receiver}->can("got_$ref")) {
-            $rule->{action} = $action;
-        }
-        elsif (my $gotrule = $self->{receiver}->can("gotrule")) {
-            $rule->{action} = $gotrule;
-        }
-        $node->{method} = $self->can("match_ref_trace")
-            if $self->{debug};
-    }
-    elsif ($node->{kind} eq 'rgx') {
-      # XXX $node;
-    }
 }
 
 sub match_next {
@@ -188,7 +130,7 @@ sub match_next {
 
 sub match_ref {
     my ($self, $ref, $parent) = @_;
-    my $rule = $self->{tree}{$ref}
+    my $rule = $self->{grammar}{tree}{$ref}
         or die "No rule defined for '$ref'";
     my $match = $self->match_next($rule) or return 0;
     return $Pegex::Constant::Dummy unless $rule->{action};
