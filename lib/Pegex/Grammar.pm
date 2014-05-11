@@ -78,7 +78,7 @@ sub compile_into_module {
     my $perl;
     my @rules;
     if ($package->can('start_rules')) {
-        @rules = @{$package->start_rules};
+        @rules = @{$package->start_rules || []};
     }
     if ($module eq 'Pegex/Pegex/Grammar.pm') {
         require Pegex::Bootstrap;
