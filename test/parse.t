@@ -5,7 +5,8 @@ use Test::More tests => 1;
 use Pegex;
 use Pegex::Input;
 
-$grammar_file = 't/mice.pgx';
+use File::Basename;
+$grammar_file = dirname(__FILE__) . '/mice.pgx';
 
 eval { pegex( Pegex::Input->new(file => $grammar_file) )->parse("3 blind mice\n") }; $@
 ? fail $@

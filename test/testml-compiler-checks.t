@@ -1,10 +1,12 @@
-use lib 't', 'inc';
+use strict;
+use File::Basename;
+use lib dirname(__FILE__);
 use TestML;
 use TestML::Compiler::Lite;
 use TestMLBridge;
 
 TestML->new(
-    testml => 'testml/error.tml',
+    testml => 'testml/compiler-checks.tml',
     bridge => 'TestMLBridge',
     compiler => 'TestML::Compiler::Lite',
 )->run;

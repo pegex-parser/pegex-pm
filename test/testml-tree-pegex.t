@@ -1,10 +1,12 @@
-use lib 't', 'inc';
+use strict;
+use File::Basename;
+use lib dirname(__FILE__);
 use TestML;
 use TestML::Compiler::Lite;
 use TestMLBridge;
 
 TestML->new(
-    testml => 'testml/compiler-checks.tml',
+    testml => 'testml/tree-pegex.tml',
     bridge => 'TestMLBridge',
     compiler => 'TestML::Compiler::Lite',
 )->run;
