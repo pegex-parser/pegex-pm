@@ -265,7 +265,6 @@ sub set_separator {
                 {
                     '+min' => $min,
                     '+max' => $max,
-                    '-flat' => 1,
                     '.all' => [
                         $sep,
                         {%$rule},
@@ -283,7 +282,6 @@ sub set_separator {
                 $copy,
                 {
                     '+min' => 0,
-                    '-flat' => 1,
                     '.all' => [
                         $sep,
                         {%$copy},

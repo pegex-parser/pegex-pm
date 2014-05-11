@@ -68,7 +68,8 @@ sub parse_to_tree {
     my ($self, $grammar, $input) = @_;
     require Pegex::Tree;
     my $parser = pegex($grammar->value, 'Pegex::Tree');
-    # use XXX; XXX $parser->grammar->tree;
+#     use XXX; XXX $parser->grammar->tree;
+    $main::x = 1;
     return native $parser->parse($input->value);
 }
 

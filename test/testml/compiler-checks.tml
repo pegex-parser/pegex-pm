@@ -275,7 +275,6 @@ a:
     .all:
     - .ref: b
     - +min: 1
-      -flat: 1
       .all:
       - +min: 0
         .ref: c
@@ -285,7 +284,6 @@ a:
     .all:
     - .ref: d
     - +min: 0
-      -flat: 1
       .all:
       - +max: 3
         +min: 2

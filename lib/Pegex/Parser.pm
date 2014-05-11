@@ -110,18 +110,6 @@ sub optimize_grammar {
 sub optimize_node {
     my ($self, $node) = @_;
 
-    for my $kind (qw(ref rgx all any err code xxx)) {
-        die if $kind eq 'xxx';
-        if ($node->{rule} = $node->{".$kind"}) {
-            $node->{kind} = $kind;
-            $node->{method} = $self->can("match_$kind") or die;
-            $node->{method} = $self->can('match_all_flat')
-                if $node->{-flat} and $kind eq 'all';
-            YYY $node if $node->{-flat} and $kind eq 'all';
-            last;
-        }
-    }
-
     my ($min, $max) = @{$node}{'+min', '+max'};
     $node->{'+min'} = defined($max) ? 0 : 1
         unless defined $node->{'+min'};
@@ -129,6 +117,20 @@ sub optimize_node {
         unless defined $node->{'+max'};
     $node->{'+asr'} = 0
         unless defined $node->{'+asr'};
+
+    for my $kind (qw(ref rgx all any err code xxx)) {
+        die if $kind eq 'xxx';
+        if ($node->{rule} = $node->{".$kind"}) {
+            $node->{kind} = $kind;
+            if ($node->{-flat} and $kind eq 'all') {
+                $node->{method} = $self->can('match_all_flat');
+            }
+            else {
+                $node->{method} = $self->can("match_$kind") or die;
+            }
+            last;
+        }
+    }
 
     if ($node->{kind} =~ /^(?:all|any)$/) {
         $self->optimize_node($_) for @{$node->{rule}};
@@ -171,8 +173,11 @@ sub match_next {
         push @$match, @$return;
         last if $max == 1;
     }
+    if (not $count and $min == 0 and $kind eq 'all') {
+        $match = [[]];
+    }
     if ($max != 1) {
-        $match = [$match]; # unless $next->{-flat};
+        $match = [$match];
         $self->{farthest} = $position
             if ($self->{position} = $position) > $self->{farthest};
     }
@@ -183,6 +188,7 @@ sub match_next {
             if ($self->{position} = $position) > $self->{farthest};
     }
 
+    # YYY ($result ? $next->{'-skip'} ? [] : $match : 0) if $main::x;
     return ($result ? $next->{'-skip'} ? [] : $match : 0);
 }
 
@@ -265,25 +271,11 @@ sub match_all {
 
 sub match_all_flat {
     my ($self, $list) = @_;
-    my $position = $self->{position};
-    my $set = [];
-    my $len = 0;
-    for my $elem (@$list) {
-        if (my $match = $self->match_next($elem)) {
-            if (not ($elem->{'+asr'} or $elem->{'-skip'})) {
-                YYY $match;
-                push @$set, @$match;
-                $len++;
-            }
-        }
-        else {
-            $self->{farthest} = $position
-                if ($self->{position} = $position) > $self->{farthest};
-            return 0;
-        }
+    my $set = $self->match_all($list) or return 0;
+    while (grep {ref($_) eq 'ARRAY'} @$set) {
+        @$set = map { (ref($_) eq 'ARRAY') ? @$_ : $_ } @$set;
     }
-    $set = [ $set, 1 ] if $len > 1;
-    return $set;
+    return [$set];
 }
 
 sub match_any {
