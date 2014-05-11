@@ -37,7 +37,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?!\.)(?=[^\w\(\)<\/\~\|`\s]\()/
+              '.rgx' => qr/\G(?![\-\.])(?=[^\w\(\)<\/\~\|`\s]\()/
             },
             {
               '.err' => 'Illegal group rule modifier (can only use .)'
@@ -47,7 +47,7 @@ sub make_tree {
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(\.?)\((?:\s|\#.*(?:\n|\z))*/
+              '.rgx' => qr/\G([\-\.]?)\((?:\s|\#.*(?:\n|\z))*/
             },
             {
               '.ref' => 'rule_group'
@@ -298,7 +298,7 @@ sub make_tree {
     'bracketed_group' => {
       '.all' => [
         {
-          '.rgx' => qr/\G(\.?)\((?:\s|\#.*(?:\n|\z))*/
+          '.rgx' => qr/\G([\-\.]?)\((?:\s|\#.*(?:\n|\z))*/
         },
         {
           '.ref' => 'rule_group'
@@ -419,6 +419,9 @@ sub make_tree {
     'rule_item' => {
       '.any' => [
         {
+          '.ref' => 'bracketed_group'
+        },
+        {
           '.ref' => 'whitespace_token'
         },
         {
@@ -429,9 +432,6 @@ sub make_tree {
         },
         {
           '.ref' => 'regular_expression'
-        },
-        {
-          '.ref' => 'bracketed_group'
         },
         {
           '.ref' => 'error_message'
