@@ -539,13 +539,16 @@ has regexes => {
 };
 
 sub lex {
-    my ($self, $grammar) = @_;
+    my ($self, $grammar, $stack, $pos) = @_;
 
-    my $tokens = $self->{tokens} = [['pegex-start']];
-    my $stack = ['pegex'];
-    my $pos = 0;
-
-    OUTER: while (1) {
+    # when lex is called the first time $stack is not defined
+    # it will be defined when called recursively
+    unless (defined $stack) {
+        $stack = ['pegex'];
+        $pos = 0;
+        $self->{tokens} = [['pegex-start']];
+    }
+    my $tokens = $self->{tokens};
         my $state = $stack->[-1];
         my $set = $self->{regexes}->{$state} or die "Invalid state '$state'";
         for my $entry (@$set) {
@@ -574,8 +577,8 @@ sub lex {
                         }
                     }
                 }
-                last OUTER unless @$stack;
-                next OUTER;
+                return unless @$stack;
+                return $self->lex($grammar, $stack, $pos);
             }
         }
         my $text = substr($grammar, $pos, 50);
@@ -584,7 +587,6 @@ sub lex {
         die <<"...";
 Failed to lex $state here-->$text
 ...
-    }
 }
 
 1;
