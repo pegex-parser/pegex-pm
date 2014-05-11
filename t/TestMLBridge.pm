@@ -14,6 +14,7 @@ use YAML::XS;
 
 sub compile {
     my ($self, $grammar) = @_;
+    # local $Pegex::Parser::Debug = 1;
     my $tree = Pegex::Compiler->new->parse($grammar->value)->tree;
     delete $tree->{'+toprule'};
     delete $tree->{'_'};
@@ -67,6 +68,7 @@ sub parse_to_tree {
     my ($self, $grammar, $input) = @_;
     require Pegex::Tree;
     my $parser = pegex($grammar->value, 'Pegex::Tree');
+    # use XXX; XXX $parser->grammar->tree;
     return native $parser->parse($input->value);
 }
 

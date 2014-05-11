@@ -115,6 +115,9 @@ sub optimize_node {
         if ($node->{rule} = $node->{".$kind"}) {
             $node->{kind} = $kind;
             $node->{method} = $self->can("match_$kind") or die;
+            $node->{method} = $self->can('match_all_flat')
+                if $node->{-flat} and $kind eq 'all';
+            YYY $node if $node->{-flat} and $kind eq 'all';
             last;
         }
     }
@@ -169,7 +172,7 @@ sub match_next {
         last if $max == 1;
     }
     if ($max != 1) {
-        $match = [$match];
+        $match = [$match]; # unless $next->{-flat};
         $self->{farthest} = $position
             if ($self->{position} = $position) > $self->{farthest};
     }
@@ -257,6 +260,29 @@ sub match_all {
         }
     }
     $set = [ $set ] if $len > 1;
+    return $set;
+}
+
+sub match_all_flat {
+    my ($self, $list) = @_;
+    my $position = $self->{position};
+    my $set = [];
+    my $len = 0;
+    for my $elem (@$list) {
+        if (my $match = $self->match_next($elem)) {
+            if (not ($elem->{'+asr'} or $elem->{'-skip'})) {
+                YYY $match;
+                push @$set, @$match;
+                $len++;
+            }
+        }
+        else {
+            $self->{farthest} = $position
+                if ($self->{position} = $position) > $self->{farthest};
+            return 0;
+        }
+    }
+    $set = [ $set, 1 ] if $len > 1;
     return $set;
 }
 

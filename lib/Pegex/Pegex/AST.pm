@@ -7,13 +7,6 @@ use Pegex::Grammar::Atoms;
 
 has atoms => Pegex::Grammar::Atoms->new->atoms;
 has extra_rules => {};
-has prefixes => {
-    '!' => ['+asr', -1],
-    '=' => ['+asr', 1],
-    '.' => '-skip',
-    '-' => '-pass',
-    '+' => '-wrap',
-  };
 
 sub got_grammar {
     my ($self, $got) = @_;
@@ -64,12 +57,8 @@ sub got_rule_definition {
 sub got_bracketed_group {
     my ($self, $got) = @_;
     my ($prefix, $group, $suffix) = @$got;
-    if ($prefix) {
-        $group->{$self->prefixes->{$prefix}} = 1;
-    }
-    if ($suffix) {
-        $self->set_quantity($group, $suffix);
-    }
+    set_modifier($group, $prefix);
+    set_quantity($group, $suffix);
     return $group;
 }
 
@@ -109,11 +98,8 @@ sub get_group {
 
 sub got_rule_part {
     my ($self, $got) = @_;
-    my ($rule, $sep_op, $sep_rule) = @$got;
-    if ($sep_rule) {
-        $sep_rule->{'+eok'} = 1 if $sep_op eq '%%';
-        $rule->{'.sep'} = $sep_rule;
-    }
+    my ($rule, $op, $sep) = @$got;
+    $rule = set_separator($rule, $op, $sep) if $got->[1];
     return $rule;
 }
 
@@ -126,14 +112,8 @@ sub got_rule_reference {
     if (my $regex = $self->atoms->{$ref}) {
         $self->{extra_rules}{$ref} = +{ '.rgx' => $regex };
     }
-    if ($suffix) {
-        $self->set_quantity($node, $suffix);
-    }
-    if ($prefix) {
-        my ($key, $val) = ($self->prefixes->{$prefix}, 1);
-        ($key, $val) = @$key if ref $key;
-        $node->{$key} = $val;
-    }
+    set_modifier($node, $prefix);
+    set_quantity($node, $suffix);
     return $node;
 }
 
@@ -215,29 +195,135 @@ sub got_error_message {
     return +{ '.err' => $got };
 }
 
+sub set_modifier {
+    my ($object, $modifier) = @_;
+    return unless $modifier;
+    if ($modifier eq '=') {
+        $object->{'+asr'} = 1;
+    }
+    elsif ($modifier eq '!') {
+        $object->{'+asr'} = -1;
+    }
+    elsif ($modifier eq '.') {
+        $object->{'-skip'} = 1;
+    }
+    elsif ($modifier eq '+') {
+        $object->{'-wrap'} = 1;
+    }
+    elsif ($modifier eq '-') {
+        $object->{'-flat'} = 1;
+    }
+    else {
+        die "Invalid modifier: '$modifier'";
+    }
+}
+
 sub set_quantity {
-    my ($self, $object, $quantifier) = @_;
-    if ($quantifier eq '*') {
-        $object->{'+min'} = 0;
-    }
-    elsif ($quantifier eq '+') {
-        $object->{'+min'} = 1;
-    }
-    elsif ($quantifier eq '?') {
+    my ($object, $quantity) = @_;
+    return unless $quantity;
+    if ($quantity eq '?') {
         $object->{'+max'} = 1;
     }
-    elsif ($quantifier =~ /^(\d+)\+$/) {
-        $object->{'+min'} = $1;
+    elsif ($quantity eq '*') {
+        $object->{'+min'} = 0;
     }
-    elsif ($quantifier =~ /^(\d+)\-(\d+)+$/) {
-        $object->{'+min'} = $1;
-        $object->{'+max'} = $2;
+    elsif ($quantity eq '+') {
+        $object->{'+min'} = 1;
     }
-    elsif ($quantifier =~ /^(\d+)$/) {
-        $object->{'+min'} = $1;
-        $object->{'+max'} = $1;
+    elsif ($quantity =~ /^(\d+)$/) {
+        $object->{'+min'} = $1 + 0;
+        $object->{'+max'} = $1 + 0;
     }
-    else { die "Invalid quantifier: '$quantifier'" }
+    elsif ($quantity =~ /^(\d+)-(\d+)$/) {
+        $object->{'+min'} = $1 + 0;
+        $object->{'+max'} = $2 + 0;
+    }
+    elsif ($quantity =~ /^(\d+)\+$/) {
+        $object->{'+min'} = $1 + 0;
+    }
+    else {
+        die "Invalid quantifier: '$quantity'";
+    }
+}
+
+sub set_separator {
+    my ($rule, $op, $sep) = @_;
+    my $extra = ($op eq '%%');
+    if (not defined $rule->{'+max'} and not defined $rule->{'+min'}) {
+        $rule = {'.all' => [ $rule, {%$sep, '+max' => 1}, ] }
+            if $extra;
+        return $rule;
+    }
+    elsif (defined $rule->{'+max'} and defined $rule->{'+min'}) {
+        my ($min, $max) = delete @{$rule}{qw(+min +max)};
+        $min-- if $min > 0;
+        $max-- if $max > 0;
+        $rule = {
+            '-flat' => 1,
+            '.all' => [
+                $rule,
+                {
+                    '+min' => $min,
+                    '+max' => $max,
+                    '-flat' => 1,
+                    '.all' => [
+                        $sep,
+                        {%$rule},
+                    ],
+                },
+            ],
+        };
+    }
+    elsif (not defined $rule->{'+max'}) {
+        my $copy = {%$rule};
+        my $min = delete $copy->{'+min'};
+        my $new = {
+            '-flat' => 1,
+            '.all' => [
+                $copy,
+                {
+                    '+min' => 0,
+                    '-flat' => 1,
+                    '.all' => [
+                        $sep,
+                        {%$copy},
+                    ],
+                },
+            ],
+        };
+        if ($rule->{'+min'} == 0) {
+            $rule = $new;
+            $rule->{'+max'} = 1;
+        }
+        elsif ($rule->{'+min'} == 1) {
+            $rule = $new;
+        }
+        else {
+            $rule = $new;
+            $min-- if $min > 0;
+            $rule->{'.all'}[-1]{'+min'} = $min;
+        }
+    }
+    else {
+        if ($rule->{'+max'} == 1) {
+            delete $rule->{'+min'};
+            $rule = {
+                %$rule,
+                '+max' => 1,
+            };
+            if ($extra) {
+                $rule = { '.all' => [$rule, {%$sep, '+max' => 1}] };
+            }
+            return $rule;
+        }
+        else {
+            XXX 'FAIL', $rule, $op, $sep;
+        }
+    }
+    if ($extra) {
+        push @{$rule->{'.all'}}, {%$sep, '+max' => 1};
+    }
+    return $rule;
 }
 
 1;

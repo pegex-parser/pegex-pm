@@ -1,0 +1,36 @@
+=meta: 0.0.1
+
+name: pegex
+version: 0.0.2
+abstract: Acmeist PEG Parser Framework
+homepage: http://pegex.org
+
+license: Artistic 2
+copyright: 2010, 2011, 2012, 2013, 2014. Ingy döt Net.
+author:
+  name: Ingy döt Net
+  email: ingy@ingy.net
+  github: ingydotnet
+  twitter: ingydotnet
+  freenode: ingy
+  homepage: http://ingy.net
+
+requires:
+  perl: 5.8.3
+test:
+  cmd: make test
+  requires:
+    test-more: 0.0.1
+install:
+  cmd: make install
+
+devel:
+  git: git@github.org/ingydotnet/bashplus
+  irc: irc.freenode.net/bpan
+  bug: https://github.com/ingydotnet/bashplus/issues/
+
+=cpan:
+  name: Pegex
+  version: 0.25
+
+=travis: perl

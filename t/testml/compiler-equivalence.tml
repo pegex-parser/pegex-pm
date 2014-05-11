@@ -1,6 +1,6 @@
 %TestML 0.1.0
 
-Plan = 18
+Plan = 46
 
 *grammar1.compile.yaml == *grammar2.compile.yaml
 *grammar1.bootstrap_compile.yaml == *grammar2.bootstrap_compile.yaml
@@ -78,3 +78,87 @@ b: /- cat + dog -/
 --- grammar2
 a: _ b __ c _
 b: /<_> cat <__> dog <_>/
+
+=== Separator Reduction a % b
+--- grammar1
+x: a % b
+--- grammar2
+x: a
+
+=== Separator Reduction a %% b
+--- grammar1
+x: a %% b
+--- grammar2
+x: a b?
+
+=== Separator Reduction a? % b
+--- grammar1
+x: a? % b
+--- grammar2
+x: a?
+
+=== Separator Reduction a? %% b
+--- grammar1
+x: a? %% b
+--- grammar2
+x: a? b?
+
+=== Separator Reduction a* % b
+--- grammar1
+x: a* % b
+--- grammar2
+x: -(a -(b a)*)?
+
+=== Separator Reduction a* %% b
+--- grammar1
+x: a* %% b
+--- grammar2
+x: -(a -(b a)* b?)?
+
+=== Separator Reduction a+ % b
+--- grammar1
+x: a+ % b
+--- grammar2
+x: -(a -(b a)*)
+
+=== Separator Reduction a+ %% b
+--- grammar1
+x: a+ %% b
+--- grammar2
+x: -(a -(b a)* b?)
+
+=== Separator Reduction <a>3 % b
+--- grammar1
+x: <a>3 % b
+--- grammar2
+x: -(a -(b a)2)
+
+=== Separator Reduction <a>3 %% b
+--- grammar1
+x: <a>3 %% b
+--- grammar2
+x: -(a -(b a)2 b?)
+
+=== Separator Reduction <a>3+ % b
+--- grammar1
+x: <a>3+ % b
+--- grammar2
+x: -(a -(b a)2+)
+
+=== Separator Reduction <a>3+ %% b
+--- grammar1
+x: <a>3+ %% b
+--- grammar2
+x: -(a -(b a)2+ b?)
+
+=== Separator Reduction <a>3-7 % b
+--- grammar1
+x: <a>3-7 % b
+--- grammar2
+x: -(a -(b a)2-6)
+
+=== Separator Reduction <a>3-7 %% b
+--- grammar1
+x: <a>3-7 %% b
+--- grammar2
+x: -(a -(b a)2-6 b?)

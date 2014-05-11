@@ -6,6 +6,7 @@ use Pegex::Base;
 extends 'Pegex::Compiler';
 
 use Pegex::Grammar::Atoms;
+use Pegex::Pegex::AST;
 
 #------------------------------------------------------------------------------
 # The grammar. A DSL data structure. Things with '=' are tokens.
@@ -248,14 +249,13 @@ sub got_rule_end {
 
 sub got_group_start {
     my ($self, $token) = @_;
-    my $gmod = $token->[1];
     push @{$self->{groups}}, [scalar(@{$self->{stack}}), $token->[1]];
 }
 
 sub got_group_end {
     my ($self, $token) = @_;
     my $rule = $self->group_ast;
-    $self->set_quantity($token->[1], $rule);
+    Pegex::Pegex::AST::set_quantity($rule, $token->[1]);
     push @{$self->{stack}}, $rule;
 }
 
@@ -275,8 +275,8 @@ sub got_rule_reference {
     $name =~ s/-/_/g;
     $name =~ s/^<(.*)>$/$1/;
     my $rule = { '.ref' => $name };
-    $self->set_modifier($token->[1], $rule);
-    $self->set_quantity($token->[3], $rule);
+    Pegex::Pegex::AST::set_modifier($rule, $token->[1]);
+    Pegex::Pegex::AST::set_quantity($rule, $token->[3]);
     push @{$self->{stack}}, $rule;
 }
 
@@ -346,9 +346,10 @@ sub group_ast {
 
     for (my $i = 0; $i < @$rule-1; $i++) {
         if ($rule->[$i + 1] =~ /^%%?$/) {
-            my $sep = splice @$rule, $i+1, 1;
-            $rule->[$i]->{'.sep'} = splice @$rule, $i+1, 1;
-            $rule->[$i]->{'.sep'}{'+eok'} = 1 if $sep eq '%%';
+            $rule->[$i] = Pegex::Pegex::AST::set_separator(
+                $rule->[$i],
+                splice @$rule, $i+1, 2
+            );
         }
     }
     my $started = 0;
@@ -374,56 +375,10 @@ sub group_ast {
     }
 
     $rule = $rule->[0] if @$rule <= 1;
-    $rule->{'-skip'} = 1 if $gmod eq '.';
+    Pegex::Pegex::AST::set_modifier($rule, $gmod)
+        unless $gmod eq ':';
 
     return $rule;
-}
-
-sub set_quantity {
-    my ($self, $quantity, $rule) = @_;
-    if ($quantity) {
-        if ($quantity eq '?') {
-            $rule->{'+max'} = 1;
-        }
-        elsif ($quantity eq '*') {
-            $rule->{'+min'} = 0;
-        }
-        elsif ($quantity eq '+') {
-            $rule->{'+min'} = 1;
-        }
-        elsif ($quantity =~ /^(\d+)$/) {
-            $rule->{'+min'} = $1;
-            $rule->{'+max'} = $1;
-        }
-        elsif ($quantity =~ /^(\d+)-(\d+)$/) {
-            $rule->{'+min'} = $1;
-            $rule->{'+max'} = $2;
-        }
-        elsif ($quantity =~ /^(\d+)\+$/) {
-            $rule->{'+min'} = $1;
-        }
-    }
-}
-
-sub set_modifier {
-    my ($self, $modifier, $rule) = @_;
-    if ($modifier) {
-        if ($modifier eq '=') {
-            $rule->{'+asr'} = 1;
-        }
-        elsif ($modifier eq '!') {
-            $rule->{'+asr'} = -1;
-        }
-        elsif ($modifier eq '.') {
-            $rule->{'-skip'} = 1;
-        }
-        elsif ($modifier eq '+') {
-            $rule->{'-wrap'} = 1;
-        }
-        elsif ($modifier eq '-') {
-            $rule->{'-pass'} = 1;
-        }
-    }
 }
 
 # DEBUG: wrap/trace parse methods:
@@ -458,7 +413,7 @@ my $EOL   = '\r?\n';
 my $WORD  = "$DASH$UNDER$ALPHA$DIGIT";
 my $WS    = "(?:[\ \t]|$HASH.*$EOL)";
 my $MOD   = '[\!\=\-\+\.]';
-my $GMOD  = '[\.]';
+my $GMOD  = '[\.\-]';
 my $QUANT = '(?:[\?\*\+]|\d+(?:\+|\-\d+)?)';
 my $NAME  = "$UNDER?[$UNDER$ALPHA](?:[$WORD]*[$ALPHA$DIGIT])?";
 
