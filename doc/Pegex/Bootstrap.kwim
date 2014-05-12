@@ -22,7 +22,7 @@ Unless you are working on Pegex itself, you can ignore this module.
 
 = See Also
 
-* L<Pegex::Compiler>
+* [Pegex::Compiler]
 
 = Author
 
