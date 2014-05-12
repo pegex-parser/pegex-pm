@@ -24,11 +24,11 @@ Unless you are working on Pegex itself, you can ignore this module.
 
 * L<Pegex::Compiler>
 
-=head1 Author
+= Author
 
 Ingy döt Net <ingy@cpan.org>
 
-=head1 Copyright and License
+= Copyright and License
 
 Copyright (c) 2010, 2011, 2012, 2013, 2014. Ingy döt Net.
 
