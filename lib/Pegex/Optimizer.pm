@@ -54,7 +54,7 @@ sub optimize_node {
             $rule->{action} = $gotrule;
         }
         $node->{method} = $self->parser->can("match_ref_trace")
-            if $self->{debug};
+            if $self->parser->{debug};
     }
     elsif ($node->{kind} eq 'rgx') {
       # XXX $node;
