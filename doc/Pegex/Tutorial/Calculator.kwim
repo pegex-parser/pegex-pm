@@ -1,38 +1,28 @@
-=head1 A Pegex Calculator
+Pegex::Tutorial::Calculator
+=====================
+A Pegex Calculator
 
 When you look around the web for stuff about parsing, you inevitably find a
 bunch of examples about how to write a precedence parser for mathematical
 expressions.
 
-=over
-
-=item L<http://en.wikipedia.org/wiki/Operator-precedence_parser>
-
-=item L<http://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing/>
-
-=item L<http://www.hokstad.com/operator-precedence-parser.html>
-
-=item L<http://www.perlmonks.org/?node_id=554516>
-
-=back
+* [http://en.wikipedia.org/wiki/Operator-precedence_parser]
+* [http://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing/]
+* [http://www.hokstad.com/operator-precedence-parser.html]
+* [http://www.perlmonks.org/?node_id=554516]
 
 This tutorial is the Pegex version of that. Pegex actually comes with an
 examples directory that contains two arithmetic expression parser/evaluator
 caclulator programs:
 
-=over
-
-=item L<https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator1.pl>
-
-=item L<https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator2.pl>
-
-=back
+* [https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator1.pl]
+* [https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator2.pl]
 
 They both do the same thing but using different parsing approaches. We'll
 cover both of them in detail. I hope you'll find that Pegex handles operator
-precedence parsing elegantly. 
+precedence parsing elegantly.
 
-=head1 The Problem
+= The Problem
 
 Precedence parsers are interesting because you need to deal with operators
 that have the same precedence, different precedences and both left and right
@@ -40,11 +30,11 @@ associativity.
 
 Consider the equation:
 
-    1 - 2 ^ 3 ^ 4 + 5 * 6 / 7
+  1 - 2 ^ 3 ^ 4 + 5 * 6 / 7
 
 Normal precedence and associativity rules make this the same as:
 
-    (1 - (2 ^ (3 ^ 4)) + ((5 * 6) / 7))
+  (1 - (2 ^ (3 ^ 4)) + ((5 * 6) / 7))
 
 Our calculator should produce the same result for both. Note that this means we
 will be parsing numbers, 5 operators, parentheses, and separating whitespace.
@@ -58,7 +48,7 @@ Here's an example of the calculator program running:
     (1 + 2) * 3 = 9
     Enter an equation:
 
-=head1 The Solutions
+= The Solutions
 
 Most of the solutions that you'll read about on the web, involve (or assume) a
 lexing/tokenizing step before parsing. Pegex always parses an input stream
@@ -68,11 +58,11 @@ happens as one operation, which has many advantages.
 But how do we get the operator precedence rules into this? Well, we have 2
 different ways:
 
-=head2 calculator1.pl - Operator Precedence Climbing
+== calculator1.pl - Operator Precedence Climbing
 
 Our first example calculator uses what is known as the Operator Precedence
 Climbing method. See:
-L<http://en.wikipedia.org/wiki/Operator-precedence_parser#Precedence_climbing_method>.
+[http://en.wikipedia.org/wiki/Operator-precedence_parser#Precedence_climbing_method].
 
 This is basically a clever technique of specifying our grammar rules such that
 they imply precedence. Here's the pegex grammar from the code:
@@ -160,7 +150,7 @@ However the real point of this is to explore good parsing techniques,
 and the PCM leaves us wanting to try something more efficient. Let's
 try another approach...
 
-=head2 calculator2.pl - Shunting Yard Algorithm
+== calculator2.pl - Shunting Yard Algorithm
 
 An age old way of parsing expressions is to somehow get the numbers and
 operators into an RPN (Reverse Polish Notation) stack, which is each operand
@@ -169,11 +159,11 @@ accounted for.
 
 For example:
 
-    1 / 2 - ( -3 * 4 )
+  1 / 2 - ( -3 * 4 )
 
 becomes:
 
-    1, 2, /, -3, 4, *, -
+  1, 2, /, -3, 4, *, -
 
 To evaluate an RPN you pop off an operator and then attempt to pop
 off and operand. If the operand is another operator you recurse. When
@@ -183,10 +173,10 @@ That's your result.
 
 Let's look at our new grammar in C<calculator2.pl>:
 
-    expr: operand (operator operand)*
-    operator: /~([<PLUS><DASH><STAR><SLASH><CARET>])~/
-    operand: num | /~<LPAREN>~/ expr /~<RPAREN>~/
-    num: /~(<DASH>?<DIGIT>+)~/
+  expr: operand (operator operand)*
+  operator: /~([<PLUS><DASH><STAR><SLASH><CARET>])~/
+  operand: num | /~<LPAREN>~/ expr /~<RPAREN>~/
+  num: /~(<DASH>?<DIGIT>+)~/
 
 This is much easier to understand. We are just parsing out the
 tokens. In a (very real) sense, we are using Pegex as a lexer.
@@ -213,19 +203,19 @@ Now let's look at the receiver class:
 
 This is also much simpler. There's only one method. What's going on?
 Well the secret is that I put the code to turn the tokens into RPN in
-a separate base class called C<examples/lib/Precedence.pm>.
+a separate base class called [examples/lib/Precedence.pm].
 
 This is an implementation of Edsger Dijkstra's famous Shunting-yard
 Algorithm from 1961! It's only 20 lines of Perl. I won't include it
 inline here, but have a look at it for yourself.
-L<https://github.com/ingydotnet/pegex-pm/blob/master/examples/lib/Precedence.pm>
+[https://github.com/ingydotnet/pegex-pm/blob/master/examples/lib/Precedence.pm]
 
 The Shunting-yard algorithm simply takes a list of expression tokens
 and transforms them into an RPN stack. It uses information from a
 precedence/associativity table like the one above.
 
-Unlike C<calculator1.pl> where we evaluated as we parsed,
-C<calculator2.pl> creates an RPN which is akin to an AST. In other
+Unlike [calculator1.pl] where we evaluated as we parsed,
+[calculator2.pl] creates an RPN which is akin to an AST. In other
 words, it's more like something an actually language compiler would
 do.
 
@@ -241,14 +231,14 @@ changed the runner code to look like this:
     }
 
 As you can see I also moved the evaluator code into a
-separate/reusable module: C<examples/lib/RPN.pm>. This is another 30
+separate/reusable module: [examples/lib/RPN.pm]. This is another 30
 lines of Perl. Please take a look at it.
-L<https://github.com/ingydotnet/pegex-pm/blob/master/examples/lib/RPN.pm>
+[https://github.com/ingydotnet/pegex-pm/blob/master/examples/lib/RPN.pm]
 
 So overall, this second solution was a bit more code, but also feels
 more solid on several levels.
 
-=head1 Conclusion
+= Conclusion
 
 Pegex strives to be the nicest and most reusable way to write new parsers.
 Operator precedence parsers are a necessary part of parsing mathematical
