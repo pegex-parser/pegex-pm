@@ -1,22 +1,23 @@
 Pegex::Tutorial::Calculator
-=====================
+===========================
+
 A Pegex Calculator
 
 When you look around the web for stuff about parsing, you inevitably find a
 bunch of examples about how to write a precedence parser for mathematical
 expressions.
 
-* [http://en.wikipedia.org/wiki/Operator-precedence_parser]
-* [http://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing/]
-* [http://www.hokstad.com/operator-precedence-parser.html]
-* [http://www.perlmonks.org/?node_id=554516]
+* http://en.wikipedia.org/wiki/Operator-precedence_parser
+* http://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing/
+* http://www.hokstad.com/operator-precedence-parser.html
+* http://www.perlmonks.org/?node_id=554516
 
 This tutorial is the Pegex version of that. Pegex actually comes with an
 examples directory that contains two arithmetic expression parser/evaluator
 caclulator programs:
 
-* [https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator1.pl]
-* [https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator2.pl]
+* https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator1.pl
+* https://github.com/ingydotnet/pegex-pm/blob/master/examples/calculator2.pl
 
 They both do the same thing but using different parsing approaches. We'll
 cover both of them in detail. I hope you'll find that Pegex handles operator
@@ -41,12 +42,12 @@ will be parsing numbers, 5 operators, parentheses, and separating whitespace.
 
 Here's an example of the calculator program running:
 
-    > perl examples/calculator1.pl
-    Enter an equation: 1+2*3
-    1+2*3 = 7
-    Enter an equation: (1 + 2) * 3
-    (1 + 2) * 3 = 9
-    Enter an equation:
+  > perl examples/calculator1.pl
+  Enter an equation: 1+2*3
+  1+2*3 = 7
+  Enter an equation: (1 + 2) * 3
+  (1 + 2) * 3 = 9
+  Enter an equation:
 
 = The Solutions
 
@@ -62,17 +63,17 @@ different ways:
 
 Our first example calculator uses what is known as the Operator Precedence
 Climbing method. See:
-[http://en.wikipedia.org/wiki/Operator-precedence_parser#Precedence_climbing_method].
+<http://en.wikipedia.org/wiki/Operator-precedence_parser#Precedence_climbing_method>.
 
 This is basically a clever technique of specifying our grammar rules such that
 they imply precedence. Here's the pegex grammar from the code:
 
-    expr: add_sub
-    add_sub: mul_div+ % /~([<PLUS><DASH>])~/
-    mul_div: exp+ % /~([<STAR><SLASH>])~/
-    exp: token+ % /~<CARET>~/
-    token: /~<LPAREN>~/ expr /~<RPAREN>~/ | number
-    number: /~(<DASH>?<DIGIT>+)~/
+  expr: add_sub
+  add_sub: mul_div+ % /- ([ PLUS DASH ]) -/
+  mul_div: exp+ % /- ([ STAR SLASH ]) -/
+  exp: token+ % /- CARET -/
+  token: /- LPAREN -/ expr /- RPAREN -/ | number
+  number: /- ( DASH? DIGIT+ ) -/
 
 It's a little bit wonky but it works. It says that any expression is an
 add/subtract and that an add/subtract is really a multiply/divide etc. Finally
@@ -87,40 +88,40 @@ the correct order, immediately evaluates the answer and returns the answer for
 each level. Whatever the return value of the final operation is, becomes the
 result of the parse. Here's the receiver class:
 
-    {
-        package Calculator;
-        use base 'Pegex::Tree';
+  {
+      package Calculator;
+      use base 'Pegex::Tree';
 
-        sub got_add_sub {
-            my ($self, $list) = @_;
-            $self->flatten($list);
-            while (@$list > 1) {
-                my ($a, $op, $b) = splice(@$list, 0, 3);
-                unshift @$list, ($op eq '+') ? ($a + $b) : ($a - $b);
-            }
-            @$list;
-        }
+      sub got_add_sub {
+          my ($self, $list) = @_;
+          $self->flatten($list);
+          while (@$list > 1) {
+              my ($a, $op, $b) = splice(@$list, 0, 3);
+              unshift @$list, ($op eq '+') ? ($a + $b) : ($a - $b);
+          }
+          @$list;
+      }
 
-        sub got_mul_div {
-            my ($self, $list) = @_;
-            $self->flatten($list);
-            while (@$list > 1) {
-                my ($a, $op, $b) = splice(@$list, 0, 3);
-                unshift @$list, ($op eq '*') ? ($a * $b) : ($a / $b);
-            }
-            @$list;
-        }
+      sub got_mul_div {
+          my ($self, $list) = @_;
+          $self->flatten($list);
+          while (@$list > 1) {
+              my ($a, $op, $b) = splice(@$list, 0, 3);
+              unshift @$list, ($op eq '*') ? ($a * $b) : ($a / $b);
+          }
+          @$list;
+      }
 
-        sub got_exp {
-            my ($self, $list) = @_;
-            $self->flatten($list);
-            while (@$list > 1) {
-                my ($a, $b) = splice(@$list, -2, 2);
-                push @$list, $a ** $b;
-            }
-            @$list;
-        }
-    }
+      sub got_exp {
+          my ($self, $list) = @_;
+          $self->flatten($list);
+          while (@$list > 1) {
+              my ($a, $b) = splice(@$list, -2, 2);
+              push @$list, $a ** $b;
+          }
+          @$list;
+      }
+  }
 
 As you can see, it has an action method for each level or precedence.
 It loops over the expression, evaluating it. Whether it loops from
@@ -129,20 +130,20 @@ want to use.
 
 Our runner code looks like this:
 
-    while (1) {
-        print "\nEnter an equation: ";
-        my $input = <>;
-        chomp $input;
-        last unless length $input;
-        calc($input);
-    }
+  while (1) {
+      print "\nEnter an equation: ";
+      my $input = <>;
+      chomp $input;
+      last unless length $input;
+      calc($input);
+  }
 
-    sub calc {
-        my $expr = shift;
-        my $calculator = pegex($grammar, 'Calculator');
-        my $result = eval { $calculator->parse($expr) };
-        print $@ || "$expr = $result\n";
-    }
+  sub calc {
+      my $expr = shift;
+      my $calculator = pegex($grammar, 'Calculator');
+      my $result = eval { $calculator->parse($expr) };
+      print $@ || "$expr = $result\n";
+  }
 
 And that's the whole thing. We have a working calculator as specced!
 
@@ -171,35 +172,35 @@ you have 2 operands you do the operation and put the result back on
 the stack. When there is only 1 element on the stack, you are done.
 That's your result.
 
-Let's look at our new grammar in C<calculator2.pl>:
+Let's look at our new grammar in `calculator2.pl`:
 
-  expr: operand (operator operand)*
-  operator: /~([<PLUS><DASH><STAR><SLASH><CARET>])~/
-  operand: num | /~<LPAREN>~/ expr /~<RPAREN>~/
-  num: /~(<DASH>?<DIGIT>+)~/
+  expr: operand ( operator operand )*
+  operator: /- ([ PLUS DASH STAR SLASH CARET ]) -/
+  operand: num | /- LPAREN -/ expr /- RPAREN -/
+  num: /- ( DASH? DIGIT+ ) -/
 
 This is much easier to understand. We are just parsing out the
 tokens. In a (very real) sense, we are using Pegex as a lexer.
 
 Now let's look at the receiver class:
 
-    {
-        package Calculator;
-        use base 'Pegex::Tree', 'Precedence';
+  {
+      package Calculator;
+      use base 'Pegex::Tree', 'Precedence';
 
-        my $operator_precedence_table = {
-            '+' => {p => 1, a => 'l'},
-            '-' => {p => 1, a => 'l'},
-            '*' => {p => 2, a => 'l'},
-            '/' => {p => 2, a => 'l'},
-            '^' => {p => 3, a => 'r'},
-        };
+      my $operator_precedence_table = {
+          '+' => {p => 1, a => 'l'},
+          '-' => {p => 1, a => 'l'},
+          '*' => {p => 2, a => 'l'},
+          '/' => {p => 2, a => 'l'},
+          '^' => {p => 3, a => 'r'},
+      };
 
-        sub got_expr {
-            my ($self, $expr) = @_;
-            $self->precedence_rpn($expr, $operator_precedence_table);
-        }
-    }
+      sub got_expr {
+          my ($self, $expr) = @_;
+          $self->precedence_rpn($expr, $operator_precedence_table);
+      }
+  }
 
 This is also much simpler. There's only one method. What's going on?
 Well the secret is that I put the code to turn the tokens into RPN in
@@ -222,13 +223,13 @@ do.
 But we are writing a calculator and we still need to evaluate this pupy. I
 changed the runner code to look like this:
 
-    sub calc {
-        my $expr = shift;
-        my $calculator = pegex($grammar, 'Calculator');
-        my $rpn = eval { $calculator->parse($expr) };
-        my $result = RPN::evaluate($rpn);
-        print $@ || "$expr = $result\n";
-    }
+  sub calc {
+      my $expr = shift;
+      my $calculator = pegex($grammar, 'Calculator');
+      my $rpn = eval { $calculator->parse($expr) };
+      my $result = RPN::evaluate($rpn);
+      print $@ || "$expr = $result\n";
+  }
 
 As you can see I also moved the evaluator code into a
 separate/reusable module: [examples/lib/RPN.pm]. This is another 30
