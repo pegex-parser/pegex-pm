@@ -5,7 +5,7 @@ version: 0.0.2
 abstract: Acmeist PEG Parser Framework
 homepage: http://pegex.org
 
-license: Artistic 2
+license: perl
 copyright: 2010, 2011, 2012, 2013, 2014. Ingy döt Net.
 author:
   name: Ingy döt Net
@@ -18,11 +18,7 @@ author:
 requires:
   perl: 5.8.3
 test:
-  cmd: make test
-  requires:
-    test-more: 0.0.1
-install:
-  cmd: make install
+  cmd: prove -lv test/
 
 devel:
   git: git@github.org/ingydotnet/bashplus
