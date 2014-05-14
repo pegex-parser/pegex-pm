@@ -63,7 +63,7 @@ different ways:
 
 Our first example calculator uses what is known as the Operator Precedence
 Climbing method. See:
-<http://en.wikipedia.org/wiki/Operator-precedence_parser#Precedence_climbing_method>.
+[http://en.wikipedia.org/wiki/Operator-precedence_parser#Precedence_climbing_method].
 
 This is basically a clever technique of specifying our grammar rules such that
 they imply precedence. Here's the pegex grammar from the code:

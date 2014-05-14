@@ -51,7 +51,7 @@ form, so [Pegex::Grammar] provides automatic compilation support.
   language's module implementations.
 
   See https://github.com/ingydotnet/pegex-pgx and
-  <https://github.com/ingydotnet/pegex-pm/blob/master/lib/Pegex/Pegex/Grammar.pm>.
+  [https://github.com/ingydotnet/pegex-pm/blob/master/lib/Pegex/Pegex/Grammar.pm].
 
 - text
 
