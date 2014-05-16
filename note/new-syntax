@@ -1,3 +1,17 @@
+== Modules to release for new-syntax
+- json-pgx
+- jsony-pgx
+- jsony-pm
+- kwim-pgx
+- pegex-json-pm
+- pegex-pgx
+- pegex-pm
+- testml-pgx
+- testml-pm
+- vic
+
+
+
 The following syntax changes were made:
 
 new: /foo/
