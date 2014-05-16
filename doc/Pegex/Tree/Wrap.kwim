@@ -1,17 +1,16 @@
-=encoding utf8
+Pegex::Tree::Wrap
+=================
 
-=head1 NAME
+Pegex Wrapper Parse Tree Receiver
 
-Pegex::Tree::Wrap - Pegex Wrapper Parse Tree Receiver
+= Synopsis
 
-=head1 SYNOPSIS
+  use Pegex;
+  $tree = pegex($grammar, 'Pegex::Tree::Wrap')->parse($input);
 
-    use Pegex;
-    $tree = pegex($grammar, 'Pegex::Tree::Wrap')->parse($input);
+= Description
 
-=head1 DESCRIPTION
-
-L<Pegex::Tree::Wrap> is receiver class that will shape the captured data from a
+[Pegex::Tree::Wrap] is receiver class that will shape the captured data from a
 Pegex parse operation into a tree made out of hashes. The keys of the hashes
 are the rule names that matched, and the values are arrays of captured data.
 
@@ -19,25 +18,16 @@ This module is not often used as a receiver base class, but it is the default
 receiver for a Pegex parse. That's because the tree is very readable with all
 the rule keys in it.
 
-=head1 SEE ALSO
+= See Also
 
-=over
+* [Pegex::Receiver]
+* [Pegex::Tree]
 
-=item *
-
-L<Pegex::Receiver>
-
-=item *
-
-L<Pegex::Tree>
-
-=back
-
-=head1 AUTHOR
+= Author
 
 Ingy döt Net <ingy@cpan.org>
 
-=head1 COPYRIGHT AND LICENSE
+= Copyright and License
 
 Copyright (c) 2012, 2013, 2014. Ingy döt Net.
 
@@ -45,5 +35,3 @@ This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
 See http://www.perl.com/perl/misc/Artistic.html
-
-=cut

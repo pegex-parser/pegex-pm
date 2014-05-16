@@ -1,5 +1,4 @@
-The Pegex API
-=============
+= The Pegex API
 
 Pegex can be used in many ways: inside scripts, from the command line or as the
 foundation of a modular parsing framework. This document details the various
@@ -65,7 +64,7 @@ smaller tasks. Here is an example:
 
   $grammar = "
   expr: num PLUS num
-  num: /(<DIGIT>+)/
+  num: /( DIGIT+)/
   ";
 
   print Dump pegex($grammar)->parse('2+2');
@@ -134,7 +133,7 @@ formally.
 
   $grammar_text = "
   expr: num PLUS num
-  num: /(<DIGIT>+)/
+  num: /( DIGIT+)/
   ";
 
   $grammar = Pegex::Grammar->new(text => $grammar_text);

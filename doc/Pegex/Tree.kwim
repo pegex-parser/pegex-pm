@@ -1,27 +1,26 @@
-=encoding utf8
+Pegex::Tree
+===========
 
-=head1 NAME
+Pegex Parse Tree Receiver
 
-Pegex::Tree - Pegex Parse Tree Receiver
+= Synopsis
 
-=head1 SYNOPSIS
+  use Pegex;
+  $tree = pegex($grammar, 'Pegex::Tree')->parse($input);
 
-    use Pegex;
-    $tree = pegex($grammar, 'Pegex::Tree')->parse($input);
+= Description
 
-=head1 DESCRIPTION
-
-L<Pegex::Tree> is receiver class that will shape the captured data from a Pegex
+[Pegex::Tree] is receiver class that will shape the captured data from a Pegex
 parse operation into a tree made out of arrays.
 
 This module is a very (probably the most) common base class for writing your
 own receiver class.
 
-=head1 AUTHOR
+= Author
 
 Ingy döt Net <ingy@cpan.org>
 
-=head1 COPYRIGHT AND LICENSE
+= Copyright and License
 
 Copyright (c) 2012, 2013, 2014. Ingy döt Net.
 
@@ -29,5 +28,3 @@ This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
 See http://www.perl.com/perl/misc/Artistic.html
-
-=cut

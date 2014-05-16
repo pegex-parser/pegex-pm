@@ -1,0 +1,33 @@
+= Pegex Tutorials
+
+Pegex has a growing number of tutorials on how to do various parsing tasks.
+
+This document is just an index to the current tutorials.
+
+- [Pegex::Tutorial::JSON]
+
+  This is a very in-depth tutorial of the creation of the module [Pegex::JSON]
+  (a JSON decoder that uses Pegex) and the thought that went into creating it.
+  It covers almost all of the [Pegex::Syntax] as well.
+
+- [Pegex::Tutorial::Calculator]
+
+  Pegex comes with an `examples/` directory. One example is
+  [Pegex/examples/calculator.pl]. It's a simple precedence parser (and
+  evaluator) for arithmetic expressions like this one:
+
+    1 * (2 + 3) / (4 ^ 5 ^ 6 - -7)
+
+= See Also
+
+- [Pegex::API]
+
+  API documentation.
+
+- [Pegex::Syntax]
+
+  A detailed description of the Pegex grammar language syntax.
+
+- [Pegex::Resources]
+
+  A list of all things Pegex.
