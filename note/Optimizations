@@ -1,0 +1,38 @@
+Optimization List
+=================
+
+When a grammar is compiled, it gets turned into a tree of information defining
+the grammar. This consists of rules, regexes, groupings, quantifiers and other
+such things.
+
+== Combine Adjacent Regexes
+
+Two plain regexes can be combined into one. The issue is to determine when it
+is appropriate, and what phase to do it in.
+
+Plain regexes can be joined immediately:
+
+    'foo'   / ( bar ) /
+    / 'foo' ( <bar> ) /
+
+== Binding a receiver to a grammar
+
+Before a parse happens, 
+
+
+
+
+== Eliminating Separator Code
+
+    a % b           a
+    a %% b          a b?
+    a* % b          (a (b a)*)?
+    a* %% b         (a (b a)* b?)?
+    a+ % b          a (b a)*
+    a+ %% b         a (b a)* b?
+    a3 % b          a (b a)2
+    a3 %% b         a (b a)2 b?
+    a3+ % b         a (b a)2+
+    a3+ %% b        a (b a)2+ b?
+    a3-7 % b        a (b a)2-6
+    a3-7 %% b       a (b a)2-6 b?
