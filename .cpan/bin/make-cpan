@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -e
+
+rm -fr cpan
+mkdir cpan
+
+(
+  set -x
+  cp Changes cpan
+  cp -r lib cpan
+  cp -r test cpan/t
+  rm -fr cpan/t/xt cpan/t/misc
+  ./.cpan/bin/make-dist-ini > cpan/dist.ini
+)
+
+for kwim in $(find doc -type f -name '*.kwim'); do
+  pod="${kwim/doc/cpan/lib}"
+  pod="${pod/.kwim/.pod}"
+  if grep '^====' "$kwim" &> /dev/null; then
+    (
+      set -x
+      kwim --to=pod --pod-cpan "$kwim" > "$pod"
+    )
+  else
+    (
+      set -x
+      kwim --to=pod --complete --wrap "$kwim" > "$pod"
+    )
+  fi
+done
+
+# vim: set sw=2 lisp:
