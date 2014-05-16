@@ -1,0 +1,28 @@
+== Pegex/Parser
+
+- contains the flatter
+
+== Pegex/Pegex/AST
+
+- contains the set-sep
+
+== Pegex/Pegex/Grammar
+
+- needs to be fixed in place?
+
+== testml/compiler-checks.tml
+
+- start with this test
+
+== testml/compiler-equivalence.tml
+
+- then do this one
+
+
+--------------------------
+a+ % b
+a -(b a)*
+
+The - (flatten) needs to add itself into the context above it.
+
+Not sure where that happens. Somewhere in Pegex::Parser
