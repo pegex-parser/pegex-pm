@@ -24,7 +24,7 @@ and possibly doing something with what is found.
 Usually a parser gets its instructions of what means what from something
 called a grammar. A grammar is a set of rules that defines how the input must
 be structured. In many parsing methodologies, input is preprocessed (possibly
-into tokesn) before the parser/grammar get to look at it. Although this is
+into tokens) before the parser/grammar get to look at it. Although this is
 a common method, it is not the only approach.
 
 =head1 How Pegex Works
@@ -44,7 +44,7 @@ Pegex parsing consists of 4 distinct parts or objects:
 =back
 
 Quite simply, a parser object is created with a grammar object and a receiver
-object. Then the parser object's `parse()` method is called on an input
+object. Then the parser object's C<parse()> method is called on an input
 object. The parser applies the rules of the grammar to the input and invokes
 methods of the receiver as the rules match. The parse is either successful or
 results in an error. The result is whatever the receiver object decides it

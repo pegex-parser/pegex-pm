@@ -41,7 +41,7 @@ intended to do.
 This is the base class of all Pegex receiver classes.
 
 It doesn't do much of anything, which is the correct thing to do. If you use
-this class as your receiver if won't do any extra work. See L<Pegex::Tree> for
+this class as your receiver it won't do any extra work. See L<Pegex::Tree> for
 a receiver base class that will help organize your matches by default.
 
 =head2 How A Receiver Works

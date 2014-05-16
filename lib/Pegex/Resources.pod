@@ -1,6 +1,6 @@
 =head1 Pegex Resources
 
-The best way to learn about Pegex, is to look at projects that currently use
+The best way to learn about Pegex is to look at projects that currently use
 it.
 
 This document attempts to name as many interesting Pegex things as possible.

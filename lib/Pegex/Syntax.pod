@@ -27,11 +27,11 @@ B<rule_section>. But hey, we already knew that!
 
 =head1 Meta Section
 
-The meta statements ate the top of a grammar file look like this:
+The meta statements at the top of a grammar file look like this:
 
     %pegexKeyword value
 
-Let's look at the top the the pegex.pgx grammar:
+Let's look at the top of the pegex.pgx grammar:
 
     # This is the Pegex grammar for Pegex grammars!
     %grammar pegex
