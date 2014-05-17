@@ -113,7 +113,12 @@ sub match_next {
         $match = [[]];
     }
     if ($max != 1) {
-        $match = [$match];
+        if ($next->{-flat}) {
+            $match = [ map { (ref($_) eq 'ARRAY') ? (@$_) : ($_) } @$match ];
+        }
+        else {
+            $match = [$match]
+        }
         $self->{farthest} = $position
             if ($self->{position} = $position) > $self->{farthest};
     }

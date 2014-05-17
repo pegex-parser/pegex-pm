@@ -67,10 +67,8 @@ d: /d/
 --- input: bbccdd
 --- tree
 - []
-- []
 --- wrap
 a:
-- []
 - []
 
 === A subrule
@@ -150,9 +148,9 @@ d: /(d+)/
 --- wrap
 a:
 - b: bb
-- cc
+- c: cc
 
-=== Pass and Skip Multi
+=== Flat and Skip Multi
 --- grammar
 a: <b>* -<c>* .<d>*
 b: /(b)/
@@ -161,13 +159,13 @@ d: /(d)/
 --- input: bccdd
 --- tree
 - - b
-- - c
-  - c
+- c
+- c
 --- wrap
 a:
 - - b: b
-- - c
-  - c
+- c: c
+- c: c
 
 === Skip Bracketed
 --- grammar
@@ -246,7 +244,7 @@ a:
 
 === List and Separators
 --- grammar
-a: <b> <c>+ % <d>
+a: b c+ % d
 b: /(b)/
 c: /(c+)/
 d: /(d+)/
@@ -400,14 +398,20 @@ c: /<COMMA>/
 --- input: b,b,,,,bb,
 --- tree
 - b
+- []
 - b
+- []
 - b
+- []
 - b
 --- wrap
 a:
 - b: b
+- []
 - b: b
+- []
 - b: b
+- []
 - b: b
 
 === Tilde matching

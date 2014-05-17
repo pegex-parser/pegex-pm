@@ -1,6 +1,7 @@
 %TestML 0.1.0
 
-Plan = 68
+Plan = 70
+Diff = 1
 
 Label = "$BlockLabel (bootstrap compile)"
 *grammar.bootstrap_compile.yaml.clean == *yaml
@@ -82,9 +83,33 @@ a:
   - .ref: y
   - .ref: z
 
+=== Separator Syntax
+--- grammar
+a: b+ % c | d* %% e
+--- yaml
+a:
+  .any:
+  - .all:
+    - .ref: b
+    - +min: 0
+      -flat: 1
+      .all:
+      - .ref: c
+      - .ref: b
+  - +max: 1
+    .all:
+    - .ref: d
+    - +min: 0
+      -flat: 1
+      .all:
+      - .ref: e
+      - .ref: d
+    - +max: 1
+      .ref: e
+
 === Complex All/Any Precedence
 --- grammar
-a: b c | ( d | e | f % g h ) i
+a: b c | ( d | e | f* % g h ) i
 --- yaml
 a:
   .any:
@@ -96,7 +121,14 @@ a:
       - .ref: d
       - .ref: e
       - .all:
-        - .ref: f
+        - +max: 1
+          .all:
+          - .ref: f
+          - +min: 0
+            -flat: 1
+            .all:
+            - .ref: g
+            - .ref: f
         - .ref: h
     - .ref: i
 
@@ -254,14 +286,18 @@ a:
 
 === List Separator
 --- grammar
-a: b | c? %% /d/
+a: b | c+ %% /d/
 --- yaml
 a:
   .any:
   - .ref: b
   - .all:
-    - +max: 1
-      .ref: c
+    - .ref: c
+    - +min: 0
+      -flat: 1
+      .all:
+      - .rgx: d
+      - .ref: c
     - +max: 1
       .rgx: d
 
@@ -271,19 +307,19 @@ a: <b>2+ % c* d* %% <e>2-3
 --- yaml
 a:
   .all:
-  - -flat: 1
-    .all:
+  - .all:
     - .ref: b
     - +min: 1
+      -flat: 1
       .all:
       - +min: 0
         .ref: c
       - .ref: b
   - +max: 1
-    -flat: 1
     .all:
     - .ref: d
     - +min: 0
+      -flat: 1
       .all:
       - +max: 3
         +min: 2

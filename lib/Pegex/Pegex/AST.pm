@@ -259,12 +259,12 @@ sub set_separator {
         $min-- if $min > 0;
         $max-- if $max > 0;
         $rule = {
-            '-flat' => 1,
             '.all' => [
                 $rule,
                 {
                     '+min' => $min,
                     '+max' => $max,
+                    '-flat' => 1,
                     '.all' => [
                         $sep,
                         {%$rule},
@@ -277,11 +277,11 @@ sub set_separator {
         my $copy = {%$rule};
         my $min = delete $copy->{'+min'};
         my $new = {
-            '-flat' => 1,
             '.all' => [
                 $copy,
                 {
                     '+min' => 0,
+                    '-flat' => 1,
                     '.all' => [
                         $sep,
                         {%$copy},

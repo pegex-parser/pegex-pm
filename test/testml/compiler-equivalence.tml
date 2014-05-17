@@ -107,58 +107,58 @@ x: a? b?
 --- grammar1
 x: a* % b
 --- grammar2
-x: -(a (b a)*)?
+x: (a -(b a)*)?
 
 === Separator Reduction a* %% b
 --- grammar1
 x: a* %% b
 --- grammar2
-x: -(a (b a)* b?)?
+x: (a -(b a)* b?)?
 
 === Separator Reduction a+ % b
 --- grammar1
 x: a+ % b
 --- grammar2
-x: -(a (b a)*)
+x: a -(b a)*
 
 === Separator Reduction a+ %% b
 --- grammar1
 x: a+ %% b
 --- grammar2
-x: -(a (b a)* b?)
+x: a -(b a)* b?
 
 === Separator Reduction <a>3 % b
 --- grammar1
 x: <a>3 % b
 --- grammar2
-x: -(a (b a)2)
+x: a -(b a)2
 
 === Separator Reduction <a>3 %% b
 --- grammar1
 x: <a>3 %% b
 --- grammar2
-x: -(a (b a)2 b?)
+x: a -(b a)2 b?
 
 === Separator Reduction <a>3+ % b
 --- grammar1
 x: <a>3+ % b
 --- grammar2
-x: -(a (b a)2+)
+x: a -(b a)2+
 
 === Separator Reduction <a>3+ %% b
 --- grammar1
 x: <a>3+ %% b
 --- grammar2
-x: -(a (b a)2+ b?)
+x: a -(b a)2+ b?
 
 === Separator Reduction <a>3-7 % b
 --- grammar1
 x: <a>3-7 % b
 --- grammar2
-x: -(a (b a)2-6)
+x: a -(b a)2-6
 
 === Separator Reduction <a>3-7 %% b
 --- grammar1
 x: <a>3-7 %% b
 --- grammar2
-x: -(a (b a)2-6 b?)
+x: a -(b a)2-6 b?
