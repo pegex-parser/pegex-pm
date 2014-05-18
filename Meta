@@ -9,14 +9,14 @@ license: perl
 copyright: 2010, 2011, 2012, 2013, 2014. Ingy döt Net.
 author:
   name: Ingy döt Net
-  email: ingy@cpan.net
+  email: ingy@cpan.org
   github: ingydotnet
   twitter: ingydotnet
   freenode: ingy
   homepage: http://ingy.net
 
 requires:
-  perl: 5.8.3
+  perl: 5.8.1
 test:
   requires:
     YAML::XS: 0
@@ -26,5 +26,8 @@ devel:
   git: git@github.org/ingydotnet/pegex-pm
   irc: irc.freenode.net/pegex
   bug: https://github.com/ingydotnet/pegex-pm/issues/
+
+=cpan:
+  include_testml: 1
 
 =travis: perl

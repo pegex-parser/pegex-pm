@@ -14,6 +14,10 @@ cpan:
 test-cpan: cpan
 	(cd cpan; dzil test) && rm -fr cpan
 
+install: distdir
+	(cd $(DISTDIR); perl Makefile.PL; make install)
+	make clean
+
 dist: clean cpan
 	(cd cpan; dzil build)
 	mv cpan/$(DIST) .
