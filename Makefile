@@ -1,7 +1,7 @@
 .PHONY: cpan test
 
-NAME := $(shell grep '^name: ' Meta | cut -d' ' -f2)
-VERSION := $(shell grep '^version: ' Meta | cut -d' ' -f2)
+NAME := $(shell grep '^name: ' Meta 2>/dev/null | cut -d' ' -f2)
+VERSION := $(shell grep '^version: ' Meta 2>/dev/null | cut -d' ' -f2)
 DISTDIR := $(NAME)-$(VERSION)
 DIST := $(DISTDIR).tar.gz
 
@@ -36,3 +36,12 @@ check-release:
 
 clean purge:
 	rm -fr cpan $(DIST) $(DISTDIR)
+
+upgrade:
+	(PERL5REPO=$(PWD) make -C ../perl5-pkg do-upgrade)
+
+do-upgrade:
+	mkdir -p $(PERL5REPO)/.cpan/bin
+	cp Makefile $(PERL5REPO)/Makefile
+	cp dist.ini $(PERL5REPO)/.cpan/
+	cp -r bin/* $(PERL5REPO)/.cpan/bin/
