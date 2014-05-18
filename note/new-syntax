@@ -1,13 +1,14 @@
 == Modules to release for new-syntax
-- json-pgx
-- jsony-pgx
-- jsony-pm
-- kwim-pgx
 - pegex-json-pm
-- pegex-pgx
+  json-pgx
+- jsony-pm
+  jsony-pgx
+- kwim-pm
+  kwim-pgx
 - pegex-pm
-- testml-pgx
+  pegex-pgx
 - testml-pm
+  testml-pgx
 - vic
 
 
