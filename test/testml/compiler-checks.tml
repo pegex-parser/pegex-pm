@@ -1,6 +1,6 @@
 %TestML 0.1.0
 
-Plan = 70
+Plan = 74
 Diff = 1
 
 Label = "$BlockLabel (bootstrap compile)"
@@ -17,7 +17,7 @@ Label = "$BlockLabel (pegex compile)"
 === Whitespace Tokens
 --- grammar
 a: - b+ + c -
-b: /- cat + dog -/
+b: /- 'cat' + 'dog' -/
 --- yaml
 a:
   .all:
@@ -447,4 +447,4 @@ a:
 a: / - foo + bar+ -- baz /
 --- yaml
 a:
-  .rgx: <_>foo<__>bar+<__>baz
+  .rgx: <_><foo><__><bar>+<__><baz>
