@@ -34,54 +34,54 @@ The following public methods are available:
 
 - `$compiler = Pegex::Compiler->new();`
 
-Return a new Pegex::Compiler object.
+  Return a new Pegex::Compiler object.
 
 - `$grammar_tree = $compiler->compile($grammar_input);`
 
-Compile a grammar text into a grammar tree that can be used by a
-Pegex::Parser. This method is calls the `parse` and `combinate` methods and
-returns the resulting tree.
+  Compile a grammar text into a grammar tree that can be used by a
+  Pegex::Parser. This method is calls the `parse` and `combinate` methods and
+  returns the resulting tree.
 
-Input can be a string, a string ref, a file path, a file handle, or a
-Pegex::Input object. Return `$self` so you can chain it to other methods.
+  Input can be a string, a string ref, a file path, a file handle, or a
+  Pegex::Input object. Return `$self` so you can chain it to other methods.
 
 - `$compiler->parse($grammar_text)`
 
-The first step of a `compile` is `parse`. This applies the Pegex language
-grammar to your grammar text and produces an unoptimized tree.
+  The first step of a `compile` is `parse`. This applies the Pegex language
+  grammar to your grammar text and produces an unoptimized tree.
 
-This method returns `$self` so you can chain it to other methods.
+  This method returns `$self` so you can chain it to other methods.
 
 - `$compiler->combinate()`
 
-Before a Pegex grammar tree can be used to parse things, it needs to be
-combinated. This process turns the regex tokens into real regexes. It also
-combines some rules together and eliminates rules that are not needed or have
-been combinated. The result is a Pegex grammar tree that can be used by a
-Pegex::Parser.
+  Before a Pegex grammar tree can be used to parse things, it needs to be
+  combinated. This process turns the regex tokens into real regexes. It also
+  combines some rules together and eliminates rules that are not needed or have
+  been combinated. The result is a Pegex grammar tree that can be used by a
+  Pegex::Parser.
 
-NOTE: While the parse phase of a compile is always the same for various
-programming langugaes, the combinate phase takes into consideration and
-special needs of the target language. Pegex::Compiler only combinates for
-Perl, although this is often sufficient in similar languages like Ruby or
-Python (PCRE based regexes). Languages like Java probably need to use their
-own combinators.
+  NOTE: While the parse phase of a compile is always the same for various
+  programming langugaes, the combinate phase takes into consideration and
+  special needs of the target language. Pegex::Compiler only combinates for
+  Perl, although this is often sufficient in similar languages like Ruby or
+  Python (PCRE based regexes). Languages like Java probably need to use their
+  own combinators.
 
 - `$compiler->tree()`
 
-Return the current state of the grammar tree (as a hash ref).
+  Return the current state of the grammar tree (as a hash ref).
 
 - `$compiler->to_yaml()`
 
-Serialize the current grammar tree to YAML.
+  Serialize the current grammar tree to YAML.
 
 - `$compiler->to_json()`
 
-Serialize the current grammar tree to JSON.
+  Serialize the current grammar tree to JSON.
 
 - `$compiler->to_perl()`
 
-Serialize the current grammar tree to Perl.
+  Serialize the current grammar tree to Perl.
 
 = In Place Compilation
 

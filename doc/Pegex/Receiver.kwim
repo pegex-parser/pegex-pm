@@ -104,7 +104,7 @@ This section documents the methods that you can include in receiver subclass.
     # produces [1, 2, 3, 4, 5, 6]
 
   Hashes are left unchanged. The array is modified in place, but is also the
-  reutrn value.
+  return value.
 
 = Author
 

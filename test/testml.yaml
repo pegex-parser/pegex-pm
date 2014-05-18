@@ -4,7 +4,7 @@ test_file_prefix: testml-
 test_file_template: |
   use strict;
   use File::Basename;
-  use lib dirname(__FILE__);
+  use lib dirname(__FILE__), 'inc';
   use TestML;
   use TestML::Compiler::Lite;
   use TestMLBridge;

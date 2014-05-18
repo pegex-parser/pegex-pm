@@ -1,4 +1,13 @@
 ---
+version: 0.30
+date:    Sat May 17 23:43:00 PDT 2014
+changes:
+- Major release.
+- New cleaner syntax.
+- Slight breakage of backwards compatability.
+- Grammar authors can get help on #pegex (irc.freenode.net)
+
+---
 version: 0.25
 date:    Sat Feb  8 14:14:59 PST 2014
 changes:

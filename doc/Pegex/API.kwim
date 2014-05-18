@@ -40,7 +40,8 @@ briefly:
   grammar. As a rule in the grammar matches, its corresponding receiver method
   (if one exists) is called with the data that has been matched. It is the
   receiver's job to take action on the data, often building it into some new
-  structure.
+  structure. Pegex will use [Pegex::Tree::Wrap] as the default receiver; it
+  produces a reasonably readable tree of the matched / captured data.
 
 - [Pegex::Input]
 
@@ -64,7 +65,7 @@ smaller tasks. Here is an example:
 
   $grammar = "
   expr: num PLUS num
-  num: /( DIGIT+)/
+  num: /( DIGIT+ )/
   ";
 
   print Dump pegex($grammar)->parse('2+2');
@@ -133,7 +134,7 @@ formally.
 
   $grammar_text = "
   expr: num PLUS num
-  num: /( DIGIT+)/
+  num: /( DIGIT+ )/
   ";
 
   $grammar = Pegex::Grammar->new(text => $grammar_text);
@@ -166,7 +167,7 @@ create a module called `lib/MyThing/Grammar.pm` with content like this:
 
 Then run this command line:
 
-  perl -MMyThing::Grammar=compile
+  perl -Ilib -MMyThing::Grammar=compile
 
 It will rewrite your module to look something like this:
 
