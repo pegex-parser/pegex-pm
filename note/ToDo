@@ -1,14 +1,16 @@
+# new-syntax
+- Support new modifier forms
+  - (rule)2-4
+  - (rule)2+
+  - rule+2-4
+- Deprecation warnings in Compiler
+
 # Release 0.23
 - perl -MTestML -e 'TestML->compile($file, $class)';
 - TestML
   - %include
   - %extends
   - %require
-- Make YAML Awesome
-  - YAML Test Suite Driven
-  - Consistent implementations
-    - Single-sourced UniScript
-  - Ruby leads the way
 
 # Release 0.22
 - Remove TestML dependency

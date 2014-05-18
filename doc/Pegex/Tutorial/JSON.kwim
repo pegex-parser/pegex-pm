@@ -1,0 +1,415 @@
+= How to write a JSON Parser in Pegex
+
+This document details the creation of the CPAN module: [Pegex::JSON] which is
+a JSON parser/decoder written in Perl using the Pegex parsing framework. The
+code lives on github here: [https://github.com/ingydotnet/pegex-json-pm].
+
+= Test First
+
+Have a look at
+[https://github.com/ingydotnet/pegex-json-pm/blob/master/t/test.t].  This
+simple test has a bunch of small pieces of JSON and their YAML equivalents. It
+asserts that when the JSON is decoded, it will match the YAML.
+
+The test is written in a testing language known as TestML. TestML just happens
+to also use Pegex in its compiler. Both TestML and Pegex are *Acmeist*
+frameworks, meaning that they are intended to work in multiple programming
+languages.
+
+You can run the test like normal:
+
+  > prove -lv t/test.t
+
+= The Pegex JSON Grammar
+
+The next thing to do is write the JSON grammar in the Pegex grammar language.
+Writing grammars is the heart and soul of using Pegex. A grammar is simply a
+definition of a language that specifies what is what, and how it must be
+structured.
+
+Since Pegex is Acmeist, I put the JSON grammar in its own repo so that it
+could be shared by many different projects in different programming languages.
+The grammar file is here:
+[https://github.com/ingydotnet/json-pgx/blob/master/json.pgx].
+
+Let's look at this small but complete language definition in detail.
+
+The file starts with some comments. Comments can be used liberally in Pegex
+and go from a '#' to the end of a line. Just as you would expect.
+
+  # A simple grammar for the simple JSON data language.
+  # For parser implementations that use this grammar, see:
+  # * https://github.com/ingydotnet/pegex-json-pm
+
+Next we have what is called the Meta section of the grammar.
+
+  %grammar json
+  %version 0.0.1
+
+Meta section lines are of the form:
+
+  %key value
+
+Your grammar should have at least a name and a version.
+
+Everything else in the grammar is a set of things called "rules". A rule has a
+name and a definition. The first rule in a grammar is special. When a parser
+starts parsing it defaults to using the first rule as the starting rule
+(although this can be overridden).
+
+We start the JSON grammar with this rule:
+
+  json: map | seq
+
+The name of this rule is 'json'. When we start parsing JSON we say that the
+entire text must match the rule 'json'. This makes a lot of sense.
+
+This style of parsing is known as Top Down and Recursive Descent. Pegex is
+both of these. It should be noted that Pegex does not tokenize a text before
+parsing it. The rules themselves form a kind of tokenizer, pulling out the
+desired data segments as needed.
+
+In this rule, we are saying that a 'json' document is either a 'map' (aka
+mapping or hash) OR it is a 'seq' (aka sequence or array), which assuming you
+know JSON (almost everybody does), is the only thing allowed at the top level.
+
+In this rule, 'map' and 'seq' are called 'rule /references/'. They point to
+other named rules that are expected to be in the grammar. References are
+usually just the name of the subrule itself, but can also be enclosed in angle
+brackets (which are sometimes required). ie the rule above could also be
+written like this:
+
+  json: map | seq
+
+We are also introduced to the OR operator which is a single PIPE character. It
+should also be noted that a COLON simply separates a rule name and its
+definition.
+
+The next line defines a new rule called 'node':
+
+  node: map | seq | scalar
+
+We are calling 'node' the list of general structures that any given point in
+the JSON data graph can be. This is simply a mapping, sequence or scalar.
+
+Moving on, we need rules describing 'map', 'seq' 'scalar'. A grammar is
+complete when all of its rule references are defined.
+
+Let's start with map:
+
+  map:
+      /- LCURLY -/
+      pair* % /- COMMA -/
+      /- RCURLY -/
+
+This seems a lot more complicated, but let's break things down, one at a time.
+What we will find this rule to mean, is that a map is a '{' followed by zero
+or more (key/value) pairs separated by a comma, then ending with a '}'. Along
+the way there may also be intermittent whitespace. The '-' character indicates
+whitespace, but we'll cover that more later.
+
+The first thing we notice is that a rule definition can span multiple lines. A
+rule definition ends when the next rule begins. Pegex actually allows for
+multiple rules on one line, but they must be separated by semicolons, like so:
+
+  rule1: a|b; rule2: c|d; rule3: e|f
+
+The next thing we see are forward slash characters. Like in Perl and
+JavaScript, a pair of slashes indicate a regular expression. In this rule we
+have 3 regular expressions.
+
+It is a good time to note that Pegex grammars get compiled into a simple data
+structure that you can express as JSON or YAML. In fact the repository
+containing the Pegex grammar that we are discussing also contains the matching
+compiled forms. See:
+[https://github.com/ingydotnet/json-pgx/blob/master/json.pgx.yaml]. A quick
+glance at this file shows all the same rule definitions, but the regexes look
+much different.
+
+That's because Pegex tries to make regexes readable and composable. That means
+that complex regexes can be defined as small parts that get composed into
+bigger parts. By the time they get compiled, they can be quite hard to
+understand.
+
+For example if we had this Pegex grammar:
+
+  greeting: / hello COMMA - world /
+  hello: / (:'O' SPACE 'HAI' | 'Hey' SPACE 'there') /
+  world: / (:Earth|Mars|Venus) /
+
+It would compile to:
+
+  greeting:
+    .rgx: (?:O\ HAI|Hey\ there),\s*(?:Earth|Mars|Venus)
+
+Note the the 'hello' and 'world' rules are gone, but their definitions have
+been baked into the one big regex for 'greeting'.
+
+Additionally there are references to things like COMMA and SPACE. These
+are called Pegex *Atoms*, and there are atoms for all the punctuation
+characters, whitespace chars, and others. The full list is here:
+[Pegex::Grammar::Atoms].
+
+Having to write out 'SEMI' instead of ';' seems strange at first, but it is
+how Pegex easily separates metasyntax from text to be matched. Once you get
+used to it, it is very readable.
+
+The actual whitespace (and comments) inside a regex are completely ignored by
+Pegex. This is the same as Perl's 'x' regex flag.
+
+Finally the '-' is Pegex's 'possible whitespace' indicator, and usually
+expands to `\s*`. It actually expands to `ws1`, which expands to `ws*`, which
+expands to `WS*`, which exapands to `\s*` (unless you override any of those
+rules).
+
+Getting back to JSON...
+
+The rule we defined for 'map' should now be more readable. Let's look at it
+again, but this time in a more compact form:
+
+  map: /- LCURLY -/   (pair* % /- COMMA -/)   /- RCURLY -/
+
+I've compacted the regexes (since they just mean curlies and commas with
+possible whitespace), and I've added parentheses around the middle stuff to
+indicate the the '%' operator has a tighter binding.
+
+So what is the '%' operator? It was borrowed from Perl 6 Rules. Consider:
+
+  a+ % b
+
+This means one or more 'a', separated by 'b'. Simple. The %% operator means
+the same thing, except it indicates that a trailing 'b' is OK.
+
+This notation is handy for things like comma separated lists. (Which is
+exactly what we are using it for here.)
+
+The rule above means zero or more 'pair's separated by commas. (trailing comma
+not allowed, which is strictly correct for JSON).
+
+Now is a good time to bring up 'rule /quantifiers/'. A rule quantifier is a
+suffix to a rule reference, and can be one of ? * or +. These suffixes mean
+the same thing that they would in regexes.
+
+There are two other quantifier suffixes. '2+' is equivalent to the regex
+syntax {2,} and 2-5 is the same as {2,5}. When you use one of these two forms,
+you need to put the rule reference in angle brackets, or else the number looks
+like part of the rule name. For example:
+
+  rule1: <rule2>5-9 <rule3>29+
+
+not:
+
+  rule1: rule25-9 rule329+
+
+Let's take a look at that rule after Pegex compilation:
+
+  map:
+    .all:
+    - .rgx: \s*\{\s*
+    - +min: 0
+      .ref: pair
+      .sep:
+        .rgx: \s*,\s*
+    - .rgx: \s*\}\s*
+
+The rule for 'map' says that the text must match 3 thing: a regex (opening
+curly brace), zero or more occurences of a rule called 'pair' separated by a
+regex (comma), and finally another regex (closing curly).
+
+One thing that we have silently covered is the AND operator. That's because
+there is no operator symbol for it. Consider the rules:
+
+  a: b c+ /d/
+  b: c | d
+  c: d e | f % g
+
+The PIPE character between 2 things means OR. No symbol between 2 things means
+AND. A PERCENT means ALTERNATION. ALTERNATION binds tightest and OR binds
+loosest, with AND in the middle. Precedence can be disambiguated with
+parentheses. Thus the rule for 'c' can be restated:
+
+  c: ((d e) | (f % g))
+
+OK. I think we've covered just about everything needed so far. That was a lot
+of learning for one rule, but now you know most of Pegex!
+
+The next three rules need no new knowledge. Take a look at these and see if
+you can figure them out.
+
+  pair:
+      string
+      /- COLON -/
+      node
+
+  seq:
+      /- LSQUARE -/
+      node* % /- COMMA -/
+      /- RSQUARE -/
+
+  scalar:
+      string |
+      number |
+      boolean |
+      null
+
+A pair (you know... a hash key/value), is a string, a colon, and some node. A
+seq is zero or more comma-separated nodes between square brackets. A scalar
+can be one of 4 forms. Simple.
+
+One interesting point is that has just arisen here, is the use of recursion.
+The rules for pair and seq both reference the rule for node. Thus, the grammar
+is recursive descent. It starts with the rule for the thing as a whole (ie
+'json') and descends (recursively) until it matches all the specific
+characters.
+
+== Pegex Regexes in More Depth
+
+Next we have the definition for a JSON string:
+
+  # string and number are interpretations of http://www.json.org/
+  string: /
+      DOUBLE
+          (
+              (:
+                  BACK (:       # Backslash escapes
+                      [
+                          DOUBLE      # Double Quote
+                          BACK        # Back Slash
+                          SLASH       # Foreward Slash
+                          b           # Back Space
+                          f           # Form Feed
+                          n           # New Line
+                          r           # Carriage Return
+                          t           # Horizontal Tab
+                      ]
+                  |
+                      u HEX{4}        # Unicode octet pair
+                  )
+              |
+                  [^ DOUBLE CONTROLS ]  # Anything else
+              )*
+          )
+      DOUBLE
+  /
+
+which Pegex compiles to this (simple and obvious;) regex:
+
+  /"((?:\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4})|[^"\x00-\x1f])*)"/
+
+Let's see what's new here...
+
+First off, we have lots of whitespace and comments. This should make it pretty
+easy to at least get the overall picture of what is being accomlished.
+
+Understanding how the text between a pair of '/' characters gets transformed
+into a real regular expression, is the key to really understanding Pegex.
+
+Notice the '*', the '{4}', the '|', the '(...)' and the '[^...]'. All of this
+punctuation gets passed on verbatim into the compiled regex. There are just a
+few exceptions. Let's cover them in detail.
+
+Everything inside `<some_rule_ref>` gets replaced by the regex that the
+reference points to. Rule references inside a regex *must* point directly to
+another reference, although those rules can point to even more regex parts.
+
+The `-` characters get replaced by 'ws1', which is subsequently replaced by
+its rule definition. `+` gets replaced by `ws2` (which resolves to `\s+` by
+default).
+
+Finally '(:' gets replaced by '(?:)'. This is simply to make your
+non-capturing paren syntax be a little prettier. In general, you can leave out
+'?' after a '(' and Pegex will put them in for you.
+
+That's it. Everything else that you put between slash characters, will go
+verbatim into the regex.
+
+In some sense, Pegex is just a very highly organized way to write a parser
+from regular expressions. To be really good at Pegex *does* require fairly
+solid understanding of how regexes work, but given that regexes are so very
+common, Pegex makes the task of turning them into a Parser, quite simple.
+
+== Capturing Data
+
+The next thing to cover is regex /capturing/. When you are parsing data, it
+is generally important to pull out certain chunks of text so that you can do
+things with them.
+
+Pegex has one very simple, straightforward and obvious way to do this: Any
+capturing parens in any regexes will capture data and pass it on to the
+/receiver/ object. Since Pegex is built over regexes, this make perfect sense.
+
+We will talk about receiver objects in the next section. For now, just know
+that a receiver object is the thing that makes something out of the data and
+events matched during a parse. In our JSON case here, our receiver will make a
+Perl data structure that matches the JSON we are parsing. Obvious!
+
+In the rule for 'string' above, we are capturing the characters between the
+double quotes. This is the raw data that will be turned into a Perl scalar.
+
+== Finishing up the JSON Grammar
+
+There are just 5 more simple rules needed to complete the JSON Pegex grammar:
+
+  number: /(
+      DASH?
+      (: 0 | [1-9] DIGIT* )
+      (: DOT DIGIT* )?
+      (: [eE] [ DASH PLUS ]? DIGIT+ )?
+  )/
+
+  boolean: true | false
+
+  true: /true/
+
+  false: /false/
+
+  null: /null/
+
+Note that the rule for 'number' captures data, but the other rules don't.
+That's because as long as the receiver is told that a 'null' rule was matched,
+it can turn it into a Perl `undef`. It's not important what the actual
+matching text was (even though in this case it has to be exactly the string
+'null').
+
+= Pegex::JSON::Grammar - The Pegex Grammar Class
+
+The Pegex JSON grammar that we just looked at in excrucuating detail gets
+compiled into a Perl data structure and then embedded into a grammar class. A
+[Pegex::Parser] object (the thing that does the parsing) requires a grammar
+object (what to look for) and a receiver object (what to do when you find it).
+
+It should be noted that Pegex uses Pegex to parse Pegex grammars. That is,
+this grammar: https://github.com/ingydotnet/pegex-pgx/blob/master/pegex.pgx
+is used by Pegex to parse our json.pgx grammar (and yes, it can parse
+pegex.pgx too).
+
+It is conceivable that everytime we wanted to parse JSON, we could parse the
+json.pgx grammar first, but that would be a waste of time. So we cache the big
+grammar tree as a pure Perl data structure inside [Pegex::JSON::Grammar].
+
+If for some reason we did need to change the json.pgx, we would have to
+recompile it to Perl and copy/paste it into our module. This would be a pain,
+so there is a special command to do it for us. Just run this:
+
+  perl -Ilib -MPegex::JSON:Grammar=compile
+
+If you are in heavy development mode and changing the grammar a lot, you can
+simply set an environment variable like this:
+
+  export PERL_PEGEX_AUTO_COMPILE=Pegex::JSON::Grammar
+
+and recompilation will happen automatically. This is possible because of this
+line in the grammar module:
+
+  use constant file => '../json-pgx/json.pgx';
+
+That line is only used during development and requires the grammar file to be
+in that location.
+
+= Pegex::JSON::Data - The Pegex Receiver Class
+
+Every Pegex parse requires a grammar object (the JSON grammar), and input
+object (the JSON being parsed) and a receiver object (the Perl maker).
+
+One of the hallmarks of Pegex, is that it keeps the grammar separate from the
+(receiver) code, thus 

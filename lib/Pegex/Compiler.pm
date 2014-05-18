@@ -10,7 +10,7 @@ use Pegex::Grammar::Atoms;
 has tree => ();
 
 sub compile {
-    my ($self, $grammar) = @_;
+    my ($self, $grammar, @rules) = @_;
 
     # Global request to use the Pegex bootstrap compiler
     if ($Pegex::Bootstrap) {
@@ -18,8 +18,10 @@ sub compile {
         $self = Pegex::Bootstrap->new;
     }
 
+    @rules = map { s/-/_/g; $_ } @rules;
+
     $self->parse($grammar);
-    $self->combinate;
+    $self->combinate(@rules);
     $self->native;
 
     return $self;
@@ -38,19 +40,27 @@ sub parse {
     return $self;
 }
 
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
 # Combination
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
 has _tree => ();
 
 sub combinate {
-    my ($self, $rule) = @_;
-    $rule ||= $self->{tree}->{'+toprule'}
-        or return $self;
+    my ($self, @rule) = @_;
+    if (not @rule) {
+        if (my $rule = $self->{tree}->{'+toprule'}) {
+            @rule = ($rule);
+        }
+        else {
+            return $self;
+        }
+    }
     $self->{_tree} = {
         map {($_, $self->{tree}->{$_})} grep { /^\+/ } keys %{$self->{tree}}
     };
-    $self->combinate_rule($rule);
+    for my $rule (@rule) {
+        $self->combinate_rule($rule);
+    }
     $self->{tree} = $self->{_tree};
     delete $self->{_tree};
     return $self;
@@ -66,9 +76,6 @@ sub combinate_rule {
 
 sub combinate_object {
     my ($self, $object) = @_;
-    if (my $sub = $object->{'.sep'}) {
-        $self->combinate_object($sub);
-    }
     if (exists $object->{'.rgx'}) {
         $self->combinate_re($object);
     }
@@ -76,6 +83,12 @@ sub combinate_object {
         my $rule = $object->{'.ref'};
         if (exists $self->{tree}{$rule}) {
             $self->combinate_rule($rule);
+        }
+        else {
+            if (my $regex = (Pegex::Grammar::Atoms::atoms)->{$rule}) {
+                $self->{tree}{$rule} = { '.rgx' => $regex };
+                $self->combinate_rule($rule);
+            }
         }
     }
     elsif (exists $object->{'.any'}) {
@@ -116,9 +129,9 @@ sub combinate_re {
     }
 }
 
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
 # Compile to native Perl regexes
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
 sub native {
     my ($self) = @_;
     $self->perl_regexes($self->{tree});
@@ -130,7 +143,6 @@ sub perl_regexes {
     if (ref($node) eq 'HASH') {
         if (exists $node->{'.rgx'}) {
             my $re = $node->{'.rgx'};
-#             $node->{'.rgx'} = qr/^$re/;
             $node->{'.rgx'} = qr/\G$re/;
         }
         else {
@@ -144,9 +156,9 @@ sub perl_regexes {
     }
 }
 
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
 # Serialization formatter methods
-#------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
 sub to_yaml {
     require YAML::XS;
     my $self = shift;

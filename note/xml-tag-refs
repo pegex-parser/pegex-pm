@@ -1,0 +1,24 @@
+Parsing Problems
+
+```
+=== Tags
+Pegex needs a way to refer back to text matched. The classic example is XML
+where the ending tag must match the start tag.
+--- input
+www<foo>xxx<bar>yyy</bar>zzz</foo>...
+--- output
+- www
+- foo:
+  - xxx
+  - bar:
+    yyy
+  - zzz
+- ...
+--- grammar
+doc: content*
+
+text | group | char
+
+text: / ((:(! LANGLE ) ALL)+) /
+char: / ( ALL ) /
+group: group

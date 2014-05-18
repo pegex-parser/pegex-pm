@@ -1,3 +1,17 @@
+# new-syntax
++ Whitespace:
+  + Deprecate ~
+    + ~ → _
+    + ~~ → __
+  + - → _
+  + + → __
+  + _ → ws*  (default)
+  + __ → ws+ (default)
+  + ws → atom:WS  (default)
++ Eliminate need for <>
++ Support regex literals
+  + 'literal'
+
 # 0.21 release
 + Fix 'a b | c' in bootstrap parser
   + Test precedence parsing

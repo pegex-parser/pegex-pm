@@ -12,8 +12,8 @@ my $atoms = {
     ws2     => '<ws>+',
 
     # Default whitespace rules for that use '-' and '+'
-    _       => '\s*',
-    __      => '\s+',
+    _       => '<ws1>',
+    __      => '<ws2>',
 
     # Special rules
     ALWAYS  => '',
@@ -61,6 +61,7 @@ my $atoms = {
 
     # Paired punctuation
     SINGLE  => "'",
+    TICK    => "'",
     DOUBLE  => '"',
     GRAVE   => '`',
     LPAREN  => '\(',
@@ -70,7 +71,7 @@ my $atoms = {
     LSQUARE => '\[',
     RSQUARE => '\]',
     LANGLE  => '<',
-    RANGLE  => '>',
+    RANGLE  => '\>',
 
     # Other ASCII punctuation
     BANG    => '!',

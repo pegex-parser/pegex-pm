@@ -1,0 +1,122 @@
+Pegex::Compiler
+===============
+
+Pegex Compiler
+
+= Synopsis
+
+  use Pegex::Compiler;
+  my $grammar_text = '... grammar text ...';
+  my $pegex_compiler = Pegex::Compiler->new();
+  my $grammar_tree = $pegex_compiler->compile($grammar_text)->tree;
+
+or:
+
+  perl -Ilib -MYourGrammarModule=compile
+
+= Description
+
+The Pegex::Compiler transforms a Pegex grammar string (or file) into a
+compiled form. The compiled form is known as a grammar tree, which is simply a
+nested data structure.
+
+The grammar tree can be serialized to YAML, JSON, Perl, or any other
+programming language. This makes it extremely portable. Pegex::Grammar has
+methods for serializing to all these forms.
+
+NOTE: Unless you are developing Pegex based modules, you can safely ignore this
+module. Even if you are you probably won't use it directly. See [In Place
+Compilation] below.
+
+= Methods
+
+The following public methods are available:
+
+- `$compiler = Pegex::Compiler->new();`
+
+Return a new Pegex::Compiler object.
+
+- `$grammar_tree = $compiler->compile($grammar_input);`
+
+Compile a grammar text into a grammar tree that can be used by a
+Pegex::Parser. This method is calls the `parse` and `combinate` methods and
+returns the resulting tree.
+
+Input can be a string, a string ref, a file path, a file handle, or a
+Pegex::Input object. Return `$self` so you can chain it to other methods.
+
+- `$compiler->parse($grammar_text)`
+
+The first step of a `compile` is `parse`. This applies the Pegex language
+grammar to your grammar text and produces an unoptimized tree.
+
+This method returns `$self` so you can chain it to other methods.
+
+- `$compiler->combinate()`
+
+Before a Pegex grammar tree can be used to parse things, it needs to be
+combinated. This process turns the regex tokens into real regexes. It also
+combines some rules together and eliminates rules that are not needed or have
+been combinated. The result is a Pegex grammar tree that can be used by a
+Pegex::Parser.
+
+NOTE: While the parse phase of a compile is always the same for various
+programming langugaes, the combinate phase takes into consideration and
+special needs of the target language. Pegex::Compiler only combinates for
+Perl, although this is often sufficient in similar languages like Ruby or
+Python (PCRE based regexes). Languages like Java probably need to use their
+own combinators.
+
+- `$compiler->tree()`
+
+Return the current state of the grammar tree (as a hash ref).
+
+- `$compiler->to_yaml()`
+
+Serialize the current grammar tree to YAML.
+
+- `$compiler->to_json()`
+
+Serialize the current grammar tree to JSON.
+
+- `$compiler->to_perl()`
+
+Serialize the current grammar tree to Perl.
+
+= In Place Compilation
+
+When you write a Pegex based module you will want to precompile your grammar
+into Perl so that it has no load penalty. Pegex::Grammar provides a special
+mechanism for this. Say you have a class like this:
+
+  package MyThing::Grammar;
+  use Pegex::Base;
+  extends 'Pegex::Grammar';
+
+  use constant file => '../mything-grammar-repo/mything.pgx';
+  sub make_tree {
+  }
+
+Simply use this command:
+
+  perl -Ilib -MMyThing::Grammar=compile
+
+and Pegex::Grammar will call Pegex::Compile to put your compiled grammar
+inside your `tree` subroutine. It will actually write the text into your
+module. This makes it trivial to update your grammar module after making
+changes to the grammar file.
+
+See [Pegex::JSON] for an example.
+
+= Author
+
+Ingy döt Net <ingy@cpan.org>
+
+= Copyright and License
+
+Copyright (c) 2011, 2012, 2013, 2014. Ingy döt Net.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+See http://www.perl.com/perl/misc/Artistic.html

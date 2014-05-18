@@ -1,0 +1,7 @@
+phrase: !one number - things EOL
+
+one: /1/
+
+number: DIGIT
+
+things: / 'blind' SPACE 'mice' /

@@ -1,0 +1,17 @@
+- Delete
+  =encoding
+  =cut
+  =over
+  =back
+
+- Change title for module docs
+         =====
+
+- Change =head* to = ==
+- Change =item to - *
+
+- Change L<> B<> I<> C<>
+
+- Titlecase =head1 text
+
+- Two space indent code sections

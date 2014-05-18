@@ -17,7 +17,7 @@ install:
 script:
 - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
   PERL5LIB=../testml-pm/lib
-  prove -lv t/
+  prove -lv test/
 - cover
 
 after_success:

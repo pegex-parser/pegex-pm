@@ -1,7 +1,7 @@
 package Pegex::Parser;
-
+use Pegex::Base;
 use Pegex::Input;
-
+use Pegex::Optimizer;
 use Scalar::Util;
 
 {
@@ -10,10 +10,6 @@ use Scalar::Util;
     our $Null = [];
     our $Dummy = [];
 }
-
-package Pegex::Parser;
-
-use Pegex::Base;
 
 has grammar => (required => 1);
 has receiver => ();
@@ -31,12 +27,16 @@ has 'debug' => (
 
 has position => 0;
 has farthest => 0;
-has optimized => 0;
 
 has throw_on_error => 1;
 
 sub parse {
     my ($self, $input, $start) = @_;
+
+    if ($start) {
+        $start =~ s/-/_/g;
+    }
+
     $self->{position} = 0;
     $self->{farthest} = 0;
 
@@ -50,18 +50,21 @@ sub parse {
 
     die "No 'grammar'. Can't parse" unless $self->{grammar};
 
-    $self->{grammar}->{tree} = $self->{grammar}->make_tree
-        unless defined $self->{grammar}->{tree};
-    $self->{tree} = $self->{grammar}->{tree};
+    $self->{grammar}{tree} = $self->{grammar}->make_tree
+        unless defined $self->{grammar}{tree};
 
     my $start_rule_ref = $start ||
-        $self->{tree}->{'+toprule'} ||
-        ($self->{tree}->{'TOP'} ? 'TOP' : undef)
+        $self->{grammar}{tree}{'+toprule'} ||
+        ($self->{grammar}{tree}{'TOP'} ? 'TOP' : undef)
             or die "No starting rule for Pegex::Parser::parse";
 
     die "No 'receiver'. Can't parse" unless $self->{receiver};
 
-    $self->optimize_grammar($start_rule_ref);
+    Pegex::Optimizer->new(
+        parser => $self,
+        grammar => $self->{grammar},
+        receiver => $self->{receiver},
+    )->optimize_grammar($start_rule_ref);
 
     # Add circular ref and weaken it.
     $self->{receiver}{parser} = $self;
@@ -92,65 +95,8 @@ sub parse {
     return $match->[0];
 }
 
-sub optimize_grammar {
-    my ($self, $start) = @_;
-    return if $self->{optimized};
-    while (my ($name, $node) = each %{$self->{tree}}) {
-        next unless ref($node);
-        $self->optimize_node($node);
-    }
-    $self->optimize_node({'.ref' => $start});
-    $self->{optimized} = 1;
-}
-
-sub optimize_node {
-    my ($self, $node) = @_;
-
-    for my $kind (qw(ref rgx all any err code xxx)) {
-        die if $kind eq 'xxx';
-        if ($node->{rule} = $node->{".$kind"}) {
-            $node->{kind} = $kind;
-            $node->{method} = $self->can("match_$kind") or die;
-            last;
-        }
-    }
-
-    my ($min, $max) = @{$node}{'+min', '+max'};
-    $node->{'+min'} = defined($max) ? 0 : 1
-        unless defined $node->{'+min'};
-    $node->{'+max'} = defined($min) ? 0 : 1
-        unless defined $node->{'+max'};
-    $node->{'+asr'} = 0
-        unless defined $node->{'+asr'};
-
-    if ($node->{kind} =~ /^(?:all|any)$/) {
-        $self->optimize_node($_) for @{$node->{rule}};
-    }
-    elsif ($node->{kind} eq 'ref') {
-        my $ref = $node->{rule};
-        my $rule = $self->{tree}{$ref};
-        if (my $action = $self->{receiver}->can("got_$ref")) {
-            $rule->{action} = $action;
-        }
-        elsif (my $gotrule = $self->{receiver}->can("gotrule")) {
-            $rule->{action} = $gotrule;
-        }
-        $node->{method} = $self->can("match_ref_trace")
-            if $self->{debug};
-    }
-    elsif ($node->{kind} eq 'rgx') {
-      # XXX $node;
-    }
-    if (my $sep = $node->{'.sep'}) {
-        $self->optimize_node($sep);
-    }
-}
-
 sub match_next {
     my ($self, $next) = @_;
-
-    return $self->match_next_with_sep($next)
-        if $next->{'.sep'};
 
     my ($rule, $method, $kind, $min, $max, $assertion) =
         @{$next}{'rule', 'method', 'kind', '+min', '+max', '+asr'};
@@ -164,8 +110,16 @@ sub match_next {
         push @$match, @$return;
         last if $max == 1;
     }
+    if (not $count and $min == 0 and $kind eq 'all') {
+        $match = [[]];
+    }
     if ($max != 1) {
-        $match = [$match];
+        if ($next->{-flat}) {
+            $match = [ map { (ref($_) eq 'ARRAY') ? (@$_) : ($_) } @$match ];
+        }
+        else {
+            $match = [$match]
+        }
         $self->{farthest} = $position
             if ($self->{position} = $position) > $self->{farthest};
     }
@@ -176,39 +130,14 @@ sub match_next {
             if ($self->{position} = $position) > $self->{farthest};
     }
 
-    return ($result ? $next->{'-skip'} ? [] : $match : 0);
-}
-
-sub match_next_with_sep {
-    my ($self, $next) = @_;
-
-    my ($rule, $method, $kind, $min, $max, $sep) =
-        @{$next}{'rule', 'method', 'kind', '+min', '+max', '.sep'};
-
-    my ($position, $match, $count, $scount, $smin, $smax) =
-        ($self->{position}, [], 0, 0, @{$sep}{'+min', '+max'});
-
-    while (my $return = $method->($self, $rule, $next)) {
-        $position = $self->{position};
-        $count++;
-        push @$match, @$return;
-        $return = $self->match_next($sep) or last;
-        push @$match, $smax == 1 ? @$return : @{$return->[0]} if @$return;
-        $scount++;
-    }
-    $match = [$match] if $max != 1;
-    my $result = ($count >= $min and ($max == 0 or $count <= $max));
-    if ($count == $scount and not $sep->{'+eok'}) {
-        $self->{farthest} = $position
-            if ($self->{position} = $position) > $self->{farthest};
-    }
-
+    # YYY ($result ? $next->{'-skip'} ? [] : $match : 0) if $main::x;
     return ($result ? $next->{'-skip'} ? [] : $match : 0);
 }
 
 sub match_ref {
     my ($self, $ref, $parent) = @_;
-    my $rule = $self->{tree}{$ref};
+    my $rule = $self->{grammar}{tree}{$ref}
+        or die "No rule defined for '$ref'";
     my $match = $self->match_next($rule) or return 0;
     return $Pegex::Constant::Dummy unless $rule->{action};
     @{$self}{'rule', 'parent'} = ($ref, $parent);
@@ -270,24 +199,20 @@ sub match_err {
     $self->throw_error($error);
 }
 
-# TODO not supported yet
-# sub match_code {
-#     my ($self, $code) = @_;
-#     my $method = "match_rule_$code";
-#     return $self->$method();
-# }
-
 sub match_ref_trace {
-    my ($self, $ref) = @_;
-    my $rule = $self->{tree}{$ref};
-    my $trace = not $rule->{'+asr'};
-    $self->trace("try_$ref") if $trace;
+    my ($self, $ref, $parent) = @_;
+    my $asr = $parent->{'+asr'};
+    my $note =
+        $asr == -1 ? '(!)' :
+        $asr == 1 ? '(=)' :
+        '';
+    $self->trace("try_$ref$note");
     my $result;
     if ($result = $self->match_ref($ref)) {
-        $self->trace("got_$ref") if $trace;
+        $self->trace("got_$ref$note");
     }
     else {
-        $self->trace("not_$ref") if $trace;
+        $self->trace("not_$ref$note");
     }
     return $result;
 }

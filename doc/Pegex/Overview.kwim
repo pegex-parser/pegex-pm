@@ -1,0 +1,59 @@
+= What is Pegex?
+
+Pegex is a Friendly, Acmeist, PEG Parser framework. Friendly means that it is
+simple to create, understand, modify and maintain Pegex parsers. Acmeist means
+that the parsers will work automatically in many programming languages (as
+long as they have some kind of traditional "regex" support). PEG (Parser
+Expression Grammars) is the new style of Recursive-Descent/BNF style grammar
+definition syntax.
+
+The name "Pegex" comes from PEG + Regex. With Pegex you define top down
+grammars that eventually break down to regex fragments. ie The low level
+parsing matches are always done with regexes against the current position in
+the input stream.
+
+= What is Parsing?
+
+It may seem like a silly question, but it's important to have an understanding
+of what parsing is and what a parser can do for you. At the the most basic
+level "parsing" is the act of reading through an input, making sense of it,
+and possibly doing something with what is found.
+
+Usually a parser gets its instructions of what means what from something
+called a grammar. A grammar is a set of rules that defines how the input must
+be structured. In many parsing methodologies, input is preprocessed (possibly
+into tokesn) before the parser/grammar get to look at it. Although this is
+a common method, it is not the only approach.
+
+= How Pegex Works
+
+Pegex parsing consists of 4 distinct parts or objects:
+
+- Parser :: The Pegex parsing engine
+- Grammar :: The rules of a particular syntax
+- Receiver :: The logic for processing matches
+- Input :: Text conforming to the grammar rules
+
+Quite simply, a parser object is created with a grammar object and a receiver
+object. Then the parser object's `parse()` method is called on an input
+object. The parser applies the rules of the grammar to the input and invokes
+methods of the receiver as the rules match. The parse is either successful or
+results in an error. The result is whatever the receiver object decides it
+should be.
+
+For example consider a parser that turns the Markdown text language into HTML.
+The Pegex code to use this might look like this:
+
+In the simplest terms, Pegex works like this (pseudocode):
+
+  parser = new Pegex.Parser(
+      grammar: new Markdown.Grammar
+      receiver: new Markdown.Receiver.HTML
+  )
+  html = parser.parse(markdown)
+
+= See Also
+
+* [Pegex::API]
+* [Pegex::Syntax]
+* [Pegex::Tutorial]

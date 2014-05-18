@@ -1,0 +1,131 @@
+# This is the Pegex grammar for YAML 1.2.
+
+# TODO:
+# Define regexes from spec productions
+
+%grammar yaml
+%version 0.1.2
+%include pegex-atoms
+%symrule >>> indent
+%symrule <<< undent
+%symrule === ondent
+%symrule >=< andent
+
+yaml-stream: (
+| comment-line
+| blank-line
+| yaml-document
+)*
+
+yaml-document:
+  document-header?
+  yaml-node
+  document-footer?
+
+document-header: '---' +
+
+document-footer: '...' EOL
+
+block-node:
+|  block-seq
+|  block-map
+|  block-scalar
+
+block-map:
+  >>
+  block-pair+
+  <<
+
+block-seq:
+  >>
+  block-elem+
+  <<
+
+block-scalar:
+|  double-quoted
+|  single-quoted
+|  plain-string
+|  empty-string
+
+#   literal-string |
+#   folded-string |
+
+block-pair:
+  == block-key - COLON - block-value BREAK
+
+block-elem:
+  == '- ' block-value BREAK
+
+block-key:
+| double-quoted
+| single-quoted
+| plain-string
+
+block-value:
+| flow-collection
+| block-node
+
+flow-collection:
+| flow-map
+| flow-seq
+
+flow-node:
+| flow-collection
+| flow-scalar
+
+flow-map:
+  - '{' -
+    flow-pair* % /- COMMA -/
+  - '}' -
+
+flow-seq:
+  - '[' -
+    flow-node* % /- COMMA -/
+  /- RSQUARE -/
+
+flow-scalar:
+| double-quoted |
+| single-quoted |
+| plain-string
+
+flow-pair:
+  flow-node /- COLON -/ flow-node
+
+double-quoted: /
+  DOUBLE
+    ((:
+    |  BACK BACK
+    |  BACK DOUBLE
+    |  [^DOUBLE BREAK]
+    )*)
+  DOUBLE
+/
+
+single-quoted: /
+  SINGLE
+    ((:
+    | SINGLE SINGLE
+    | [^ SINGLE ]
+    )*)
+  SINGLE
+/
+
+plain-string: / ( [^ non-starters ] [^ non-plain ]* ) /
+
+empty-string: //
+
+literal-string: `literal-string not yet supported`
+
+folded-string: `folded-string not yet supported`
+
+non-starters: /
+  PERCENT
+  SINGLE
+  DOUBLE
+  SPACE
+/
+
+non-plain: /
+  COLON
+  BREAK
+/

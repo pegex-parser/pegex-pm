@@ -1,298 +1,547 @@
-# NOTE:
-# This algorithm should be rewritten as a proper token -> infix ->
-# shunting-yard -> RPN -> evaluate to AST... parser.
-# It should treat % as a proper infix operator with right precedence.
 package Pegex::Bootstrap;
+
+use Carp qw(carp confess croak);
 
 use Pegex::Base;
 extends 'Pegex::Compiler';
 
 use Pegex::Grammar::Atoms;
+use Pegex::Pegex::AST;
 
-my $modifier = qr{[\!\=\-\+\.]};
-my $group_modifier = qr{[\.]};
-my $quantifier = qr{(?:[\?\*\+]|\d+(?:\+|\-\d+)?)};
-my %prefixes = (
-    '!' => ['+asr', -1],
-    '=' => ['+asr', 1],
-    '.' => '-skip',
-    '-' => '-pass',
-    '+' => '-wrap',
-);
+#------------------------------------------------------------------------------
+# The grammar. A DSL data structure. Things with '=' are tokens.
+#------------------------------------------------------------------------------
+has pointer => 0;
+has groups => [];
+has tokens => [];
+has ast => {};
+has stack => [];
+has tree => {};
+has grammar => {
+    'grammar' => [
+        '=pegex-start',
+        'meta-section',
+        'rule-section',
+        '=pegex-end',
+    ],
+    'meta-section' => 'meta-directive*',
+    'meta-directive' => [
+        '=directive-start',
+        '=directive-value',
+        '=directive-end',
+    ],
+    'rule-section' => 'rule-definition*',
+    'rule-definition' => [
+        '=rule-start',
+        '=rule-sep',
+        'rule-group',
+        '=rule-end',
+    ],
+    'rule-group' => 'any-group',
+    'any-group' => [
+        '=list-alt?',
+        'all-group',
+        [
+            '=list-alt',
+            'all-group',
+            '*',
+        ],
+    ],
+    'all-group' => 'rule-part+',
+    'rule-part' => [
+        'rule-item',
+        [
+            '=list-sep',
+            'rule-item',
+            '?',
+        ],
+    ],
+    'rule-item' => [
+        '|',
+        '=rule-reference',
+        '=quoted-regex',
+        'regular-expression',
+        'bracketed-group',
+        'whitespace-token',
+        '=error-message',
+    ],
+    'regular-expression' => [
+        '=regex-start',
+        '=!regex-end*',
+        '=regex-end',
+    ],
+    'bracketed-group' => [
+        '=group-start',
+        'rule-group',
+        '=group-end',
+    ],
+    'whitespace-token' => [
+        '|',
+        '=whitespace-maybe',
+        '=whitespace-must',
+    ],
+};
 
+#------------------------------------------------------------------------------
+# Parser logic:
+#------------------------------------------------------------------------------
 sub parse {
     my ($self, $grammar_text) = @_;
-    $self = $self->new unless ref $self;
 
-    # If the grammar looks like a filename, try to read that file for the
-    # grammar content.
-    if (length($grammar_text) and $grammar_text !~ /(\s|\:|\#|\%)/) {
-        open IN, $grammar_text
-            or die "Can't open file '$grammar_text' for input";
-        $grammar_text = do {local $/; <IN>};
-        close IN;
-    }
+    $self->lex($grammar_text);
+    # YYY $self->{tokens};
+    $self->{pointer} = 0;
+    $self->{farthest} = 0;
     $self->{tree} = {};
 
-    # Remove comment lines
-    $grammar_text =~ s/^#.*\n+//gm;
+    $self->match_ref('grammar') || do {
+        my $far = $self->{farthest};
+        my $tokens = $self->{tokens};
+        $far -= 4 if $far >= 4;
+        WWW splice @$tokens, $far, 9;
+        die "Bootstrap parse failed";
+    };
+    # XXX $self->{tree};
 
-    # Remove trailing comments
-    $grammar_text =~ s/\ +#.*//g;
-
-    # Remove blank lines
-    $grammar_text =~ s/^\s*\n//gm;
-
-    # Turn semis into line breaks
-    $grammar_text =~ s/;/\n/g;
-
-    # Ensure trailing newline
-    $grammar_text .= "\n" unless
-        $grammar_text eq '' or
-        $grammar_text =~ /\n\z/;
-
-    # Process directives
-    if ($grammar_text =~ s/\A((%\w+ +.*\n)+)//) {
-        my $section = $1;
-        my (@directives) = ($section =~ /%(\w+) +(.*?) *\n/g);
-        my $tree = $self->tree;
-        while (@directives) {
-            my ($key, $val) = splice(@directives, 0, 2);
-            die "'$key' is an invalid Pegex directive"
-                unless $key =~ /^(grammar|version|extends|include)$/;
-            $key = "+$key";
-            my $old = $tree->{$key};
-            if (defined $old) {
-                if (ref $old) {
-                    push @$old, $val;
-                }
-                else {
-                    $tree->{$key} = [ $old, $val ];
-                }
-            }
-            else {
-                $tree->{$key} = $val;
-            }
-        }
-    }
-
-    for my $rule (split /(?=^[\w\-]+:\s*)/m, $grammar_text) {
-        (my $value = $rule) =~ s/^([\w-]+):// or die "$rule";
-        (my $key = $1) =~ s/-/_/g;
-        $value =~ s/\s+/ /g;
-        $value =~ s/^\s*(.*?)\s*$/$1/;
-        $self->{tree}->{$key} = $value;
-        $self->{tree}->{'+toprule'} ||= $key;
-        $self->{tree}->{'+toprule'} = $key if $key eq 'TOP';
-    }
-
-    for my $rule (sort keys %{$self->{tree}}) {
-        next if $rule =~ /^\+/;
-        my $text = $self->{tree}->{$rule};
-        my @tokens = map {
-            s/-(?!\d)/_/g if /^\-+$/ or not /^[\`\/\-]/;
-            s/(?<![\w\>])\++/__/g if /^\++$/ or not /^[\)\`\/\+]/;
-            $_;
-        } grep $_,
-        ($text =~ m{(
-            `[^`\n]*` |
-            /[^/\n]*/ |
-            ~+ |
-            \-+(?=\s|$) |
-            \++(?=\s|$) |
-            %%? |
-            $modifier?<[\w\-]+>$quantifier? |
-            $modifier?[\w\-]+$quantifier? |
-            \| |
-            $group_modifier?\( |
-            \)$quantifier? |
-        )}gx);
-        die "No tokens found for rule <$rule> => '$text'"
-            unless @tokens;
-        unshift @tokens, '(';
-        push @tokens, ')';
-        my $tree = $self->make_tree(\@tokens);
-        $self->{tree}->{$rule} = $self->compile_next($tree);
-    }
     return $self;
 }
 
-sub make_tree {
-    my ($self, $tokens) = @_;
-    my $stack = [];
-    my $tree = [];
-    push @$stack, $tree;
-    for my $token (@$tokens) {
-        if ($token =~ /^$group_modifier?\(/) {
-            push @$stack, [];
+sub match_next {
+    my ($self, $next) = @_;
+    my $method;
+    if (ref $next) {
+        $next = [@$next];
+        if ($next->[0] eq '|') {
+            shift @$next;
+            $method = 'match_any';
         }
-        push @{$stack->[-1]}, $token;
-        if ($token =~ /^\)/) {
-            my $branch = pop @$stack;
-            push @{$stack->[-1]}, $self->wilt($branch);
+        else {
+            $method = 'match_all';
+        }
+        if ($next->[-1] =~ /^[\?\*\+]$/) {
+            my $quant = pop @$next;
+            return $self->match_times($quant, $method => $next);
+        }
+        else {
+            return $self->$method($next);
         }
     }
-    return $tree->[0];
+    else {
+        $method = ($next =~ s/^=//) ? 'match_token' : 'match_ref';
+        if ($next =~ s/([\?\*\+])$//) {
+            return $self->match_times($1, $method => $next);
+        }
+        else {
+            return $self->$method($next);
+        }
+    }
 }
 
-sub wilt {
-    my ($self, $branch) = @_;
-    return $branch unless ref($branch) eq 'ARRAY';
-    my $wilted = [];
-    for (my $i = 0; $i < @$branch; $i++) {
-        push @$wilted, ($branch->[$i] =~ /^%%?$/)
-            ? [$branch->[$i], pop(@$wilted), $branch->[++$i]]
-            : $branch->[$i];
+sub match_times {
+    my ($self, $quantity, $method, @args) = @_;
+    my ($min, $max) =
+        $quantity eq '' ? (1, 1) :
+        $quantity eq '?' ? (0, 1) :
+        $quantity eq '*' ? (0, 0) :
+        $quantity eq '+' ? (1, 0) : die "Bad quantity '$quantity'";
+    my $stop = $max || 9999;
+    my $count = 0;
+    my $pointer = $self->{pointer};
+    while ($stop-- and $self->$method(@args)) {
+        $count++;
     }
-    if (grep {$_ eq '|'} @$wilted) {
-        my @group;
-        my @grouped = shift @$wilted;   # '('
-        shift @$wilted if $wilted->[0] eq '|';
-        for (@$wilted) {
-            if (/^(?:\||\)$quantifier?)$/) {
-                push @grouped, (
-                    (@group == 1
-                        ? $group[0]
-                        : ['(', @group, ')']
-                    ), $_
-                );
-                @group = ();
+    return 1 if $count >= $min and (not $max or $count <= $max);
+    $self->{pointer} = $pointer;
+    $self->{farthest} = $pointer if $pointer > $self->{farthest};
+    return;
+}
+
+sub match_any {
+    my ($self, $any) = @_;
+    my $pointer = $self->{pointer};
+    for (@$any) {
+        if ($self->match_next($_)) {
+            return 1;
+        }
+    }
+    $self->{pointer} = $pointer;
+    $self->{farthest} = $pointer if $pointer > $self->{farthest};
+    return;
+}
+
+sub match_all {
+    my ($self, $all) = @_;
+    my $pointer = $self->{pointer};
+    for (@$all) {
+        if (not $self->match_next($_)) {
+            $self->{pointer} = $pointer;
+            $self->{farthest} = $pointer if $pointer > $self->{farthest};
+            return;
+        }
+    }
+    return 1;
+}
+
+sub match_ref {
+    my ($self, $ref) = @_;
+    my $rule = $self->{grammar}->{$ref}
+        or Carp::confess "Not a rule reference: '$ref'";
+    $self->match_next($rule);
+}
+
+sub match_token {
+    my ($self, $token_want) = @_;
+    my $not = ($token_want =~ s/^\!//) ? 1 : 0;
+    return if $self->{pointer} >= @{$self->{tokens}};
+    my $token = $self->{tokens}[$self->{pointer}];
+    my $token_got = $token->[0];
+    if (($token_want eq $token_got) xor $not) {
+        $token_got =~ s/-/_/g;
+        my $method = "got_$token_got";
+        if ($self->can($method)) {
+            # print "$method\n";
+            $self->$method($token);
+        }
+        $self->{pointer}++;
+        return 1;
+    }
+    return;
+}
+
+#------------------------------------------------------------------------------
+# Receiver/ast-generator methods:
+#------------------------------------------------------------------------------
+sub got_directive_start {
+    my ($self, $token) = @_;
+    $self->{directive_name} = $token->[1];
+}
+
+sub got_directive_value {
+    my ($self, $token) = @_;
+    my $value = $token->[1];
+    $value =~ s/\s+$//;
+    my $name = $self->{directive_name};
+    if (my $old_value = $self->{tree}{"+$name"}) {
+        if (not ref($old_value)) {
+            $old_value = $self->{tree}{"+$name"} = [$old_value];
+        }
+        push @$old_value, $value;
+    }
+    else {
+        $self->{tree}{"+$name"} = $value;
+    }
+}
+
+sub got_rule_start {
+    my ($self, $token) = @_;
+    $self->{stack} = [];
+    my $rule_name = $token->[1];
+    $rule_name =~ s/-/_/g;
+    $self->{rule_name} = $rule_name;
+    $self->{tree}{'+toprule'} ||= $rule_name;
+    $self->{groups} = [[0, ':']];
+}
+
+sub got_rule_end {
+    my ($self) = @_;
+    $self->{tree}{$self->{rule_name}} = $self->group_ast;
+}
+
+sub got_group_start {
+    my ($self, $token) = @_;
+    push @{$self->{groups}}, [scalar(@{$self->{stack}}), $token->[1]];
+}
+
+sub got_group_end {
+    my ($self, $token) = @_;
+    my $rule = $self->group_ast;
+    Pegex::Pegex::AST::set_quantity($rule, $token->[1]);
+    push @{$self->{stack}}, $rule;
+}
+
+sub got_list_alt {
+    my ($self) = @_;
+    push @{$self->{stack}}, '|';
+}
+
+sub got_list_sep {
+    my ($self, $token) = @_;
+    push @{$self->{stack}}, $token->[1];
+}
+
+sub got_rule_reference {
+    my ($self, $token) = @_;
+    my $name = $token->[2];
+    $name =~ s/-/_/g;
+    $name =~ s/^<(.*)>$/$1/;
+    my $rule = { '.ref' => $name };
+    Pegex::Pegex::AST::set_modifier($rule, $token->[1]);
+    Pegex::Pegex::AST::set_quantity($rule, $token->[3]);
+    push @{$self->{stack}}, $rule;
+}
+
+sub got_error_message {
+    my ($self, $token) = @_;
+    push @{$self->{stack}}, { '.err' => $token->[1] };
+}
+
+sub got_whitespace_maybe {
+    my ($self) = @_;
+    $self->got_rule_reference(['whitespace-maybe', undef, '_', undef]);
+}
+
+sub got_whitespace_must {
+    my ($self) = @_;
+    $self->got_rule_reference(['whitespace-maybe', undef, '__', undef]);
+}
+
+sub got_quoted_regex {
+    my ($self, $token) = @_;
+    my $regex = $token->[1];
+    $regex =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
+    push @{$self->{stack}}, { '.rgx' => $regex };
+}
+
+sub got_regex_start {
+    my ($self) = @_;
+    push @{$self->{groups}}, [scalar(@{$self->{stack}}), '/'];
+}
+
+sub got_regex_end {
+    my ($self) = @_;
+    my $regex = join '', map {
+        if (ref($_)) {
+            my $part;
+            if (defined($part = $_->{'.rgx'})) {
+                $part;
+            }
+            elsif (defined($part = $_->{'.ref'})) {
+                "<$part>";
             }
             else {
-                push @group, $_;
+                XXX $_;
             }
         }
-        $wilted = \@grouped;
-    }
-    return $wilted;
+        else {
+            $_;
+        }
+    } splice(@{$self->{stack}}, (pop @{$self->{groups}})->[0]);
+    $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
+    push @{$self->{stack}}, {'.rgx' => $regex};
 }
 
-sub compile_next {
-    my ($self, $node) = @_;
-    my $unit = ref($node) ?
-        $node->[0] =~ /^%%?$/
-            ? $self->compile_sep($node) :
-        $node->[2] eq '|'
-            ? $self->compile_group($node, 'any')
-            : $self->compile_group($node, 'all')
-    :
-        $node =~ /^~+$/ ? $self->compile_ws($node) :
-        $node =~ m!^`! ? $self->compile_error($node) :
-        $node =~ m!/! ? $self->compile_re($node) :
-        $node =~ m!<! ? $self->compile_rule($node) :
-        $node =~ m!^$modifier?[\w\-]+$quantifier?$!
-            ? $self->compile_rule($node) :
-            die $node;
-
-    while (defined $unit->{'.all'} and @{$unit->{'.all'}} == 1) {
-        $unit = $unit->{'.all'}->[0];
-    }
-    return $unit;
+sub got_regex_raw {
+    my ($self, $token) = @_;
+    push @{$self->{stack}}, $token->[1];
 }
 
-sub compile_group {
-    my ($self, $node, $type) = @_;
-    die unless @$node > 2;
-    my $object = {};
-    if ($node->[0] =~ /^($modifier)/) {
-        my ($key, $val) = ($prefixes{$1}, 1);
-        ($key, $val) = @$key if ref $key;
-        $object->{$key} = $val;
+#------------------------------------------------------------------------------
+# Receiver helper methods:
+#------------------------------------------------------------------------------
+sub group_ast {
+    my ($self) = @_;
+    my ($offset, $gmod) = @{pop @{$self->{groups}}};
+    $gmod ||= '';
+    my $rule = [splice(@{$self->{stack}}, $offset)];
+
+    for (my $i = 0; $i < @$rule-1; $i++) {
+        if ($rule->[$i + 1] =~ /^%%?$/) {
+            $rule->[$i] = Pegex::Pegex::AST::set_separator(
+                $rule->[$i],
+                splice @$rule, $i+1, 2
+            );
+        }
     }
-    if ($node->[-1] =~ /($quantifier)$/) {
-        $self->set_quantity($object, $1);
+    my $started = 0;
+    for (
+        my $i = (@$rule and $rule->[0] eq '|') ? 1 : 0;
+        $i < @$rule-1;
+        $i++
+    ) {
+        next if $rule->[$i] eq '|';
+        if ($rule->[$i+1] eq '|') {
+            $i++;
+            $started = 0;
+        }
+        else {
+            $rule->[$i] = {'.all' => [$rule->[$i]]}
+                unless $started++;
+            push @{$rule->[$i]{'.all'}}, splice @$rule, $i+1, 1;
+            $i--
+        }
     }
-    shift @$node;
-    pop @$node;
-    if ($type eq 'any') {
-        $object->{'.any'} = [
-            map $self->compile_next($_), grep {$_ ne '|'} @$node
-        ];
+    if (grep {$_ eq '|'} @$rule) {
+        $rule = [{'.any' => [ grep {$_ ne '|'} @$rule ]}];
     }
-    elsif ($type eq 'all') {
-        $object->{'.all'} = [
-            map $self->compile_next($_), @$node
-        ];
-    }
-    return $object;
+
+    $rule = $rule->[0] if @$rule <= 1;
+    Pegex::Pegex::AST::set_modifier($rule, $gmod)
+        unless $gmod eq ':';
+
+    return $rule;
 }
 
-sub compile_re {
-    my ($self, $node) = @_;
-    my $object = {};
-    $node =~ s!^/(.*)/$!$1! or die $node;
-    $node =~ s/(?:^|\s)(\-+)(?:\s|$)/'<' . '_' x length($1) . '>'/ge;
-    $node =~ s/(?:^|\s)(\++)(?:\s|$)/'<' . '__' x length($1) . '>'/ge;
-    $node =~ s!\s+!!g;
-    $node =~ s!\((\:|\=|\!)!(?$1!g;
-    $object->{'.rgx'} = $node;
-    return $object;
-}
+# DEBUG: wrap/trace parse methods:
+# for my $method (qw(
+#     match_times match_next match_ref match_token match_any match_all
+# )) {
+#     no strict 'refs';
+#     no warnings 'redefine';
+#     my $orig = \&$method;
+#     *$method = sub {
+#         my $self = shift;
+#         my $args = join ', ', map {
+#             ref($_) ? '[' . join(', ', @$_) . ']' :
+#             length($_) ? $_ : "''"
+#         } @_;
+#         print "$method($args)\n";
+#         die if $main::x++ > 250;
+#         $orig->($self, @_);
+#     };
+# }
 
-sub compile_rule {
-    my ($self, $node) = @_;
-    my $object = {};
-    if ($node =~ s/^($modifier)//) {
-        my ($key, $val) = ($prefixes{$1}, 1);
-        ($key, $val) = @$key if ref $key;
-        $object->{$key} = $val;
-    }
-    if ($node =~ s/($quantifier)$//) {
-        $self->set_quantity($object, $1);
-    }
-    $node =~ s!^<(.*)>$!$1!;
-    $object->{'.ref'} = $node;
-    if (defined(my $re = Pegex::Grammar::Atoms->atoms->{$node})) {
-        $self->tree->{$node} ||= {'.rgx' => $re};
-    }
-    return $object;
-}
+#------------------------------------------------------------------------------
+# Lexer logic:
+#------------------------------------------------------------------------------
+my $ALPHA = 'A-Za-z';
+my $DIGIT = '0-9';
+my $DASH  = '\-';
+my $SEMI  = '\;';
+my $UNDER  = '\_';
+my $HASH  = '\#';
+my $EOL   = '\r?\n';
+my $WORD  = "$DASH$UNDER$ALPHA$DIGIT";
+my $WS    = "(?:[\ \t]|$HASH.*$EOL)";
+my $MOD   = '[\!\=\-\+\.]';
+my $GMOD  = '[\.\-]';
+my $QUANT = '(?:[\?\*\+]|\d+(?:\+|\-\d+)?)';
+my $NAME  = "$UNDER?[$UNDER$ALPHA](?:[$WORD]*[$ALPHA$DIGIT])?";
 
-sub compile_error {
-    my ($self, $node) = @_;
-    my $object = {};
-    $node =~ s!^`(.*)`$!$1! or die $node;
-    $object->{'.err'} = $node;
-    return $object;
-}
+# Repeated Rules:
+my $rem   = [qr/\A(?:$WS+|$EOL+)/];
+my $qr    = [qr/\A\'((?:\\.|[^\'])*)\'/, 'quoted-regex'];
 
-sub compile_sep {
-    my ($self, $node) = @_;
-    my $object = $self->compile_next($node->[1]);
-    $object->{'.sep'} = $self->compile_next($node->[2]);
-    $object->{'.sep'}{'+eok'} = 1 if $node->[0] eq '%%';
-    return $object;
-}
+# Lexer regex tree:
+has regexes => {
+    pegex => [
+        [qr/\A%(grammar|version|extends|include)$WS+/,
+            'directive-start', 'directive'],
 
-sub compile_ws {
-    my ($self, $node) = @_;
-    my $regex = '<ws' . length($node) . '>';
-    return { '.rgx' => $regex };
-}
+        [qr/\A($NAME)(?=$WS*\:)/,
+            'rule-start', 'rule'],
 
-sub set_quantity {
-    my ($self, $object, $quantifier) = @_;
-    if ($quantifier eq '*') {
-        $object->{'+min'} = 0;
+        $rem,
+
+        [qr/\A\z/,
+            'pegex-end', 'end'],
+    ],
+
+    rule => [
+        [qr/\A(?:$SEMI$WS*$EOL?|\s*$EOL|)(?=$NAME$WS*\:|\z)/,
+            'rule-end', 'end'],
+
+        [qr/\A\:/,
+            'rule-sep'],
+
+        [qr/\A(?:\+|\~\~)(?=\s)/,
+            'whitespace-must'],
+        [qr/\A(?:\-|\~)(?=\s)/,
+            'whitespace-maybe'],
+
+        $qr,
+        [qr/\A($MOD)?($NAME|<$NAME>)($QUANT)?(?!$WS*$NAME\:)/,
+            'rule-reference'],
+        [qr/\A\//,
+            'regex-start', 'regex'],
+        [qr/\A\`([^\`\n]*?)\`/,
+            'error-message'],
+
+        [qr/\A($GMOD)?\(/,
+            'group-start'],
+        [qr/\A\)($QUANT)?/,
+            'group-end'],
+        [qr/\A\|/,
+            'list-alt'],
+        [qr/\A(\%\%?)/,
+            'list-sep'],
+
+        $rem,
+    ],
+
+    directive => [
+        [qr/\A(\S.*)/,
+            'directive-value'],
+        [qr/\A$EOL/,
+            'directive-end', 'end']
+    ],
+
+    regex => [
+        [qr/\A$WS+(?:\+|\~\~|\-\-)(?=[\s\/])/,
+            'whitespace-must'],
+        [qr/\A(?:\-|~)(?=[\s\/])/,
+            'whitespace-maybe'],
+        $qr,
+        [qr/\A$WS+()($NAME|<$NAME>)/,
+            'rule-reference'],
+        [qr/\A([^\s\'\/]+)/,
+            'regex-raw'],
+        [qr/\A$WS+/],
+        [qr/\A$EOL+/],
+        [qr/\A\//,
+            'regex-end', 'end'],
+        $rem,
+    ],
+};
+
+sub lex {
+    my ($self, $grammar) = @_;
+
+    my $tokens = $self->{tokens} = [['pegex-start']];
+    my $stack = ['pegex'];
+    my $pos = 0;
+
+    OUTER: while (1) {
+        my $state = $stack->[-1];
+        my $set = $self->{regexes}->{$state} or die "Invalid state '$state'";
+        for my $entry (@$set) {
+            my ($regex, $name, $scope) = @$entry;
+            if (substr($grammar, $pos) =~ $regex) {
+                $pos += length($&);
+                if ($name) {
+                    no strict 'refs';
+                    my @captures = map $$_, 1..$#+;
+                    pop @captures
+                        while @captures and not defined $captures[-1];
+                    push @$tokens, [$name, @captures];
+                    if ($scope) {
+                        if ($scope eq 'end') {
+                            pop @$stack;
+                        }
+                        else {
+                            push @$stack, $scope;
+                            # Hack to support /+ …/
+                            if ($scope eq 'regex') {
+                                if (substr($grammar, $pos) =~ /\A\+(?=[\s\/])/) {
+                                    $pos += length($&);
+                                    push @$tokens, ['whitespace-must'];
+                                }
+                            }
+                        }
+                    }
+                }
+                last OUTER unless @$stack;
+                next OUTER;
+            }
+        }
+        my $text = substr($grammar, $pos, 50);
+        $text =~ s/\n/\\n/g;
+        WWW $tokens;
+        die <<"...";
+Failed to lex $state here-->$text
+...
     }
-    elsif ($quantifier eq '+') {
-        $object->{'+min'} = 1;
-    }
-    elsif ($quantifier eq '?') {
-        $object->{'+max'} = 1;
-    }
-    elsif ($quantifier =~ /^(\d+)\+$/) {
-        $object->{'+min'} = $1;
-    }
-    elsif ($quantifier =~ /^(\d+)\-(\d+)+$/) {
-        $object->{'+min'} = $1;
-        $object->{'+max'} = $2;
-    }
-    elsif ($quantifier =~ /^(\d+)$/) {
-        $object->{'+min'} = $1;
-        $object->{'+max'} = $1;
-    }
-    else { die "Invalid quantifier: '$quantifier'" }
 }
 
 1;
+
+# vim: set lisp:

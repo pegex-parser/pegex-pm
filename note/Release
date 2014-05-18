@@ -1,0 +1,9 @@
+Things to do before next release:
+
+== Modules to update
+* TestML
+* Pegex-JSON
+* JSONY
+
+* JSYNC
+* Pegex::Crontab
