@@ -31,13 +31,7 @@ sub optimize_node {
         die if $kind eq 'xxx';
         if ($node->{rule} = $node->{".$kind"}) {
             $node->{kind} = $kind;
-            if (not $::testing and $node->{-flat} and $kind eq 'all') {
-                delete $node->{-flat};
-                $node->{method} = $self->parser->can('match_all_flat');
-            }
-            else {
-                $node->{method} = $self->parser->can("match_$kind") or die;
-            }
+            $node->{method} = $self->parser->can("match_$kind") or die;
             last;
         }
     }

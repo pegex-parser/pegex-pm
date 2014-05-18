@@ -98,8 +98,8 @@ sub get_group {
 
 sub got_rule_part {
     my ($self, $got) = @_;
-    my ($rule, $op, $sep) = @$got;
-    $rule = set_separator($rule, $op, $sep) if $got->[1];
+    my ($rule, $sep) = @$got;
+    $rule = set_separator($rule, @$sep) if @$sep;
     return $rule;
 }
 

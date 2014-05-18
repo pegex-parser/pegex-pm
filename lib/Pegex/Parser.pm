@@ -183,15 +183,6 @@ sub match_all {
     return $set;
 }
 
-sub match_all_flat {
-    my ($self, $list) = @_;
-    my $set = $self->match_all($list) or return 0;
-    while (grep {ref($_) eq 'ARRAY'} @$set) {
-        @$set = map { (ref($_) eq 'ARRAY') ? @$_ : $_ } @$set;
-    }
-    return [$set];
-}
-
 sub match_any {
     my ($self, $list) = @_;
     for my $elem (@$list) {

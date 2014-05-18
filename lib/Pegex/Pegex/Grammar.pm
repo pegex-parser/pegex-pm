@@ -19,13 +19,13 @@ sub make_tree {
     '+toprule' => 'grammar',
     '+version' => '0.2.0',
     'ERROR_all_group' => {
-      '-flat' => 1,
       '.all' => [
         {
           '.ref' => 'ERROR_rule_part'
         },
         {
           '+min' => 0,
+          '-flat' => 1,
           '.all' => [
             {
               '.ref' => '_'
@@ -38,13 +38,13 @@ sub make_tree {
       ]
     },
     'ERROR_any_group' => {
-      '-flat' => 1,
       '.all' => [
         {
           '.ref' => 'ERROR_all_group'
         },
         {
           '+min' => 1,
+          '-flat' => 1,
           '.all' => [
             {
               '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*/
@@ -199,7 +199,6 @@ sub make_tree {
       ]
     },
     'ERROR_rule_part' => {
-      '-flat' => 1,
       '.all' => [
         {
           '.ref' => 'ERROR_rule_item'
@@ -207,6 +206,7 @@ sub make_tree {
         {
           '+max' => 1,
           '+min' => 0,
+          '-flat' => 1,
           '.all' => [
             {
               '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+/
@@ -478,7 +478,6 @@ sub make_tree {
       '.rgx' => qr/\G[!=\+\-\.]/
     },
     'rule_part' => {
-      '-flat' => 1,
       '.all' => [
         {
           '.ref' => 'rule_item'
@@ -486,6 +485,7 @@ sub make_tree {
         {
           '+max' => 1,
           '+min' => 0,
+          '-flat' => 1,
           '.all' => [
             {
               '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+/
