@@ -11,7 +11,7 @@ parse_to_tree_test(*grammar, *input).yaml.clean == *ast
 
 === Single Regex - Single Capture
 --- grammar
-a: /x*(y*)z*<EOL>/
+a: /x*(y*)z* EOL/
 --- input
 xxxyyyyzzz
 --- tree
@@ -21,7 +21,7 @@ a: yyyy
 
 === Single Regex - Multi Capture
 --- grammar
-a: /(x*)(y*)(z*)<EOL>/
+a: /(x*)(y*)(z*) EOL/
 --- input
 xxxyyyyzzz
 --- tree
@@ -50,7 +50,7 @@ t:
 
 === Single Regex - No Capture
 --- grammar
-a: /x*y*z*<EOL>/
+a: /x*y*z* EOL/
 --- input
 xxxyyyyzzz
 --- tree
@@ -60,22 +60,20 @@ a: []
 
 === Non capture Regex
 --- grammar
-a: <b> <b>* -<c>* .<d>*
+a: b b* -c* .d*
 b: /b/
 c: /c+/
 d: /d/
 --- input: bbccdd
 --- tree
 - []
-- []
 --- wrap
 a:
-- []
 - []
 
 === A subrule
 --- grammar
-a: <b> /(y+)/ <EOL>
+a: b /(y+)/ EOL
 b: /(x+)/
 --- input
 xxxyyyy
@@ -89,8 +87,8 @@ a:
 
 === Multi match regex in subrule
 --- grammar
-a: <b>
-b: /(x*)y*(z*)<EOL>/
+a: b
+b: /(x*)y*(z*) EOL/
 --- input
 xxxyyyyzzz
 --- tree
@@ -104,9 +102,9 @@ a:
 
 === Any rule group
 --- grammar
-a: ( <b> | <c> )
+a: (b | c)
 b: /(bleh)/
-c: /(x*)y*(z*)<EOL>?/
+c: /(x*)y*(z*) EOL?/
 --- input
 xxxyyyyzzz
 --- tree
@@ -120,7 +118,7 @@ a:
 
 === + Modifier
 --- grammar
-a: ( b c )+ <EOL>
+a: ( b c )+ EOL
 b: /(x*)/
 c: /(y+)/
 --- input
@@ -139,7 +137,7 @@ a:
 
 === Wrap Pass and Skip
 --- grammar
-a: +<b> -<c> .<d>
+a: +b -c .d
 b: /(b+)/
 c: /(c+)/
 d: /(d+)/
@@ -150,28 +148,28 @@ d: /(d+)/
 --- wrap
 a:
 - b: bb
-- cc
+- c: cc
 
-=== Pass and Skip Multi
+=== Flat and Skip Multi
 --- grammar
-a: <b>* -<c>* .<d>*
+a: b* -c* .d*
 b: /(b)/
 c: /(c)/
 d: /(d)/
 --- input: bccdd
 --- tree
 - - b
-- - c
-  - c
+- c
+- c
 --- wrap
 a:
 - - b: b
-- - c
-  - c
+- c: c
+- c: c
 
 === Skip Bracketed
 --- grammar
-a: <b> .( <c> <d> )
+a: b .(c d)
 b: /(b)/
 c: /(c+)/
 d: /(d+)/
@@ -184,7 +182,7 @@ a:
 
 === Assertions
 --- grammar
-a: !<b> =<c> <c>
+a: !b =c c
 b: /b/
 c: /(c+)/
 --- input: ccc
@@ -211,7 +209,7 @@ a:
 
 === Empty regex group plus rule
 --- grammar
-a: <b>* <c> <EOL>
+a: b* c EOL
 b: /xxx/
 c: /(yyy)/
 --- input
@@ -226,9 +224,9 @@ a:
 
 === Rule to Rule to Rule
 --- grammar
-a: <b>
-b: <c>*
-c: <d> <EOL>
+a: b
+b: c*
+c: d EOL
 d: /x(y)z/
 --- input
 xyz
@@ -246,7 +244,7 @@ a:
 
 === List and Separators
 --- grammar
-a: <b> <c>+ % <d>
+a: b c+ % d
 b: /(b)/
 c: /(c+)/
 d: /(d+)/
@@ -269,7 +267,7 @@ a:
 
 === Rule with Separator
 --- grammar
-a: <c>* % <d>
+a: c* % d
 c: /(c+)/
 d: /d+/
 --- input: cccdccddc
@@ -285,7 +283,7 @@ a:
 
 === List without Separators
 --- grammar
-a: <b> <c>* % <d> <b>
+a: b c* % d b
 b: /(b)/
 c: /(c+)/
 d: /d+/
@@ -302,7 +300,7 @@ a:
 
 === Whitespace Matchers
 --- grammar
-TOP: /<ws>*(<DOT>)~(<DOT>*)~/
+TOP: / ws*( DOT ) - ( DOT* ) -/
 --- input
   .  
      ..    
@@ -318,7 +316,7 @@ TOP:
 === Automatically Pass TOP
 --- grammar
 b: /(b)/
-TOP: <b> <c>*
+TOP: b c*
 c: /(c)/
 --- input: bcc
 --- tree
@@ -333,7 +331,7 @@ TOP:
 
 === Empty Stars
 --- grammar
-a: ( <b>* <c> )+ <b>*
+a: ( b* c )+ b*
 b: /(b)/
 c: /(c+)/
 --- input: cc
@@ -394,27 +392,33 @@ a:
 
 === Quantifier on the Separator
 --- grammar
-a: <b>2-4 %% <c>*
+a: <b>2-4 %% c*
 b: /(b)/
-c: /<COMMA>/
+c: / COMMA /
 --- input: b,b,,,,bb,
 --- tree
 - b
+- []
 - b
+- []
 - b
+- []
 - b
 --- wrap
 a:
 - b: b
+- []
 - b: b
+- []
 - b: b
+- []
 - b: b
 
 === Tilde matching
 --- grammar
-a: ~ <b> ~~ <b>+
+a: - b + b+
 b: /(b)/
-c: /<COMMA>/
+c: / COMMA /
 --- input: b  bb
 --- tree
 - b
@@ -428,7 +432,7 @@ a:
 
 === False Values
 --- grammar
-a: <zero> <empty> <undef>
+a: zero empty undef
 zero: /(b+)/
 empty: /(c+)/
 undef: /(d+)/
@@ -440,7 +444,7 @@ undef: /(d+)/
 
 === Wrap
 --- grammar
-a: <b> <c> <d>
+a: b c d
 b: /(b+)/
 c: /(c+)/
 d: /(d+)/

@@ -143,7 +143,6 @@ sub perl_regexes {
     if (ref($node) eq 'HASH') {
         if (exists $node->{'.rgx'}) {
             my $re = $node->{'.rgx'};
-#             $node->{'.rgx'} = qr/^$re/;
             $node->{'.rgx'} = qr/\G$re/;
         }
         else {

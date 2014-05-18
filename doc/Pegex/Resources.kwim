@@ -1,0 +1,49 @@
+= Pegex Resources
+
+The best way to learn about Pegex, is to look at projects that currently use
+it.
+
+This document attempts to name as many interesting Pegex things as possible.
+
+== IRC Channel
+
+Many of the people who are actively developing Pegex, hangout on the `#pegex`
+IRC channel on `irc.freenode.net`. Stop by. We'd love to chat with you!
+
+Note, if you are unfamiliar with IRC, there's a really simple way to get
+started. Simply click this link: [http://webchat.freenode.net/]. Then, Just
+enter a nickname, enter '#pegex' for the channel, and enter the captcha. You
+will be connected and you type stuff in the input box at the bottom of the
+screen.  After you type something, hit the Enter key, and your text will be
+sent. Try it!
+
+== The examples Directory
+
+The Pegex git-repository/code-base is here:
+[https://github.com/ingydotnet/pegex-pm]. It contains a directory of example
+parsers:
+
+- `calculator1.pl`
+
+  This an arithmetic expression parser and evaluator. It uses the precedence
+  climbing method to deal with operator precedence.
+
+- `calculator2.pl`
+
+  This is the same as above, except it uses a precedence table, and the
+  shunting yard algorithm, to handle precedence.
+
+== Pegex Grammar Repositories
+
+* "The Pegex Grammar"[https://github.com/ingydotnet/pegex-pgx]
+* "The TestML Grammar"[https://github.com/ingydotnet/testml-pgx]
+* "A JSON Grammar"[https://github.com/ingydotnet/json-pgx]
+* "A CronTab Grammar"[https://github.com/ingydotnet/crontab-pgx]
+
+== Module Repositories
+
+* "The Pegex Perl Module"[https://github.com/ingydotnet/pegex-pm]
+* "The TestML Perl Module"[https://github.com/ingydotnet/testml-pm]
+* "A JSON Decoder Perl Module"[https://github.com/ingydotnet/pegex-json-pgx]
+* "A JSONY Decoder Perl Module"[https://github.com/ingydotnet/json-pgx]
+* "A CronTab Parser Perl Module"[https://github.com/ingydotnet/pegex-crontab-pm]
