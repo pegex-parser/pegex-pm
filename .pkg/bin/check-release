@@ -11,8 +11,11 @@ error() {
 [ -z "$(git status -s)" ] ||
   error "Uncommited git changes"
 
-grep "^version: $VERSION" Changes &>/dev/null ||
-  error "No Changes entry for version '$VERSION'"
+if ! (grep "^version: $VERSION" Changes &>/dev/null); then
+  if ! (grep "^- $VERSION" Changes &>/dev/null); then
+    error "No Changes entry for version '$VERSION'"
+  fi
+fi
 
 git tag | grep -E "^v?${VERSION//./\\.}$" &>/dev/null &&
   error "Version '$VERSION' already tagged as released"

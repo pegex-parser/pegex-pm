@@ -5,14 +5,13 @@ use YAML::XS;
 use Template::Toolkit::Simple;
 use Hash::Merge 'merge';
 use IO::All;
-use XXX;
 
 my $meta = Load io->file('Meta')->all;
 my $cpan = delete($meta->{'=cpan'}) || {};
 my $data = merge($cpan, $meta);
 
 print tt
-    ->path(['./.cpan'])
+    ->path(['./.pkg'])
     ->data($data)
     ->render('dist.ini');
 
