@@ -1,4 +1,12 @@
 ---
+version: 0.31
+date:    Sat May 17 23:43:00 PDT 2014
+changes:
+- Add doc badges.
+- Switch to Zilla::Dist
+- Fix a bug in Pegex::Parser
+
+---
 version: 0.30
 date:    Sat May 17 23:43:00 PDT 2014
 changes:

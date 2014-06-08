@@ -40,7 +40,7 @@ sub parse {
     $self->{position} = 0;
     $self->{farthest} = 0;
 
-    if (not UNIVERSAL::isa($input, 'Pegex::Input')) {
+    if (not ref $input or not UNIVERSAL::isa($input, 'Pegex::Input')) {
         $input = Pegex::Input->new(string => $input);
     }
     $self->{input} = $input;
