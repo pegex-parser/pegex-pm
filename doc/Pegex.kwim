@@ -3,9 +3,7 @@ Pegex
 
 Acmeist PEG Parser Framework
 
-<badge-travis ingydotnet/pegex-pm>
-
-<badge-coveralls ingydotnet/pegex-pm>
+<badge travis coveralls ingydotnet/pegex-pm>
 
 = Synopsis
 

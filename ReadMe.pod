@@ -12,8 +12,6 @@ Pegex - Acmeist PEG Parser Framework
 
 =for html
 <a href="https://travis-ci.org/ingydotnet/pegex-pm"><img src="https://travis-ci.org/ingydotnet/pegex-pm.png" alt="pegex-pm"></a>
-
-=for html
 <a href="https://coveralls.io/r/ingydotnet/pegex-pm?branch=master"><img src="https://coveralls.io/repos/ingydotnet/pegex-pm/badge.png" alt="pegex-pm"></a>
 
 =head1 SYNOPSIS

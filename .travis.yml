@@ -11,6 +11,7 @@ perl:
 install:
 - cpanm --quiet --notest
   Devel::Cover::Report::Coveralls
+  YAML::XS
 
 script:
 - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
@@ -19,3 +20,4 @@ script:
 
 after_success:
 - cover -report coveralls
+
