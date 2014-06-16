@@ -9,6 +9,10 @@ perl:
 - '5.8'
 
 install:
+- git clone --depth=1
+  git://github.com/ingydotnet/testml-pm ../testml-pm
+- git clone --depth=1
+  git://github.com/ingydotnet/pegex-pm ../pegex-pm
 - cpanm --quiet --notest
   Devel::Cover::Report::Coveralls
   YAML::XS
@@ -21,3 +25,9 @@ script:
 after_success:
 - cover -report coveralls
 
+notifications:
+  irc:
+    channels:
+    - irc.freenode.net/pegex
+    on_success: change
+    on_failure: always
