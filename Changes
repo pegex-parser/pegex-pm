@@ -1,4 +1,10 @@
 ---
+version: 0.33
+date:    Mon Jun 16 13:45:07 PDT 2014
+changes:
+- Change VERSION dist strategy.
+
+---
 version: 0.32
 date:    Sat Jun 14 12:26:36 PDT 2014
 changes:

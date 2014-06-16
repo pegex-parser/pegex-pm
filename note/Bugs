@@ -1,0 +1,19 @@
+== Bugs
+
+Make these into GitHub issues once online:
+
+- Empty regex seems to be a bug:
+
+    a: //
+
+  The compiler loops forever on this.
+
+  Now I can't reproduce
+
+- Pegex::Optimizer should detect unused receiver methods
+
+  When changing rule names in a grammar, I often forget to change the receiver
+  rule names to match. Pegex can detect this during optimization, and fail or
+  warn. Might want an option to disable the warnings too.
+
+
