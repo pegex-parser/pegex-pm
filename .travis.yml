@@ -9,12 +9,9 @@ perl:
 - '5.8'
 
 install:
-- git clone --depth=1
-  git://github.com/ingydotnet/testml-pm ../testml-pm
-- git clone --depth=1
-  git://github.com/ingydotnet/pegex-pm ../pegex-pm
 - cpanm --quiet --notest
   Devel::Cover::Report::Coveralls
+  TestML
   YAML::XS
 
 script:
