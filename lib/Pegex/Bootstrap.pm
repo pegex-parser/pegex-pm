@@ -1,12 +1,11 @@
 package Pegex::Bootstrap;
-
-use Carp qw(carp confess croak);
-
 use Pegex::Base;
 extends 'Pegex::Compiler';
 
 use Pegex::Grammar::Atoms;
 use Pegex::Pegex::AST;
+
+use Carp qw(carp confess croak);
 
 #------------------------------------------------------------------------------
 # The grammar. A DSL data structure. Things with '=' are tokens.

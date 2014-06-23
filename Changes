@@ -1,4 +1,10 @@
 ---
+version: 0.34
+date:    Mon Jun 23 16:02:08 PDT 2014
+changes:
+- Fix for issue#13
+
+---
 version: 0.33
 date:    Mon Jun 16 13:45:07 PDT 2014
 changes:

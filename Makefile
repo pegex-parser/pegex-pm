@@ -53,7 +53,8 @@ install: distdir
 	(cd $(DISTDIR); perl Makefile.PL; make install)
 	make clean
 
-update: makefile readme travis version
+update: makefile
+	make readme travis version
 
 cpan:
 	zild-make-cpan
@@ -83,7 +84,7 @@ distshell: distdir
 disttest: cpan
 	(cd cpan; dzil test) && make clean
 
-release: update test check-release disttest
+release: clean update check-release test disttest
 	make dist
 	cpan-upload $(DIST)
 	git push
@@ -91,8 +92,9 @@ release: update test check-release disttest
 	git push --tag
 	make clean
 	git status
+	@[ -n "$$(which cowsay)" ] && cowsay "$(DIST) Released!!!" && echo
 
-preflight: update test check-release disttest
+preflight: clean update check-release test disttest
 	make dist
 	@echo cpan-upload $(DIST)
 	@echo git push
@@ -100,6 +102,7 @@ preflight: update test check-release disttest
 	@echo git push --tag
 	make clean
 	git status
+	@[ -n "$$(which cowsay)" ] && cowsay "$(DIST) Released!!!" && echo
 
 readme:
 	kwim --pod-cpan doc/$(NAMEPATH).kwim > ReadMe.pod
@@ -121,14 +124,7 @@ ifeq (Zilla-Dist,$(NAME))
 makefile:
 	@echo Skip 'make upgrade'
 else
-makefile:
-	cp Makefile /tmp/
-	make upgrade
-	@if [ -n "`diff Makefile /tmp/Makefile`" ]; then \
-	    echo "Makefile updated. Try again"; \
-	    exit 1; \
-	fi
-	rm /tmp/Makefile
+makefile: upgrade
 endif
 
 version:

@@ -1,12 +1,12 @@
 package Pegex::Parser;
 use Pegex::Base;
+
 use Pegex::Input;
 use Pegex::Optimizer;
 use Scalar::Util;
 
 {
     package Pegex::Constant;
-
     our $Null = [];
     our $Dummy = [];
 }

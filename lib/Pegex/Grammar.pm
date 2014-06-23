@@ -95,6 +95,7 @@ sub compile_into_module {
     open OUT, '>', $file or die $!;
     print OUT $module_text;
     close OUT;
+    print "Compiled '$grammar_file' into '$file'.\n";
 }
 
 1;

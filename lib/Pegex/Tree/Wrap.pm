@@ -1,5 +1,4 @@
 package Pegex::Tree::Wrap;
-
 use Pegex::Base;
 extends 'Pegex::Receiver';
 

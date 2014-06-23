@@ -1,5 +1,4 @@
 package Pegex::Compiler;
-
 use Pegex::Base;
 
 use Pegex::Parser;

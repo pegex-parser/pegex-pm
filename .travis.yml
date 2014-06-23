@@ -25,6 +25,11 @@ after_success:
 notifications:
   irc:
     channels:
-    - irc.freenode.net/pegex
+    - irc.freenode.net#pegex
     on_success: change
     on_failure: always
+
+# Hack to not run on tag pushes:
+branches:
+  except:
+  - /^v?[0-9]+\.[0-9]+/

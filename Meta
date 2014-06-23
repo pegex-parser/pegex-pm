@@ -1,7 +1,7 @@
 =meta: 0.0.1
 
 name: Pegex
-version: 0.33
+version: 0.34
 abstract: Acmeist PEG Parser Framework
 homepage: http://pegex.org
 
@@ -24,10 +24,15 @@ test:
 
 devel:
   git: git@github.org/ingydotnet/pegex-pm
-  irc: irc.freenode.net/pegex
+  irc: irc.freenode.net#pegex
   bug: https://github.com/ingydotnet/pegex-pm/issues/
 
 =cpan:
   include_testml: 1
 
-=travis: perl
+=travis:
+  type: perl
+  irc: irc.freenode.net#pegex
+  test:
+    requires:
+      TestML: 0

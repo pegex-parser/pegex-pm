@@ -1,5 +1,4 @@
 package Pegex::Receiver;
-
 use Pegex::Base;
 
 has parser => (); # The parser object.
