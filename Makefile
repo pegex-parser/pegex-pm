@@ -16,6 +16,7 @@ VERSION := $(shell zild meta version)
 DISTDIR := $(NAME)-$(VERSION)
 DIST := $(DISTDIR).tar.gz
 NAMEPATH := $(subst -,/,$(NAME))
+SUCCESS := "$(DIST) Released!!!"
 
 default: help
 
@@ -92,7 +93,9 @@ release: clean update check-release test disttest
 	git push --tag
 	make clean
 	git status
-	@[ -n "$$(which cowsay)" ] && cowsay "$(DIST) Released!!!" && echo
+	@echo
+	@[ -n "$$(which cowsay)" ] && cowsay "$(SUCCESS)" || echo "$(SUCCESS)"
+	@echo
 
 preflight: clean update check-release test disttest
 	make dist
@@ -102,10 +105,12 @@ preflight: clean update check-release test disttest
 	@echo git push --tag
 	make clean
 	git status
-	@[ -n "$$(which cowsay)" ] && cowsay "$(DIST) Released!!!" && echo
+	@echo
+	@[ -n "$$(which cowsay)" ] && cowsay "$(SUCCESS)" || echo "$(SUCCESS)"
+	@echo
 
 readme:
-	kwim --pod-cpan doc/$(NAMEPATH).kwim > ReadMe.pod
+	swim --pod-cpan doc/$(NAMEPATH).swim > ReadMe.pod
 
 travis:
 	zild-make-travis
