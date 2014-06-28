@@ -3,25 +3,21 @@ version: 0.35
 date:    Fri Jun 27 20:55:38 PDT 2014
 changes:
 - Kwim to Swim
-
 ---
 version: 0.34
 date:    Mon Jun 23 16:02:08 PDT 2014
 changes:
 - Fix for issue#13
-
 ---
 version: 0.33
 date:    Mon Jun 16 13:45:07 PDT 2014
 changes:
 - Change VERSION dist strategy.
-
 ---
 version: 0.32
 date:    Sat Jun 14 12:26:36 PDT 2014
 changes:
 - New badge syntax
-
 ---
 version: 0.31
 date:    Sat May 17 23:43:00 PDT 2014
@@ -29,7 +25,6 @@ changes:
 - Add doc badges.
 - Switch to Zilla::Dist
 - Fix a bug in Pegex::Parser
-
 ---
 version: 0.30
 date:    Sat May 17 23:43:00 PDT 2014
@@ -38,19 +33,16 @@ changes:
 - New cleaner syntax.
 - Slight breakage of backwards compatability.
 - Grammar authors can get help on #pegex (irc.freenode.net)
-
 ---
 version: 0.25
 date:    Sat Feb  8 14:14:59 PST 2014
 changes:
 - Support 5.8.1+
-
 ---
 version: 0.24
 date:    Thu Feb  6 22:56:23 PST 2014
 changes:
 - tweak some dzil settings
-
 ---
 version: 0.23
 date:    Thu Feb  6 17:16:39 PST 2014
@@ -58,14 +50,12 @@ changes:
 - https://rt.cpan.org/Ticket/Display.html?id=82587
 - Doc and example fixes
 - Add 2014 to all copyrights
-
 ---
 version: 0.22
 date:    Wed Feb  5 11:26:05 PST 2014
 changes:
 - Release under dzil (thanks frew++!!)
 - travis testing (frew++)
-
 ---
 version: 0.21
 date:    Thu Nov  8 10:47:42 PST 2012
@@ -77,7 +67,6 @@ changes:
 - Examples and Tutorials
 - New receivers: Pegex::Tree and Pegex::Tree::Wrap
 - API becomes more solidified.
-
 ---
 version: 0.20
 date:    Thu Aug 30 00:06:30 PDT 2012
@@ -134,7 +123,7 @@ changes:
 - Switch OO to Mouse
 ---
 version: 0.11
-date:    '???'
+date:    Fri Sep 10 10:41:30 PDT 2010
 changes:
 - Add manifest_skip and readme_from to Makefile.PL
 ---
