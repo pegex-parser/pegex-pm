@@ -1,4 +1,9 @@
 ---
+version: 0.37
+date:    Sat Jun 28 09:52:45 PDT 2014
+changes:
+- More doc change for Pegex::Module. ggl++
+---
 version: 0.36
 date:    Sat Jun 28 09:45:54 PDT 2014
 changes:

@@ -11,22 +11,22 @@ Base Class for Pegex Grammar Interface Modules
 
   use Pegex::Parser;
 
-  has parser => 'Pegex::Parser';
-  has grammar => 'MyLanguage::Grammar';
-  has receiver => 'MyLanguage::AST';
+  has parser_class => 'Pegex::Parser';
+  has grammar_class => 'MyLanguage::Grammar';
+  has receiver_class => 'MyLanguage::AST';
 
   1;
 
 = Description
 
 The module in the Synopsis above is a complete language parsing module. It just
-inherits from [Pegex::Module], and then overrides the `grammar` and `receiver`
-attributes. [Pegex::Module] provides the `parse()` method.
+inherits from [Pegex::Module], and then overrides the `grammar_class` and
+`receiver_class` attributes. [Pegex::Module] provides the `parse()` method.
 
 = XXX
 
-At this point you must specify the `parser` attribute as well. The inheritance
-of this default is not working.
+At this point you must specify the `parser_class` attribute as well. The
+inheritance of this default is not working.
 
 = Author
 
