@@ -43,6 +43,9 @@ sub optimize_node {
                 if (my $method = $self->grammar->can("rule_$rule")) {
                     $node->{method} = $self->make_method_wrapper($method);
                 }
+                elsif (not $self->grammar->{tree}{$rule}) {
+                    die "No rule '$rule' defined in grammar";
+                }
             }
             $node->{method} ||= $self->parser->can("match_$kind") or die;
             last;
