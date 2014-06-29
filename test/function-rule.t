@@ -1,0 +1,39 @@
+use Test::More;
+use Pegex::Parser;
+
+{
+    package G;
+    use base 'Pegex::Grammar';
+
+    sub rule_a {
+        my ($self, $parser, $input) = @_;
+        return $parser->match_rule(['aaa', 'bbb'], 3);
+    }
+
+    use constant text => <<'...';
+top: a
+...
+}
+
+{
+    package R;
+    use base 'Pegex::Tree';
+    sub got_a {
+        my ($self, $got) = @_;
+        [reverse @$got];
+    }
+}
+
+my $parser = Pegex::Parser->new(
+    grammar => G->new,
+    receiver => R->new,
+    debug => 1,
+);
+
+my $result = $parser->parse('xyz');
+
+is scalar(@$result), 2, 'Got array of size 2';
+is $result->[0], 'bbb', 'bbb is first';
+is $result->[1], 'aaa', 'aaa is second';
+
+done_testing;
