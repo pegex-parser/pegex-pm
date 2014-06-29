@@ -7,18 +7,23 @@ use Pegex::Parser;
 
     sub rule_a {
         my ($self, $parser, $input) = @_;
+        return;
+    }
+
+    sub rule_b {
+        my ($self, $parser, $input) = @_;
         return $parser->match_rule(['aaa', 'bbb'], 3);
     }
 
     use constant text => <<'...';
-top: a
+top: a | b
 ...
 }
 
 {
     package R;
     use base 'Pegex::Tree';
-    sub got_a {
+    sub got_b {
         my ($self, $got) = @_;
         [reverse @$got];
     }
@@ -27,7 +32,7 @@ top: a
 my $parser = Pegex::Parser->new(
     grammar => G->new,
     receiver => R->new,
-    debug => 1,
+    # debug => 1,
 );
 
 my $result = $parser->parse('xyz');
