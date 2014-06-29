@@ -64,11 +64,12 @@ sub parse {
 
     die "No 'receiver'. Can't parse" unless $self->{receiver};
 
-    Pegex::Optimizer->new(
+    $self->{optimizer} = Pegex::Optimizer->new(
         parser => $self,
         grammar => $self->{grammar},
         receiver => $self->{receiver},
-    )->optimize_grammar($start_rule_ref);
+    );
+    $self->{optimizer}->optimize_grammar($start_rule_ref);
 
     # Add circular ref and weaken it.
     $self->{receiver}{parser} = $self;
@@ -80,7 +81,10 @@ sub parse {
         $self->{receiver}->initial();
     }
 
-    my $match = $self->match_ref($start_rule_ref, {});
+    my $match = $self->debug ? do {
+        my $method = $self->{optimizer}->make_trace_wrapper(\&match_ref);
+        $self->$method($start_rule_ref, {'+asr' => 0});
+    } : $self->match_ref($start_rule_ref, {});
 
     $self->{input}->close;
 
