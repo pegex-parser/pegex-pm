@@ -154,7 +154,7 @@ sub match_ref {
     my ($self, $ref, $parent) = @_;
     my $rule = $self->{grammar}{tree}{$ref}
         or die "No rule defined for '$ref'";
-    my $match = $self->match_next($rule) or return 0;
+    my $match = $self->match_next($rule) or return;
     return $Pegex::Constant::Dummy unless $rule->{action};
     @{$self}{'rule', 'parent'} = ($ref, $parent);
     # XXX API mismatch
@@ -167,7 +167,7 @@ sub match_rgx {
 
     pos($$buffer) = $self->{position};
 
-    $$buffer =~ /$regexp/g or return 0;
+    $$buffer =~ /$regexp/g or return;
     $self->{position} = pos($$buffer);
 
     no strict 'refs';
@@ -193,7 +193,7 @@ sub match_all {
         else {
             $self->{farthest} = $position
                 if ($self->{position} = $position) > $self->{farthest};
-            return 0;
+            return;
         }
     }
     $set = [ $set ] if $len > 1;
@@ -207,7 +207,7 @@ sub match_any {
             return $match;
         }
     }
-    return 0;
+    return;
 }
 
 sub match_err {
