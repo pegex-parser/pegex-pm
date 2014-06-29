@@ -11,8 +11,8 @@ use Pegex::Parser;
     }
 
     sub rule_b {
-        my ($self, $parser, $input) = @_;
-        return $parser->match_rule(['aaa', 'bbb'], 3);
+        my ($self, $parser, $buffer, $pos) = @_;
+        return $parser->match_rule(3, ['aaa', $$buffer]);
     }
 
     use constant text => <<'...';
@@ -38,7 +38,7 @@ my $parser = Pegex::Parser->new(
 my $result = $parser->parse('xyz');
 
 is scalar(@$result), 2, 'Got array of size 2';
-is $result->[0], 'bbb', 'bbb is first';
+is $result->[0], 'xyz', 'xyz is first';
 is $result->[1], 'aaa', 'aaa is second';
 
 done_testing;

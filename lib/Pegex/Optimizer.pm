@@ -88,7 +88,12 @@ sub make_method_wrapper {
     return sub {
         my ($parser, $ref, $parent) = @_;
         @{$parser}{'rule', 'parent'} = ($ref, $parent);
-        $method->($parser->{grammar}, $parser, $parser->{input});
+        $method->(
+            $parser->{grammar},
+            $parser,
+            $parser->{buffer},
+            $parser->{position},
+        );
     }
 }
 

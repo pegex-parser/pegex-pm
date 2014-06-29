@@ -139,7 +139,7 @@ sub match_next {
 }
 
 sub match_rule {
-    my ($self, $match, $position) = @_;
+    my ($self, $position, $match) = (@_, []);
     $self->{position} = $position;
     $self->{farthest} = $self->{position}
         if $self->{position} > $self->{farthest};
@@ -147,6 +147,7 @@ sub match_rule {
     my ($ref, $parent) = @{$self}{'rule', 'parent'};
     my $rule = $self->{grammar}{tree}{$ref}
         or die "No rule defined for '$ref'";
+
     [ $rule->{action}->($self->{receiver}, @$match) ];
 }
 
@@ -157,7 +158,9 @@ sub match_ref {
     my $match = $self->match_next($rule) or return;
     return $Pegex::Constant::Dummy unless $rule->{action};
     @{$self}{'rule', 'parent'} = ($ref, $parent);
-    # XXX API mismatch
+
+    # XXX Possible API mismatch.
+    # Not sure if we should "splat" the $match.
     [ $rule->{action}->($self->{receiver}, @$match) ];
 }
 
