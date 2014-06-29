@@ -44,6 +44,15 @@ sub optimize_node {
                     $node->{method} = $self->make_method_wrapper($method);
                 }
                 elsif (not $self->grammar->{tree}{$rule}) {
+                    if (my $method = $self->grammar->can("$rule")) {
+                        warn <<"...";
+Warning:
+
+    You have a method called '$rule' in your grammar.
+    It should probably be called 'rule_$rule'.
+
+...
+                    }
                     die "No rule '$rule' defined in grammar";
                 }
             }
