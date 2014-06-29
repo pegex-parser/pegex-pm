@@ -1,4 +1,9 @@
 ---
+version: 0.38
+date:    Sun Jun 29 16:02:50 PDT 2014
+changes:
+- Fix issue#12. Make trace work on outermost rule.
+---
 version: 0.37
 date:    Sat Jun 28 09:52:45 PDT 2014
 changes:
