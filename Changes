@@ -1,4 +1,9 @@
 ---
+version: 0.39
+date:    Tue Jul  1 10:05:51 PDT 2014
+changes:
+- Support a maxparse debugging option
+---
 version: 0.38
 date:    Sun Jun 29 16:02:50 PDT 2014
 changes:

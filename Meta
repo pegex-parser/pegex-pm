@@ -1,12 +1,12 @@
 =meta: 0.0.1
 
 name: Pegex
-version: 0.38
+version: 0.39
 abstract: Acmeist PEG Parser Framework
 homepage: http://pegex.org
 
 license: perl
-copyright: 2010, 2011, 2012, 2013, 2014. Ingy döt Net.
+copyright: 2010-2014. Ingy döt Net.
 author:
   name: Ingy döt Net
   email: ingy@cpan.org
