@@ -9,6 +9,7 @@ sub optimize_grammar {
     my ($self, $start) = @_;
     my $tree = $self->grammar->{tree};
     return if $tree->{'+optimized'};
+    $self->set_max_parse if $self->parser->{maxparse};
     $self->{extra} = {};
     while (my ($name, $node) = each %$tree) {
         next unless ref($node);
@@ -116,6 +117,21 @@ sub make_trace_wrapper {
         }
         return $result;
     }
+}
+
+sub set_max_parse {
+    require Pegex::Parser;
+    my ($self) = @_;
+    my $maxparse = $self->parser->{maxparse};
+    no warnings 'redefine';
+    my $method = \&Pegex::Parser::match_ref;
+    my $counter = 0;
+    *Pegex::Parser::match_ref = sub {
+        die "Maximum parsing rules reached ($maxparse)\n"
+            if $counter++ >= $maxparse;
+        my $self = shift;
+        $self->$method(@_);
+    };
 }
 
 1;
