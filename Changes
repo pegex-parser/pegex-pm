@@ -1,4 +1,9 @@
 ---
+version: 0.41
+date:    Thu Jul 17 10:28:16 PDT 2014
+changes:
+- ZD put an incorrect dep on TestML. @rurban++
+---
 version: 0.40
 date:    Mon Jul 14 09:56:50 PDT 2014
 changes:

@@ -136,7 +136,14 @@ ifeq (Zilla-Dist,$(NAME))
 makefile:
 	@echo Skip 'make upgrade'
 else
-makefile: upgrade
+makefile:
+	@cp Makefile /tmp/
+	make upgrade
+	@if [ -n "`diff Makefile /tmp/Makefile`" ]; then \
+	    echo "Makefile updated. Try again"; \
+	    exit 1; \
+	fi
+	@rm /tmp/Makefile
 endif
 
 version:
