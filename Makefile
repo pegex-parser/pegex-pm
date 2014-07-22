@@ -7,10 +7,13 @@
 
 .PHONY: cpan test
 
+PERL ?= $(shell which perl)
+ZILD := $(PERL) -S zild
+
 ifneq (,$(shell which zild))
-    NAME := $(shell zild meta name)
-    VERSION := $(shell zild meta version)
-    RELEASE_BRANCH := $(shell zild meta branch)
+    NAME := $(shell $(ZILD) meta name)
+    VERSION := $(shell $(ZILD) meta version)
+    RELEASE_BRANCH := $(shell $(ZILD) meta branch)
 else
     NAME := No-Name
     VERSION := 0
@@ -29,7 +32,8 @@ help:
 	@echo 'Makefile targets:'
 	@echo ''
 	@echo '    make test      - Run the repo tests'
-	@echo '    make install   - Install the repo'
+	@echo '    make install   - Install the dist from this repo'
+	@echo '    make prereqs   - Install the CPAN prereqs'
 	@echo '    make update    - Update generated files'
 	@echo '    make release   - Release the dist to CPAN'
 	@echo ''
@@ -52,22 +56,29 @@ help:
 
 test:
 ifeq ($(wildcard pkg/no-test),)
-	prove -lv test
+	$(PERL) -S prove -lv test
 else
 	@echo "Testing not available. Use 'disttest' instead."
 endif
 
 install: distdir
+	@echo '***** Installing $(DISTDIR)'
 	(cd $(DISTDIR); perl Makefile.PL; make install)
 	make clean
 
+prereqs:
+	cpanm `$(ZILD) meta requires`
+
 update: makefile
+	@echo '***** Updating/regenerating repo content'
 	make readme contrib travis version
 
-release: clean update check-release test disttest
+release: clean update check-release date test disttest
+	@echo '***** Releasing $(DISTDIR)'
 	make dist
-	[ -n "$$(git status -s)" ] && git commit -am '$(VERSION)'
 	cpan-upload $(DIST)
+	make clean
+	[ -z "$$(git status -s)" ] || git commit -am '$(VERSION)'
 	git push
 	git tag $(VERSION)
 	git push --tag
@@ -78,48 +89,56 @@ release: clean update check-release test disttest
 	@echo
 
 cpan:
+	@echo '***** Creating the `cpan/` directory'
 	zild-make-cpan
 
 cpanshell: cpan
+	@echo '***** Starting new shell in `cpan/` directory'
 	(cd cpan; $$SHELL)
 	make clean
 
 cpantest: cpan
 ifeq ($(wildcard pkg/no-test),)
-	(cd cpan; prove -lv t) && make clean
+	@echo '***** Running tests in `cpan/` directory'
+	(cd cpan; $(PERL) -S prove -lv t) && make clean
 else
 	@echo "Testing not available. Use 'disttest' instead."
 endif
 
 dist: clean cpan
+	@echo '***** Creating new dist: $(DIST)'
 	(cd cpan; dzil build)
 	mv cpan/$(DIST) .
 	rm -fr cpan
 
 distdir: clean cpan
+	@echo '***** Creating new dist directory: $(DISTDIR)'
 	(cd cpan; dzil build)
 	mv cpan/$(DIST) .
 	tar xzf $(DIST)
 	rm -fr cpan $(DIST)
 
 distshell: distdir
+	@echo '***** Starting new shell in `$(DISTDIR)` directory'
 	(cd $(DISTDIR); $$SHELL)
 	make clean
 
 disttest: cpan
+	@echo '***** Running tests in `$(DISTDIR)` directory'
 	(cd cpan; dzil test) && make clean
 
 upgrade:
-	cp `zild sharedir`/Makefile ./
+	@echo '***** Checking that Zilla-Dist Makefile is up to date'
+	cp `$(ZILD) sharedir`/Makefile ./
 
 readme:
 	swim --pod-cpan doc/$(NAMEPATH).swim > ReadMe.pod
 
 contrib:
-	zild-render-template Contributing
+	$(PERL) -S zild-render-template Contributing
 
 travis:
-	zild-render-template travis.yml .travis.yml
+	$(PERL) -S zild-render-template travis.yml .travis.yml
 
 clean purge:
 	rm -fr cpan .build $(DIST) $(DISTDIR)
@@ -128,6 +147,7 @@ clean purge:
 # Non-pulic-facing targets:
 #------------------------------------------------------------------------------
 check-release:
+	@echo '***** Checking readiness to release $(DIST)'
 	RELEASE_BRANCH=$(RELEASE_BRANCH) zild-check-release
 
 # We don't want to update the Makefile in Zilla::Dist since it is the real
@@ -140,11 +160,14 @@ makefile:
 	@cp Makefile /tmp/
 	make upgrade
 	@if [ -n "`diff Makefile /tmp/Makefile`" ]; then \
-	    echo "Makefile updated. Try again"; \
+	    echo "ATTENTION: Dist-Zilla Makefile updated. Please re-run the command."; \
 	    exit 1; \
 	fi
 	@rm /tmp/Makefile
 endif
 
+date:
+	$(ZILD) changes date "`date`"
+
 version:
-	zild-version-update
+	$(PERL) -S zild-version-update

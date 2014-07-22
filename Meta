@@ -1,7 +1,7 @@
 =meta: 0.0.1
 
 name: Pegex
-version: 0.41
+version: 0.42
 abstract: Acmeist PEG Parser Framework
 homepage: http://pegex.org
 

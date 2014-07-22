@@ -1,4 +1,9 @@
 ---
+version: 0.42
+date:    Mon Jul 21 17:25:50 PDT 2014
+changes:
+- Fix copyright year stuff
+---
 version: 0.41
 date:    Thu Jul 17 10:28:16 PDT 2014
 changes:
@@ -95,7 +100,7 @@ changes:
 - Support a b | c precedence in Pegex grammars.
 - Complete documenatation.
 - Examples and Tutorials
-- New receivers: Pegex::Tree and Pegex::Tree::Wrap
+- New receivers, Pegex::Tree and Pegex::Tree::Wrap
 - API becomes more solidified.
 ---
 version: 0.20

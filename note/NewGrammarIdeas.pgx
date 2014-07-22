@@ -1,0 +1,36 @@
+# Input:
+#
+# "\x00\x0dVikas N Kumar\x00\x0cIngy döt Net\x00\x00"
+#
+# Output:
+#
+# name-list:
+# - name: Vikas N Kumar
+# - name: Ingy döt Net
+
+# Pegex Grammar (with new syntax additions):
+
+name-list: name-field* end
+
+name-field: !end len name
+
+# { ... } is a code section. It follow any rule clause. It acts as a receiver
+# function. The code inside is a mini data manipulation language. Variables go
+# into a "Stash" that is accessible by the rest of Pegex including the grammar.
+# Statements are separated by ';'. The last result of the last statement is
+# returned. In the example below, the last statement is nothing, so nothing is
+# returned. THe variable `len` may be used by the grammar.
+len: / ( BYTE BYTE ) / { len = $1.to_i; }
+
+# Match and capture exactly `len` *characters* (not bytes). The '$' char
+# indicates a variable reference. Obviously regexes like these cannot be
+# precompiled. The regex might compile to something like this:
+#
+#   [ '(.', ['len'], ')' ]
+#
+# Then it would be turned into a regex right before it was used. If the
+# variable `len` did not exist, an error would occur.
+name: / ( ANY{$len} ) /
+
+# \x00\x00 indicates End-Of-Input
+end: / NULL NULL /
