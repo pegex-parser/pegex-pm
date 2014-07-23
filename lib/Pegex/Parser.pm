@@ -54,8 +54,7 @@ sub parse {
 
     die "No 'grammar'. Can't parse" unless $self->{grammar};
 
-    $self->{grammar}{tree} = $self->{grammar}->make_tree
-        unless defined $self->{grammar}{tree};
+    $self->{grammar}{tree} = $self->{grammar}->tree;
 
     my $start_rule_ref = $start ||
         $self->{grammar}{tree}{'+toprule'} ||
@@ -271,6 +270,16 @@ Error parsing Pegex document:
   ${\ (' ' x (length($pretext) + 10) . '^')}
   position: $position ($real_pos pre-lookahead)
 ...
+}
+
+# TODO Move this to a Parser helper role/subclass
+sub line_column {
+    my ($self, $position) = @_;
+    $position ||= $self->{position};
+    my $buffer = $self->{buffer};
+    my $line = @{[substr($$buffer, 0, $position) =~ /(\n)/g]} + 1;
+    my $column = $position - rindex($$buffer, "\n", $position);
+    return [$line, $position];
 }
 
 1;

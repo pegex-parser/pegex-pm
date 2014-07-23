@@ -89,9 +89,17 @@ sub compile_into_module {
     }
     open IN, $file or die $!;
     my $module_text = do {local $/; <IN>};
+    require Pegex;
+    my $msg = "   # Generated/Inlined by Pegex::Grammar ($Pegex::VERSION)";
     close IN;
     $perl =~ s/^/  /gm;
-    $module_text =~ s/^(sub\s+make_tree\s*\{).*?(^\})/$1\n$perl$2/ms;
+    $module_text =~ s/^(sub\s+make_tree\s*\{).*?(^\})/$1$msg\n$perl$2/ms;
+    $module_text =~ s/^(sub\s+tree\s*\{).*?(^\})/$1$msg\n$perl$2/ms;
+    chomp $grammar_text;
+    $grammar_text = "<<'...';\n$grammar_text\n...\n";
+    $module_text =~ s/^(sub\s+text\s*\{).*?(^\})/$1$msg\n$grammar_text$2/ms;
+    $grammar_text =~ s/^/# /gm;
+    $module_text =~ s/^(# sub\s+text\s*\{).*?(^# \})/$1$msg\n$grammar_text$2/ms;
     open OUT, '>', $file or die $!;
     print OUT $module_text;
     close OUT;

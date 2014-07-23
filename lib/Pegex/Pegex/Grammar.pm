@@ -11,7 +11,253 @@ use constant file => '../pegex-pgx/pegex.pgx';
 #     Pegex::Bootstrap->new->compile($grammar)->tree;
 # }
 
-sub make_tree {
+sub text {   # Generated/Inlined by Pegex::Grammar (0.43)
+<<'...';
+# This is the Pegex grammar for Pegex grammars!
+
+%grammar pegex
+%version 0.2.0
+%include pegex-atoms
+
+
+grammar:
+  meta-section
+  rule-section
+  ( doc-ending | ERROR-rule-definition )
+
+meta-section: ( meta-definition | + | ERROR-meta-definition )*
+
+rule-section: ( rule-definition | + )*
+
+meta-definition: / '%' meta-name BLANK+ meta-value /
+
+rule-definition: rule-start rule-group ending
+
+rule-start: / ( rule-name ) BLANK* ':' -/
+
+rule-group: any-group
+
+any-group: /- '|'? -/ all-group ( /- '|' -/ all-group )*
+
+all-group: rule-part (- rule-part)*
+
+rule-part: (rule-item)1-2 % /+ ( '%'{1,2} ) +/
+
+rule-item:
+  | bracketed-group
+  | whitespace-token
+  | rule-reference
+  | quoted-regex
+  | regular-expression
+  | error-message
+
+rule-reference:
+  /
+    ( rule-modifier? )      # [=!.-+]
+      (:                    # foo | <foo>
+        ( rule-name ) |
+        (: '<' ( rule-name ) '>' )
+      )
+    ( rule-quantifier? )    # [?*+] 2+ 2-3
+    (! BLANK* ':' )         # Avoid parsing 'foo:'
+  /                        # as a rule reference.
+
+quoted-regex:
+  / TICK ( [^ TICK ]* ) TICK /
+
+regular-expression:
+  '/'
+  whitespace-must-start?
+  (
+  | whitespace-must
+  | whitespace-maybe
+  | quoted-regex
+  | regex-rule-reference
+  | +
+  | regex-raw
+  )*
+  '/'
+
+whitespace-must-start: / PLUS (= [ SPACE SLASH ]) /
+
+whitespace-must: /+ (: PLUS | DASH DASH )  (= [ SPACE SLASH ]) /
+
+whitespace-maybe: /- DASH (= [ SPACE SLASH ]) /
+
+regex-rule-reference:
+  /
+    (:
+      + ( rule-name ) |
+      (: '<' ( rule-name ) '>' )
+    )
+    (! BLANK* ':' )
+  /
+
+regex-raw: / ([^ WS SLASH TICK LANGLE ]+) /
+
+bracketed-group:
+    / ( group-modifier? ) '(' -/
+    rule-group
+    /- ')' ( rule-quantifier? ) /
+
+whitespace-token:
+    / ( (: PLUS | DASH | DASH DASH | TILDE | TILDE TILDE ) ) (= + )/
+
+error-message:
+    / '`' ( [^ '`' DOS ]* ) '`' /
+
+rule-modifier: / [ BANG EQUAL PLUS DASH DOT ] /
+
+group-modifier: / [ DASH DOT ] /
+
+rule-quantifier:
+    / (:
+        [ STAR PLUS QMARK ] |
+        DIGIT+ (: DASH DIGIT+ | PLUS)?
+    ) /
+
+meta-name:
+    / ( 'grammar' | 'extends' | 'include' | 'version' ) /
+
+meta-value:
+    /
+        BLANK*
+        ( [^ SEMI BREAK ]*? )
+        BLANK*
+        ending
+    /
+
+rule_name: /
+  (:
+    ALPHA ALNUM* (:[ DASH UNDER ] ALNUM+)* |
+    DASH+ |
+    UNDER+
+  )
+  (= [^ WORD DASH ])
+/
+
+ending: /
+  ~?
+  (:
+    BREAK - SEMI? - |
+    comment - SEMI? - |
+    SEMI - |
+    EOS
+  )
+/
+
+ws: / (: WS | comment ) /
+
+comment: / '#' ANY* (: BREAK | EOS ) /
+
+###
+# Pegex common error recognition and reporting:
+###
+
+doc-ending: /- EOS /
+
+illegal-non-modifier-char: / [^
+    WORD LPAREN RPAREN LANGLE SLASH TILDE PIPE GRAVE WS
+] /
+
+illegal-non-quantifier-char: / [^
+    WORD LPAREN RPAREN LANGLE SLASH TILDE PIPE GRAVE WS
+    STAR PLUS QMARK BANG EQUAL PLUS DASH DOT COLON SEMI
+] /
+
+ERROR-meta-definition:
+    /(= PERCENT WORD+ )/
+    `Illegal meta rule`
+
+# Much of this is essentially a duplicate of the above rules, except with added
+# error checking
+
+ERROR-rule-definition: ERROR-rule-start ERROR-rule-group ( ending | `Rule ending syntax error` )
+
+ERROR-rule-group: ERROR-any-group | ERROR-all-group
+
+ERROR-all-group: ERROR-rule-part+ % -
+
+ERROR-any-group: (ERROR-all-group)2+ % /- PIPE -/
+
+ERROR-rule-part: (ERROR-rule-item)1-2 % /+ ( PERCENT{1,2} ) +/
+
+ERROR-rule-start: / ( rule-name ) BLANK* COLON -/ | `Rule header syntax error`
+
+ERROR-rule-item:
+    rule-item |
+    ERROR-rule-reference |
+    ERROR-regular-expression |
+    ERROR-bracketed-group |
+    ERROR-error-message
+
+# Errors - rule-reference
+ERROR-rule-reference:
+    /(= rule-modifier? LANGLE rule-name (! RANGLE ) )/
+    `Missing > in rule reference`
+|
+    /(= rule-modifier? rule-name RANGLE )/
+    `Missing < in rule reference`
+|
+    /(=
+        rule-modifier? (: rule-name | LANGLE rule-name RANGLE )
+        illegal-non-quantifier-char
+    )/
+    `Illegal character in rule quantifier`
+|
+    /(= rule-modifier? rule-name DASH )/
+    `Unprotected rule name with numeric quantifier; please use <rule>#-# syntax!`
+|
+    !rule-modifier
+    /(=
+        illegal-non-modifier-char
+        (: rule-name | LANGLE rule-name RANGLE )
+        rule-quantifier?         # [?*+] 2+ 2-3
+        (! BLANK* COLON )      # Avoid parsing 'foo:'
+    )/                             # as a rule reference.
+    `Illegal rule modifier (must be [=!.-+]?)`
+
+# Errors - regular-expression
+ERROR-regular-expression:
+    /(= SLASH ( [^ SLASH ]* ) doc-ending )/
+    `Runaway regular expression; no ending slash at EOF`
+
+# Errors - bracketed-group
+ERROR-bracketed-group:
+    /(! group-modifier) (= illegal-non-modifier-char LPAREN )/
+    `Illegal group rule modifier (can only use .)`
+|
+    / ( group-modifier? ) LPAREN -/
+    rule-group
+    (
+        =doc-ending
+        `Runaway rule group; no ending parens at EOF`
+    |
+        / (= - RPAREN illegal-non-quantifier-char ) /
+        `Illegal character in group rule quantifier`
+    )
+
+# Errors - error-message
+ERROR-error-message:
+    /(= GRAVE [^ GRAVE DOS ]* [ DOS ] [^ GRAVE ]* GRAVE )/
+    `Multi-line error messages not allowed!`
+|
+    /(= GRAVE [^ GRAVE ]* doc-ending )/
+    `Runaway error message; no ending grave at EOF`
+
+# Errors - separation
+ERROR-separation:
+    /(= - PERCENT{3} )/
+    `Leading separator form (BOK) no longer supported`
+|
+    /(= - PERCENT{1,2} [^ WS ] )/
+    `Illegal characters in separator indicator`
+
+# vim: set lisp:
+...
+}
+
+sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.43)
   {
     '+grammar' => 'pegex',
     '+include' => 'pegex-atoms',
