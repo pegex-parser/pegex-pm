@@ -1,0 +1,134 @@
+%grammar vic
+%version 0.2.1
+#COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
+
+# mcu-select is necessary.
+program: mcu-select header* statement* EOS
+
+header: pragmas | comment
+mcu-select: /'PIC' BLANK+ ( mcu-types ) line-ending/
+mcu-types: / ALPHA DIGIT+ ALPHA DIGIT+ / # the uc names are like P16F690 or P16F84 etc.
+pragmas: 'pragma' + (variable | name) (pragma-expression | name)? line-ending
+pragma-expression: name / EQUAL -/ (number-units | number | string) -
+
+comment: /- HASH ANY* EOL/ | blank-line
+blank-line: /- EOL/
+
+## overriding what pegex is doing here
+_: / BLANK* EOL?/
+__: / BLANK+ EOL?/
+line-ending: /- SEMI - EOL?/
+
+statement:
+  | comment
+  | instruction
+  | expression
+  | conditional-statement
+  | assert-statement
+  | block
+
+block: named-block
+named-block: name anonymous-block
+anonymous-block: start-block statement* end-block
+start-block: /- LCURLY - EOL?/
+end-block: /- RCURLY - EOL?/
+
+instruction: name values line-ending
+
+name: - identifier-without-keyword -
+values: value* % list-separator
+value: - (string | number-units | number | array-element | variable |
+        named-block | modifier-constant | modifier-variable |
+        validated-variable) -
+
+expression: (assign-expr | unary-expr | declaration) line-ending
+unary-lhs: - unary-operator - variable -
+unary-rhs: - variable - unary-operator -
+unary-expr: unary-lhs | unary-rhs
+complement: - complement-operator - rhs-expr -
+nested-expr-value: start-nested-expr rhs-expr end-nested-expr
+expr-value: - (number | array-element | variable | number-units | complement |
+                modifier-variable | nested-expr-value) -
+rhs-expr: expr-value+ % rhs-operator
+assign-expr: - variable - assign-operator - rhs-expr
+declaration: - variable - / EQUAL / - (constant | modifier-constant)
+array-element: variable start-array rhs-expr end-array
+
+comparison: expr-value compare-operator expr-value
+single-conditional: comparison | expr-value
+nested-conditional: start-nested-expr single-conditional end-nested-expr
+any-conditional: single-conditional | nested-conditional
+conditional-predicate: - (anonymous-block) - ('else' - (anonymous-block | conditional-statement)*)? -
+single-conditional-subject: any-conditional+ % logic-operator
+nested-conditional-subject: start-nested-expr single-conditional-subject end-nested-expr
+conditional-subject: single-conditional-subject | nested-conditional-subject
+conditional-statement: - /('if' | 'while')/ - conditional-subject - conditional-predicate line-ending?
+
+# special case
+assert-value: - (validated-variable | variable | number) -
+assert-comparison: assert-value compare-operator assert-value
+assert-condition: assert-comparison
+assert-message: list-separator - string
+assert-statement: name assert-condition - assert-message? - line-ending
+
+complement-operator: /( TILDE | BANG )/
+unary-operator: /( PLUS PLUS | DASH DASH)/
+assign-operator: /([ PLUS DASH PERCENT CARET STAR PIPE AMP SLASH]? EQUAL)/ | shift-assign-operator
+compare-operator: /([ BANG EQUAL LANGLE RANGLE] EQUAL | (: LANGLE | RANGLE ))/
+logic-operator: /([ AMP PIPE]{2})/
+math-operator: /([ PLUS DASH STAR SLASH PERCENT])/
+shift-operator: /( LANGLE LANGLE | RANGLE RANGLE)/
+shift-assign-operator: /( LANGLE LANGLE EQUAL | RANGLE RANGLE EQUAL)/
+bit-operator: /([ PIPE CARET AMP])/
+rhs-operator: math-operator | bit-operator | shift-operator
+# parentheses
+start-nested-expr: /- LPAREN -/
+end-nested-expr: /- RPAREN -/
+start-array: /- LSQUARE -/
+end-array: /- RSQUARE -/
+
+string: single-quoted-string | double-quoted-string
+
+# most microcontrollers cannot do floating point math so ignore real numbers
+number-units: number - units
+# number handles both hex and non-hex values for ease of use
+number: /('0'[xX] HEX+ | '-'? DIGIT+)/ | boolean
+units: /([mu]?'s'|[kM]?'Hz' | '%')/
+boolean: /('TRUE'|'FALSE'|'true'|'false'|'0'|'1')/
+
+validated-variable: identifier-without-keyword
+modifier-variable: identifier-without-keyword - variable
+modifier-constant: identifier-without-keyword - constant
+variable: DOLLAR identifier
+constant: number-units | number | string | array
+array: start-array - array-element-type* % list-separator - end-array
+array-element-type: - (number-units | number | string) -
+identifier-without-keyword: /(! keyword)( ALPHA[ WORDS]*)/
+identifier: /( ALPHA [ WORDS ]*)/
+keyword: /'if'|'else'|'while'|'true'|'false'|'TRUE'|'FALSE'/
+list-separator: - COMMA - comment?
+
+single_quoted_string:
+    /(:
+        SINGLE
+        ((:
+            [^ BREAK BACK SINGLE] |
+            BACK SINGLE |
+            BACK BACK
+        )*?)
+        SINGLE
+    )/
+
+double_quoted_string:
+    /(:
+        DOUBLE
+        ((:
+            [^ BREAK BACK DOUBLE] |
+            BACK DOUBLE |
+            BACK BACK |
+            BACK escape
+        )*?)
+        DOUBLE
+    )/
+
+escape: / [0nt] /

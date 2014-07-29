@@ -29,11 +29,11 @@ all-group: rule-part (- rule-part)*
 rule-part: (rule-item)1-2 % /+ ( '%'{1,2} ) +/
 
 rule-item:
+  | bracketed-group
   | whitespace-token
   | rule-reference
   | quoted-regex
   | regular-expression
-  | bracketed-group
   | error-message
 
 rule-reference:
@@ -93,7 +93,7 @@ error-message:
 
 rule-modifier: / [ BANG EQUAL PLUS DASH DOT ] /
 
-group-modifier: '.'
+group-modifier: / [ DASH DOT ] /
 
 rule-quantifier:
     / (:

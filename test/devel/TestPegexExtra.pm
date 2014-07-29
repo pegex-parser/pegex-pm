@@ -1,4 +1,4 @@
-package xt::Test;
+package TestPegexExtra;
 use strict; use warnings;
 
 use Test::More;
@@ -22,11 +22,13 @@ use constant TEST_GRAMMARS => [
     '../pegex-pgx/pegex.pgx',
     '../testml-pgx/testml.pgx',
     '../json-pgx/json.pgx',
-    '../yaml-pgx/yaml.pgx',
+    # '../yaml-pgx/yaml.pgx',
     '../kwim-pgx/kwim.pgx',
     '../drinkup/share/drinkup.pgx',
-    '../SQL-Parser-Neo/pegex/pg-lexer.pgx',
+    # '../SQL-Parser-Neo/pegex/pg-lexer.pgx',
     '../SQL-Parser-Neo/pegex/Pg.pgx',
+    '../vic/share/vic.pgx',
+    '../swim-pgx/swim.pgx',
 ];
 
 sub pegex_parser {
@@ -72,7 +74,8 @@ sub test_grammar_paths {
 sub check_grammar {
     my ($source) = @_;
     (my $file = $source) =~ s!.*/!!;
-    my $path = "./xt/grammars/$file";
+    my $xt = -e 'xt' ? 'xt' : 'test/devel';
+    my $path = "./$xt/grammars/$file";
     if (-e $source) {
         if (not -e $path) {
             diag "$path not found. Copying from $source\n";

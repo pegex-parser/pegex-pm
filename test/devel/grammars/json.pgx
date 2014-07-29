@@ -4,69 +4,70 @@
 
 %grammar json
 %version 0.0.1
+%include pegex-atoms
 
 json: map | seq
 
 node: map | seq | scalar
 
 map:
-    / ~ <LCURLY> ~ /
-    pair* % / ~ <COMMA> ~ /
-    / ~ <RCURLY> ~ /
+  /- '{' -/
+  pair* % /- ',' -/
+  /- '}' -/
 
 pair:
-    string
-    / ~ <COLON> ~ /
-    node
+  string
+  /- ':' -/
+  node
 
 seq:
-    / ~ <LSQUARE> ~ /
-    node* % / ~ <COMMA> ~ /
-    / ~ <RSQUARE> ~ /
+  /- '[' -/
+  node* % /- ',' -/
+  /- ']' -/
 
 scalar:
-    string |
-    number |
-    boolean |
-    null
+  | string
+  | number
+  | boolean
+  | null
 
 # string and number are interpretations of http://www.json.org/
 string: /
-    <DOUBLE>
-        (
-            (:
-                <BACK> (:       # Backslash escapes
-                    [
-                        <DOUBLE>    # Double Quote
-                        <BACK>      # Back Slash
-                        <SLASH>     # Foreward Slash
-                        b           # Back Space
-                        f           # Form Feed
-                        n           # New Line
-                        r           # Carriage Return
-                        t           # Horizontal Tab
-                    ]
-                |
-                    u <HEX>{4}      # Unicode octet pair
-                )
-            |
-                [^ <DOUBLE> <CONTROLS> ]  # Anything else
-            )*
+  DOUBLE
+    (
+      (:
+        BACK (:     # Backslash escapes
+          [
+            DOUBLE    # Double Quote
+            BACK    # Back Slash
+            SLASH     # Foreward Slash
+            'b'     # Back Space
+            'f'     # Form Feed
+            'n'     # New Line
+            'r'     # Carriage Return
+            't'     # Horizontal Tab
+          ]
+        |
+          'u' HEX{4}    # Unicode octet pair
         )
-    <DOUBLE>
+      |
+        [^ DOUBLE CONTROLS ]  # Anything else
+      )*
+    )
+  DOUBLE
 /
 
 number: /(
-    <DASH>?
-    (: 0 | [1-9] <DIGIT>* )
-    (: <DOT> <DIGIT>* )?
-    (: [eE] [<DASH><PLUS>]? <DIGIT>+ )?
+  DASH?
+  (: '0' | [1-9] DIGIT* )
+  (: DOT DIGIT* )?
+  (: [eE] [ DASH PLUS ]? DIGIT+ )?
 )/
 
 boolean: true | false
 
-true: /true/
+true: 'true'
 
-false: /false/
+false: 'false'
 
-null: /null/
+null: 'null'

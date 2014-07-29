@@ -1,6 +1,9 @@
-use Test::More;
 use strict; use warnings;
-use xt::Test;
+use File::Basename;
+use lib dirname(__FILE__);
+
+use Test::More;
+use TestPegexExtra;
 
 for my $grammar (test_grammar_paths) {
     my $parser = pegex_parser_ast;
