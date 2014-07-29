@@ -1,0 +1,214 @@
+Cafe Pegex::Parser 0.0.1
+  require
+    Pegex::Input
+    Pegex::Optimizer
+
+class Pegex::Constant
+$Null = {}
+$Dummy = {}
+
+class Pegex::Parser
+
+(@grammar, @receiver, @debug)->
+  @input
+  @rule
+  @parent
+  @debug /= Env<PEGEX_DEBUG> / Pegex::Parser$Debug / False
+  @position = 0
+  @farthest = 0
+  @throw_on_error = True
+
+parse = (input, start)->
+  if start
+    start.gsub '-', '_'
+
+  @position = 0
+  @farthest = 0
+
+  if input.Str?
+    input = Pegex::Input
+      input = input
+
+  @input = input
+  @input.open
+    unless @input.open?
+  @buffer = @input.read
+  @length = @buffer.length
+
+  die "No 'grammar'. Can't parse."
+    unless @grammar
+
+  @grammar.tree = @grammar.make-tree
+
+  start-rule-ref = start |
+    @grammar.tree<+toprule> |
+    @grammar.tree<TOP> & 'TOP' |
+    die "No starting rule for Pegex::Parser::parse"
+
+  @optimizer = Pegex::Optimizer
+    parser = @
+    grammar = @grammar
+    receiver = @receiver
+
+  @optimizer.optimize-grammar start-rule-ref
+
+  @receiver.parser = @
+
+  if @receiver&initial
+    @rule = start-rule-ref
+    @parent = {}
+    @receiver.initial
+
+  if @debug
+    method = @optimizer.make-trace-wrapper @&match-ref
+    match = @$method start-rule-ref, {'+asr': 0}
+  else
+    match = match-ref start-rule-ref, {}
+
+  @input.close
+
+  if ! match | @position < @length
+    @.throw-error "Parse document failed for some reason"
+    return   # In case @throw-on-error is off
+
+  if @receiver&final
+    @rule = start-rule-ref
+    @parent = {}
+    match = [ @receiver.final *match ]
+
+  return match:0
+
+match-next = (next)->
+  (rule, method, kind, min, max, assertion) =
+    next<rule method kind +min +max +asr>
+
+  (position, match, count) = (@position, [], 0)
+
+  while return = @$method rule, next
+    position = @position unless assertion
+    count++
+    push match, *return
+    last if max == 1
+  if ! count & min == 0 & kind == 'all'
+    match = [[]]
+  if max != 1
+    if next<-flat>
+      match = match.map (elem)->
+        elem.Array? ? *elem : elem
+    else
+      match = [ match ]
+      @farthest = position if (@position = position) > @farthest
+  result = (count >= min & (! max | count <= max)) ^^ (assertion == -1)
+  if ! result | assertion
+    @farthest = position if (@position = position) > @farthest
+
+  return result ? next<-skip> ? [] : match : 0
+
+match-rule = (position, match=[])->
+  @position = position
+  @farthest = position
+    if position > @farthest
+  match = [ match ] if match.size > 1
+  {ref, parent} = @
+  rule = @grammar.tree[ref]
+    | die "No rule defined for '$ref'"
+
+  [ rule.action @receiver, @match ]
+
+match-ref = (ref, parent)->
+  rule = @grammar.tree[ref]
+    | die "No rule defined for '$ref'"
+  match = @match-next(rule) | return
+  return Pegex::Constant$Dummy unless rule<action>
+  @<rule parent> = (ref, parent)
+
+  [ rule<action> receiver, *match ]
+
+match-rgx = (regexp)->
+  match = @buffer:@position: =~ regexp
+    or return
+
+  @position = match.pos
+
+  @farthest = @position
+    if @position > @farthest
+
+  captures = match.captures
+  captures = [ captures ] if captures > 1
+
+  return captures
+
+match-all = (list)->
+  position = @position
+  set = []
+  len = 0
+  list.each (elem)->
+    if match = match-next elem
+      if ! (elem<+asr> | elem<-skip>)
+        set.push *match
+        len++
+    else
+      @farthest = position
+        if (@position = position) > @farthest
+      return
+  set = [ set ] if len > 1
+  return set
+
+match-any = (list)->
+  list.each (elem)->
+    if match = match-next elem
+      return match
+  return
+
+match-err = (error)->
+  throw-error error
+
+trace = (action)->
+  indent = (action =~ /^try_/) ? 1 : 0
+  @indent |= 0
+  @indent-- unless indent == 0
+  STDERR.print ' ' * @indent
+  @indent++ if indent > 0
+  snippet = @buffer:@position
+  snippet = snippet:0:30 + "..."
+    if snippet > 30
+  snippet.gsub "\n", '\n'
+  STDERR.printf "%-30s", action +
+    (indent ? " >$snippet<\n" : "\n")
+
+throw-error = (msg)->
+  @error = Error format-error msg
+  return ~ unless throw-on-error
+  @error.throw
+
+format-error = (msg)->
+  position = @farthest
+  real-pos = @position
+
+  line = (@buffer:0:position).count("\n") + 1
+  column = position - @buffer.rindex "\n", position
+
+  pretext = @buffer:(
+      position < 50 ? 0 : position - 50
+  ):(
+      position < 50 ? position : 50
+  )
+  context = @buffer:position:50
+  pretext.gsub /[\s\S]*\n/, ''
+  context.gsub /\n/, '\n'
+
+  return """
+    Error parsing Pegex document:
+      msg:      $msg
+      line:     $line
+      column:   $column
+      context:  $pretext$context
+      ${' ' * (pretext + 10) . '^'}
+      position: $position ($real-pos pre-lookahead)
+    """
+
+# TODO Move this to a Parser helper role/subclass
+line-column = (position=@position)->
+  line = (@buffer:0:position).count("\n") + 1
+  column = position - @buffer.rindex "\n", position
+  return [line, position]
