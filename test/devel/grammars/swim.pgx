@@ -1,9 +1,9 @@
-# Pegex grammar for the Kwim markup language
+# Pegex grammar for the Swim markup language
 #
 #   Copyright 2014. Ingy döt Net <ingy@ingy.net>
 #
 
-%grammar kwim
+%grammar swim
 %version 0.0.1
 
 document: block-top*

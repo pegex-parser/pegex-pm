@@ -1,236 +1,238 @@
-testml_document:
-    code_section
-    data_section?
+%grammar testml
+%version 0.0.1
+%include atom
+
+testml-document:
+  code-section
+  data-section?
 
 # General Tokens
 escape: / [0nt] /
-line: / <ANY>* <EOL> /
-blank_line: / <BLANK>* <EOL> /
-comment: / <HASH> <line> /
-ws: /(:
-    <BLANK> |
-    <EOL> |
-    <comment>
-)/
+line: / ANY* EOL /
+blanks: / BLANK+ /
+blank-line: / BLANK* EOL /
+comment: / '#' line /
+ws: /(: BLANK | EOL | comment )/
 
 # Strings
-quoted_string:
-    single_quoted_string |
-    double_quoted_string
+quoted-string:
+  | single-quoted-string
+  | double-quoted-string
 
-single_quoted_string:
-    /(:
-        <SINGLE>
-        ((:
-            [^<BREAK><BACK><SINGLE>] |
-            <BACK><SINGLE> |
-            <BACK><BACK>
-        )*?)
-        <SINGLE>
-    )/
+single-quoted-string:
+  /(:
+    SINGLE
+    ((:
+      [^ BREAK BACK SINGLE ] |
+      BACK SINGLE |
+      BACK BACK
+    )*?)
+    SINGLE
+  )/
 
-double_quoted_string:
-    /(:
-        <DOUBLE>
-        ((:
-            [^<BREAK><BACK><DOUBLE>] |
-            <BACK><DOUBLE> |
-            <BACK><BACK> |
-            <BACK><escape>
-        )*?)
-        <DOUBLE>
-    )/
+double-quoted-string:
+  /(:
+    DOUBLE
+    ((:
+      [^ BREAK BACK DOUBLE] |
+      BACK DOUBLE |
+      BACK BACK |
+      BACK escape
+    )*?)
+    DOUBLE
+  )/
 
-unquoted_string:
-    /(
-        [^<BLANKS><BREAK><HASH>]
-        (:
-            [^<BREAK><HASH>]*
-            [^<BLANKS><BREAK><HASH>]
-        )?
-    )/
+unquoted-string:
+  /(
+    [^ BLANKS BREAK HASH]
+    (:
+      [^ BREAK HASH]*
+      [^ BLANKS BREAK HASH]
+    )?
+  )/
 
-number: / (<DIGIT>+) /
+number: / ( DIGIT+ ) /
 
 
 # TestML Code Section
-code_section: (
-        ~~ |
-        assignment_statement |
-        code_statement
-    )*
+code-section: (
+  | +
+  | assignment-statement
+  | code-statement
+)*
 
-assignment_statement:
-    variable_name
-    /<WS>+ <EQUAL> <WS>+/
-    code_expression
-    ending
+assignment-statement:
+  variable-name
+  / WS+ '=' WS+ /
+  code-expression
+  ending
 
-variable_name: /(<ALPHA><WORD>*)/
+variable-name: /( ALPHA WORD* )/
 
-code_statement:
-    code_expression
-    assertion_call?
-    ending
+code-statement:
+  code-expression
+  assertion-call?
+  ending
 
-ending: /(: <SEMI> | <EOL> )/ | =ending2
+ending: /(: ';' | EOL )/ | =ending2
 
-ending2: /~ <RCURLY>/
+ending2: /- '}'/
 
-code_expression:
-    code_object
-    call_call*
+code-expression:
+  code-object
+  call-call*
 
-call_call:
-    !assertion_call_test
-    call_indicator
-    code_object
+call-call:
+  !assertion-call-test
+  call-indicator
+  code-object
 
-code_object:
-    function_object |
-    point_object |
-    string_object |
-    number_object |
-    call_object
+code-object:
+  | function-object
+  | point-object
+  | string-object
+  | number-object
+  | call-object
 
-function_object:
-    function_signature?
-    function_start
-    ( ~~ | assignment_statement | code_statement )*
-    / ~ <RCURLY> /
+function-object:
+  function-signature?
+  function-start
+  ( + | assignment-statement | code-statement )*
+  /- '}'/
 
-function_start: / ~ (<LCURLY>) ~ /
+function-start: /- ( '{' ) -/
 
-function_signature:
-    /<LPAREN>~/
-    function_variables?
-    /~<RPAREN>/
+function-signature:
+  /'(' -/
+  function-variables?
+  /- ')'/
 
-function_variables:
-    function_variable+ % / ~ <COMMA> ~ /
+function-variables:
+  function-variable+ % /- ',' -/
 
-function_variable: /(<ALPHA><WORD>*)/
+function-variable: /( ALPHA WORD* )/
 
-point_object: /(<STAR> <LOWER><WORD>*)/
+point-object: /( '*' LOWER WORD* )/
 
-string_object: quoted_string
+string-object: quoted-string
 
-number_object: number
+number-object: number
 
-call_object:
-    call_name
-    call_argument_list?
+call-object:
+  call-name
+  call-argument-list?
 
-call_name: user_call | core_call
+call-name: user-call | core-call
 
-user_call: /(<LOWER><WORD>*)/
+user-call: /( LOWER WORD* )/
 
-core_call: /(<UPPER><WORD>*)/
+core-call: /( UPPER WORD* )/
 
-call_indicator: /(: <DOT> ~ | ~ <DOT> )/
+call-indicator: /(: '.' - | - '.' )/
 
-call_argument_list:
-    / <LPAREN> ~ /
-    call_argument* % / ~ <COMMA> ~ /
-    / ~ <RPAREN> /
+call-argument-list:
+  /'(' -/
+  call-argument* % /- ',' -/
+  /- ')'/
 
-call_argument: code_expression
+call-argument: code-expression
 
-assertion_call_test: / <call_indicator> (: EQ|OK|HAS ) /
+assertion-call-test: / call-indicator (:EQ|OK|HAS) /
 
-assertion_call:
-    +assertion_eq |
-    +assertion_ok |
-    +assertion_has
+assertion-call:
+  | +assertion-eq
+  | +assertion-ok
+  | +assertion-has
 
-assertion_eq:
-    +assertion_operator_eq |
-    +assertion_function_eq
+assertion-eq:
+  | +assertion-operator-eq
+  | +assertion-function-eq
 
-assertion_operator_eq:
-    / ~~ <EQUAL><EQUAL> ~~ /
-    code_expression
+assertion-operator-eq:
+  /+ '==' +/
+  code-expression
 
-assertion_function_eq:
-    / <call_indicator> EQ <LPAREN> /
-    code_expression
-    / <RPAREN> /
+assertion-function-eq:
+  / call-indicator 'EQ(' /
+  code-expression
+  / ')' /
 
-assertion_ok: assertion_function_ok
+assertion-ok: assertion-function-ok
 
-assertion_function_ok: / <call_indicator> (OK) <empty_parens>? /
+assertion-function-ok: / call-indicator ('OK') empty-parens? /
 
-assertion_has: +assertion_operator_has | +assertion_function_has
+assertion-has: +assertion-operator-has | +assertion-function-has
 
-assertion_operator_has:
-    / ~~ <TILDE><TILDE> ~~ /
-    code_expression
+assertion-operator-has:
+  /+ '~~' +/
+  code-expression
 
-assertion_function_has:
-    / <call_indicator> HAS <LPAREN> /
-    code_expression
-    / <RPAREN> /
+assertion-function-has:
+  / call-indicator 'HAS(' /
+  code-expression
+  / ')' /
 
-empty_parens: /(: <LPAREN> ~ <RPAREN> )/
+empty-parens: /(: '(' - ')' )/
 
 # TestML Data Section
-data_section: data_block*
+block-marker: '==='
+point-marker: '---'
 
-data_block:
-    block_header
-    .( blank_line | comment )*
-    block_point*
+data-section: data-block*
 
-block_header:
-    block_marker
-    ( / <BLANK>+ / block_label )?
-    / <BLANK>* <EOL> /
+data-block:
+  block-header
+  .( blank-line | comment )*
+  block-point*
 
-block_marker: / <EQUAL><EQUAL><EQUAL> /
+block-header:
+  block-marker
+  ( blanks block-label )?
+  blank-line
 
-block_label: unquoted_string
+block-label: unquoted-string
 
-block_point: lines_point | phrase_point
+block-point: lines-point | phrase-point
 
-lines_point:
-    point_marker
-    / <BLANK>+ /
-    point_name
-    / <BLANK>* <EOL> /
-    point_lines
+lines-point:
+  point-marker
+  blanks
+  point-name
+  blank-line
+  point-lines
 
-point_lines: /(
-    (:
-        (!
-            <block_marker> |
-            <point_marker>
-        )
-        <line>
-    )*
+point-lines: /(
+  (:
+    (!
+      block-marker |
+      point-marker
+    )
+    line
+  )*
 )/
 
-phrase_point:
-    point_marker
-    / <BLANK>+ /
-    point_name
-    / <COLON> <BLANK> /
-    point_phrase
-    / <EOL> /
-    /(:
-        <comment> |
-        <blank_line>
-    )*/
+phrase-point:
+  point-marker
+  blanks
+  point-name
+  / COLON BLANK /
+  point-phrase
+  / EOL /
+  /(:
+    comment |
+    blank-line
+  )*/
 
-point_marker: / <DASH><DASH><DASH> /
+point-name:
+  /(
+    user-point-name |
+    core-point-name
+  )/
 
-point_name:
-    /(
-        <user_point_name> |
-        <core_point_name>
-    )/
+user-point-name:  / LOWER WORD* /
 
-user_point_name:  / <LOWER><WORD>* /
+core-point-name:  / UPPER WORD* /
 
-core_point_name:  / <UPPER><WORD>* /
+point-phrase: unquoted-string
 
-point_phrase: unquoted_string
+# vim: sw=2 lisp:

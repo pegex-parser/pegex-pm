@@ -2,9 +2,12 @@
 # BEGIN { $Pegex::Parser::Debug = 1 }
 # BEGIN { $Pegex::Bootstrap = 1 }
 
-use Test::More;
 use strict; use warnings;
-use xt::Test;
+use File::Basename;
+use lib dirname(__FILE__);
+
+use Test::More;
+use TestPegexExtra;
 use Pegex::Bootstrap;
 use Pegex::Compiler;
 use YAML::XS;
