@@ -21,8 +21,8 @@ class Pegex::Parser
 debug = False
 
 # Public accessors:
-\debug
-\throw_on_error
+debug = \rw
+throw_on_error = \rw
 
 # The class constructor:
 @ = \(@grammar, @receiver, ...)
@@ -42,21 +42,26 @@ parse = \(input, start)
   @position = 0
   @farthest = 0
 
-  @input = Pegex::Input(input)
+  @input = Str? input
+    ? Pegex::Input(string: input)
+    : input
 
   @input.open
     unless @input.open?
   @buffer = @input.read
 
-  die "No 'grammar'. Can't parse."
+  !!! "No 'grammar'. Can't parse."
     unless @grammar
 
-  @grammar.tree |= @grammar.make-tree
+  @grammar:tree |= @grammar.make-tree
 
   start-rule-ref = start |
     @grammar:tree:'+toprule' |
     @grammar:tree:TOP & 'TOP' |
-    die "No starting rule for Pegex::Parser:parse"
+    !!! "No starting rule for Pegex::Parser:parse"
+
+  !!! "No 'receiver'. Can't parse"
+    unless @receiver
 
   optimizer = Pegex::Optimizer
     parser: @
@@ -72,15 +77,15 @@ parse = \(input, start)
     @parent = {}
     @receiver.initial
 
-  if @debug
-    method = optimizer.make-trace-wrapper @:match-ref
-    match = @.(method)(start-rule-ref, {'+asr': 0})
-  else
-    match = match-ref start-rule-ref, {}
+  match = @debug
+    ? \()
+      method = optimizer.make-trace-wrapper @:match-ref
+      @.(method)(start-rule-ref, {'+asr': 0})
+    : match-ref start-rule-ref, {}
 
   @input.close
 
-  if ! match | @position < @buffer.length
+  if ! match | @position < @buffer
     throw-error "Parse document failed for some reason"
     return   # In case @throw-on-error is off
 
@@ -100,19 +105,25 @@ match-next = \(next)
   while return = @.(method)(rule, next)
     position = @position unless assertion
     count++
-    push match, *return
+    match.extend return
     last if max == 1
+
   if ! count & min == 0 & kind == 'all'
     match = [[]]
+
   if max != 1
     if next:'-flat'
       match = match.map \(elem) { elem.Array? ? *elem : elem }
     else
       match = [ match ]
-      @farthest = position if (@position = position) > @farthest
-  result = (count >= min & (! max | count <= max)) ^^ (assertion == -1)
+    @farthest = position
+      if (@position = position) > @farthest
+
+  result = (count >= min & (! max | count <= max))
+    ^^ (assertion == -1)
   if ! result | assertion
-    @farthest = position if (@position = position) > @farthest
+    @farthest = position
+      if (@position = position) > @farthest
 
   result ? next:'-skip' ? [] : match : 0
 
@@ -123,15 +134,15 @@ match-rule = \(position, match=[])
   match = [ match ] if match > 1
   {ref, parent} = @
   rule = @grammar:tree:(ref)
-    | die "No rule defined for '$ref'"
+    | !!! "No rule defined for '$ref'"
 
   [ @receiver.(rule:action)(*match) ]
 
 match-ref = \(ref, parent)
   rule = @grammar:tree:(ref)
-    | die "No rule defined for '$ref'"
+    | !!! "No rule defined for '$ref'"
   match = match-next(rule) | return
-  return Pegex::Constant:Dummy unless rule<action>
+  return Pegex::Constant:Dummy unless rule:action
   @:<rule parent> = (ref, parent)
 
   [ @receiver.(rule:action)(*match) ]
@@ -155,8 +166,8 @@ match-all = \(list)
   len = 0
   list.each \(elem)
     if match = match-next elem
-      if ! (elem<+asr> | elem<-skip>)
-        set.push *match
+      if ! (elem:'+asr' | elem:'-skip')
+        set.extend match
         len++
     else
       @farthest = position
@@ -205,8 +216,8 @@ format-error = \(msg)
       position < 50 ? position : 50
   )
   context = @buffer:position:50
-  pretext .= gsub /[\s\S]*\n/, ''
-  context .= gsub /\n/, '\n'
+  pretext .= gsub /.*\n/s, ''
+  context .= gsub "\n", '\n'
 
   """
   Error parsing Pegex document:
@@ -214,12 +225,12 @@ format-error = \(msg)
     line:     $line
     column:   $column
     context:  $pretext$context
-    ${' ' * (pretext + 10) . '^'}
+    ${' ' * (pretext + 10) + '^'}
     position: $position ($real-pos pre-lookahead)
   """
 
 # TODO Move this to a Parser helper role/subclass
-line-column = \(position=@position)
+line-column = \({position}=@)
   line = (@buffer:0:position).count("\n") + 1
   column = position - @buffer.rindex("\n", position)
   [line, position]
