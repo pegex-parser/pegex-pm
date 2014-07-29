@@ -1,4 +1,12 @@
-a = $b
-[a, =, b, $]
-[=, [a, $, [b]]]
-[=, [[Sym, [a]]
+indent: / SPACE{$indent-stack.last} ( SPACE+ ) (= NS) /
+        { indent-stack.push($1.length) }
+
+
+
+
+
+{
+    foo = $1;
+    bar = $2.upper;
+    baz = 'xyz' + $bar;
+}
