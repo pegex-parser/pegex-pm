@@ -1,0 +1,163 @@
+CafeScript
+==========
+
+CafeScript (Cafe) aims to be a nice syntax that compiles to many OO languages
+including: Perl (5 & 6), Ruby, JavaScript, Python (2 & 3), PHP, Go, Scala and
+possibly C++.
+
+Cafe's main objective is to write sharable libraries in a portable way, using a
+syntax that (at least some) people find to be awesome.
+
+= Overview
+
+Cafe consists of the following high level concepts:
+
+* Libraries (loadable files of code)
+  * Global variables
+* Classes
+  * Methods
+    * Instance methods
+    * Class methods
+  * Constructor
+  * Accessor methods
+  * Class variables
+* Instance Objects
+  * Instance data
+  * Method calls
+* Functions
+  * Closures
+  * Anonymous functions
+* Data Primitives
+  * Hash
+  * Array
+  * Unicode string
+  * Boolean
+  * Regex
+* Static Typing
+* Exception Handling
+* Normal Programming Stuff
+  * Loops
+  * Conditionals
+  * Variables
+
+In the following sections I'll try to start with the things that are most
+surprising. Cafe tries to take the very best syntaxes it can find to do
+the job. This is of course subjective, but I'll try to reference the rationale
+and prior art along the way.
+
+= Functions / Classes / Methods
+
+A function is defined using `\(…){…}` syntax. The backslash to mean function
+comes from Haskell. Think oh it as an ASCII lambda symbol. A function body is
+contained either in curly braces or an indented code block. Here are some
+examples:
+
+  # Define a function called min:
+  min = \(x, y) { x < y ? x : y }
+  # Or the more normal way, using indentation:
+  min = \(x, y)
+    x < y
+      ? x
+      : y
+
+You can think of this as defining an anonymous function and then assigning it
+to the `min` variable. If `min` is scoped to a class that you are defining,
+then this becomes a method of that class. What actually gets generated is
+specific to the target language.
+
+A class is defined using the `class` keyword at the library (outer) scope. In
+reality, `class` is not a keyword, but a compile time directive that is
+available at the library scope. ie You can still use `class` as a variable
+name.
+
+A class is made by a list of assignments. You can create class variables, class
+methods, instance methods or instance data accessors.
+
+= Data Primitives
+
+Cafe supports the usual Func, Hash, List, Str, Num, Bool and Null data
+primitive types. All variables, functions, methods etc are statically typed.
+The types are inferred as much as possible. A variable cannot change type.
+Implicit casting is done when appropriate.
+
+== Hash
+
+Also called 'Dictionary' or 'Associative Array', a Hash is a mapping of string
+keys to Object values. Here are some examples:
+
+  hash = Hash()         # Create a new empty hash
+  hash = {}             # same
+  hash = {              # Create a new hash with values
+    foo: 1,
+    "bar\n": 'baz',
+  }
+  hash =                # Same
+    foo: 1
+    "bar\n": 'baz'
+  hash = { foo: 1 "bar\n": 'baz' }  # Same
+
+Notice here that commas are often optional. Much of the syntax that is required
+in other languages is optional in Cafe; as long as there is no ambiguity. In
+general, lists of literal values do not need commas to separate them. For
+instance, compare these 3 equivalents:
+
+  hash = { foo bar: 'baz' quux: gorch 42 }
+  hash = { foo, bar: 'baz', quux: gorch 42 }
+  hash = { 'foo': Null, 'bar': 'baz', 'quux': gorch(42) }
+
+To fetch from a hash:
+
+  value = hash:foo      # Get the value of the 'foo' key
+  value = hash:(var)    # Get the value whose key is in the var variable
+  (v1 v2 v3) = hash:<foo bar baz>  # Get 3 values
+  (v1 v2 v3) = hash:(expr1, expr2, expr3)  # Get 3 values
+
+To store into a hash:
+
+  hash:foo = value      # Set the value of the 'foo' key
+  hash:(var) = value    # Set the value whose key is in the var variable
+  hash:<foo bar baz> = (v1, v2, v3)  # Set 3 values
+  hash:(expr1, expr2, expr3) = (v1, v2, v3)  # Set 3 values
+
+Other hash stuff
+
+  keys = hash.keys
+  hash.each \(k, v) { … }
+
+- Substrings
+
+    string:0:5
+    string:6:
+    string:-2:
+    string:(expr1):(expr2)
+    string.method args...
+    string > 0                # length
+    string + string           # Concatenation
+
+- Hash Access
+
+    hash:key1
+    hash:(var1)
+    hash:<key1 key2>
+    hash:[var1, var2]
+    hash.method args...
+
+- Array Access
+
+    array:0
+    array:10:
+
+- Class Access
+
+  Class definitions start with a `class` keyword and end with next `class`
+  keyword or EOF. Indentation of content is not required.
+
+  - `class:&method` :: Get the method pointer (or check if exists)
+  - `class:$variable` :: Access a class variable
+  - `class(...)` :: Instantiation
+
+- Operators
+
+  - `/` -- defined or
+  - `|` -- or
+  - `&` -- and
