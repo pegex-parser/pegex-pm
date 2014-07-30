@@ -1,0 +1,24 @@
+CafeScript CheatSheet
+=====================
+
+This is a set of examples of various snippets of CafeScript(C) code, and
+equivalents in CoffeeScript(S), Ruby(R), Perl6(6), Perl5(5) and Python(P).
+
+== Global regex string replacement in place
+
+Replace all the regex matches in a string variable with a string value.
+
+  C: foo .= gsub /a*/, 'b'
+  S: foo = foo.replace /a*/, 'b'
+  R: foo.gsub! /a*/, 'b'
+  5: $foo =~ s/a*/b/g
+  6: $foo.subst(/a*/, 'b', :g)
+  P: re.sub(r'a*', 'b', foo)
+
+== Set an attribute of the current object
+
+  C: @foo = 42
+  S: @foo = 42
+  R: @foo = 42
+  5: $self->{foo} = 42
+  6: $.foo = 42
