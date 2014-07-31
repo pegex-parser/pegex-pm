@@ -79,7 +79,7 @@ parse = \(input, start)
 
   match = @debug
     ? \()
-      method = optimizer.make-trace-wrapper @:match-ref
+      method = optimizer.make-trace-wrapper @\match-ref
       @.(method)(start-rule-ref, {'+asr': 0})
     : match-ref start-rule-ref, {}
 
