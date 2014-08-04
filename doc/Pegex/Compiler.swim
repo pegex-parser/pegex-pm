@@ -16,9 +16,9 @@ or:
 
 = Description
 
-The Pegex::Compiler transforms a Pegex grammar string (or file) into a
-compiled form. The compiled form is known as a grammar tree, which is simply a
-nested data structure.
+The Pegex::Compiler transforms a Pegex grammar string (or file) into a compiled
+form. The compiled form is known as a grammar tree, which is simply a nested
+data structure.
 
 The grammar tree can be serialized to YAML, JSON, Perl, or any other
 programming language. This makes it extremely portable. Pegex::Grammar has
@@ -101,10 +101,10 @@ Simply use this command:
 
   perl -Ilib -MMyThing::Grammar=compile
 
-and Pegex::Grammar will call Pegex::Compile to put your compiled grammar
-inside your `tree` subroutine. It will actually write the text into your
-module. This makes it trivial to update your grammar module after making
-changes to the grammar file.
+and Pegex::Grammar will call Pegex::Compile to put your compiled grammar inside
+your `tree` subroutine. It will actually write the text into your module. This
+makes it trivial to update your grammar module after making changes to the
+grammar file.
 
 See [Pegex::JSON] for an example.
 
@@ -114,9 +114,9 @@ Ingy döt Net <ingy@cpan.org>
 
 = Copyright and License
 
-Copyright (c) 2010-2014. Ingy döt Net.
+Copyright 2010-2014. Ingy döt Net.
 
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
 
 See http://www.perl.com/perl/misc/Artistic.html
