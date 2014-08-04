@@ -79,12 +79,19 @@ update: makefile
 	@echo '***** Updating/regenerating repo content'
 	make readme contrib travis version webhooks
 
-release: clean update check-release date test disttest
+release:
+	make self-install
+	make clean
+	make update
+	make check-release
+	make date
+	make test
+	make disttest
 	@echo '***** Releasing $(DISTDIR)'
 	make dist
 	cpan-upload $(DIST)
 	make clean
-	[ -z "$$(git status -s)" ] || git commit -am '$(VERSION)'
+	[ -z "$$(git status -s)" ] || zild-git-commit
 	git push
 	git tag $(VERSION)
 	git push --tag
@@ -168,6 +175,9 @@ check-release:
 ifeq (Zilla-Dist,$(NAME))
 makefile:
 	@echo Skip 'make upgrade'
+
+self-install: install
+	[ -n "which plenv" ] && plenv rehash
 else
 makefile:
 	@cp Makefile /tmp/
@@ -177,6 +187,8 @@ makefile:
 	    exit 1; \
 	fi
 	@rm /tmp/Makefile
+
+self-install:
 endif
 
 date:
