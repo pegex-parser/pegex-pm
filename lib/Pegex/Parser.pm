@@ -5,12 +5,16 @@ use Pegex::Input;
 use Pegex::Optimizer;
 use Scalar::Util;
 
+# XXX Need to figure out what uses this. (sample.t)
 {
     package Pegex::Constant;
     our $Null = [];
     our $Dummy = [];
 }
 
+# sub BUILD {
+#     XXX @_;
+# }
 has grammar => (required => 1);
 has receiver => ();
 has input => ();

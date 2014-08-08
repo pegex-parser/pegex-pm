@@ -2,41 +2,48 @@ use strict;
 use Test::More;
 use Cwd 'cwd';
 use Capture::Tiny 'capture_merged';
-use Devel::Local '.';
-# use XXX;
+
+$ENV{PERL5LIB} = cwd . '/lib';
 
 my $home = cwd;
 my $repos = [
-    # Perl Modules
-    'pegex-json-pm',
-    'testml-pm',
-    'jsony-pm',
-    'pegex-crontab-pm',
-#     'cogdb-pm',
-    'pegex-cmd-pm',
-#     'pegex-yaml-pm',
-#     'inline-pm',
+    ### Perl Modules
 
-    # Pegex Grammars
-    'cdent-pgx',
+    # 'inline-c-pm',        # Takes a long time
+    'jsony-pm',
+    'pegex-chess-pm',
+    'pegex-cmd-pm',
+    'pegex-cpan-packages-pm',
+    'pegex-crontab-pm',
+    'pegex-forth-pm',
+    'pegex-json-pm',
+    'pegex-vcard-pm',
+    'testml-pm',
+    'vic',
+    'yaml-pegex-pm',
+
+    ### Pegex Grammars
+
+    'chess-pgx',
     'crontab-pgx',
-    'dtsl-pgx',
     'json-pgx',
-    'kwim-pgx',
-    'markup-socialtext-pgx',
+    'jsony-pgx',
     'pegex-pgx',
+    'swim-pgx',
     'testml-pgx',
-    'tt2-pgx',
-    'yaml2-pgx',
+    'vic-pgx',
     'yaml-pgx',
-    'ypath-pgx',
 ];
 
 for my $repo (@$repos) {
     chdir($home) or die;
-    chdir("../$repo") or
-        chdir("$ENV{HOME}/src/$repo") or
-        die "Can't find '$repo' repo";
+    my $repo_path = "../$repo";
+    if (not -d "$repo_path") {
+        diag "$repo does not exist";
+        next;
+    }
+    chdir("$repo_path")
+        or die "Can't chdir '$repo_path'";
     assert_git_ok($repo) or next;
     if ($repo =~ /-pm$/) {
         make_test($repo) or next;
@@ -57,21 +64,28 @@ sub assert_git_ok {
     my ($branch_output) = run("git branch");
     $branch_output =~ /\*\s+(\w+)/ or die $branch_output;
     my $branch_name = $1;
-    is $branch_name, 'master', "$repo - git branch is master";
-    my ($status_output) = run("git status -s");
-    if ($status_output) {
-        fail "$repo - repo is clean";
-        # diag $status_output;
+    if ($branch_name eq 'master') {
+        pass "$repo - git branch is master";
     }
     else {
+        diag "$repo - not on branch master";
+        return;
+    }
+    my ($status_output) = run("git status -s");
+    if (not $status_output) {
         pass "$repo - repo is clean";
     }
-    return ($branch_name eq 'master' and not $status_output);
+    else {
+        diag "$repo - is not git clean";
+        # diag $status_output;
+        return;
+    }
+    return 1;
 }
 
 sub make_test {
     my ($repo) = @_;
-    for my $dir (qw't xt') {
+    for my $dir (qw'test test/devel') {
         next unless -d $dir;
         my $rc;
         my $cmd = "prove -lv $dir";
