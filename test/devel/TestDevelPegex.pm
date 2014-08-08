@@ -1,4 +1,4 @@
-package TestPegexExtra;
+package TestDevelPegex;
 use strict; use warnings;
 
 use Test::More;
@@ -22,13 +22,11 @@ use constant TEST_GRAMMARS => [
     '../pegex-pgx/pegex.pgx',
     '../testml-pgx/testml.pgx',
     '../json-pgx/json.pgx',
-    # '../yaml-pgx/yaml.pgx',
+    '../yaml-pgx/yaml.pgx',
     '../kwim-pgx/kwim.pgx',
     '../drinkup/share/drinkup.pgx',
     # '../SQL-Parser-Neo/pegex/pg-lexer.pgx',
     '../SQL-Parser-Neo/pegex/Pg.pgx',
-    '../vic/share/vic.pgx',
-    '../swim-pgx/swim.pgx',
 ];
 
 sub pegex_parser {
@@ -93,6 +91,10 @@ sub copy_grammar {
     my ($source, $target) = @_;
     return unless -e $source;
     io->file($target)->assert->print(slurp($source));
+}
+
+END {
+    done_testing;
 }
 
 1;

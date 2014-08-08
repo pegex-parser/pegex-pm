@@ -3,13 +3,13 @@
 # BEGIN { $Pegex::Bootstrap = 1 }
 
 use strict; use warnings;
-use File::Basename;
-use lib dirname(__FILE__);
-
 use Test::More;
-use TestPegexExtra;
+use lib -e 'xt' ? 'xt' : 'test/devel';
+use TestDevelPegex;
+
 use Pegex::Bootstrap;
 use Pegex::Compiler;
+
 use YAML::XS;
 
 for my $grammar (test_grammar_paths) {
@@ -22,5 +22,3 @@ for my $grammar (test_grammar_paths) {
     is $got, $expected,
         "Bootstrap compile matches normal compile for $grammar";
 }
-
-done_testing;

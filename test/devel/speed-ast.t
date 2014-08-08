@@ -1,9 +1,7 @@
 use strict; use warnings;
-use File::Basename;
-use lib dirname(__FILE__);
-
 use Test::More;
-use TestPegexExtra;
+use lib -e 'xt' ? 'xt' : 'test/devel';
+use TestDevelPegex;
 
 for my $grammar (test_grammar_paths) {
     my $parser = pegex_parser_ast;
@@ -18,5 +16,3 @@ for my $grammar (test_grammar_paths) {
         fail "$grammar failed to parse $@";
     }
 }
-
-done_testing;

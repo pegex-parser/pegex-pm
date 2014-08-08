@@ -63,6 +63,7 @@ my $grammar = Pegex::Grammar->new(
 my $parser = Pegex::Parser->new(
     grammar => $grammar,
     receiver => Pegex::Receiver->new,
+    debug => 1,
 );
 my $ast1 = $parser->parse($input);
 

@@ -204,8 +204,8 @@ lines-point:
 point-lines: /(
   (:
     (!
-      block-marker |
-      point-marker
+      (: block-marker | point-marker )
+      SPACE WORD
     )
     line
   )*
