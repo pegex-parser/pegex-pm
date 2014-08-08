@@ -20,24 +20,20 @@ class Pegex::Parser
 # A class variable:
 debug = False
 
-# Public accessors:
-debug = \rw
-throw_on_error = \rw
-
 # The class constructor:
 @ = \(@grammar, @receiver, ...)
   {@input} = ...
   @rule
   @parent
   @error
-  @debug /= Env:PEGEX_DEBUG / debug | False
+  \@debug /= Env:PEGEX_DEBUG / debug | False
   @position = 0
   @farthest = 0
-  @throw_on_error = True
+  \@throw_on_error = True
 
 # Define the `parse()` method:
 parse = \(input, start)
-  start &.= gsub '-', '_'
+  start &= start .= gsub '-', '_'
 
   @position = 0
   @farthest = 0

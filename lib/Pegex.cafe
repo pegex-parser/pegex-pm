@@ -1,0 +1,16 @@
+Cafe Pegex 0.0.1
+  require
+    Pegex::Parser
+    Pegex::Grammar
+  export
+    pegex
+
+\pegex(grammar receiver) {
+  if ! receiver
+    load Pegex::Tree::Wrap
+    receiver = Pegex::Tree::Wrap
+  receiver = Class(receiver)()
+  Pegex::Parser
+    grammar: Pegex::Grammar
+      text: grammar
+    receiver: receiver
