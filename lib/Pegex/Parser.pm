@@ -12,33 +12,28 @@ use Scalar::Util;
     our $Dummy = [];
 }
 
-# sub BUILD {
-#     XXX @_;
-# }
 has grammar => (required => 1);
-has receiver => ();
-has input => ();
-
-has rule => ();
-has parent => ();
-has 'debug' => (
-    default => sub {
+has 'debug' => ();
+sub BUILD {
+    my ($self) = @_;
+    $self->{receiver} ||= undef;
+    $self->{input} ||= undef;
+    $self->{rule} = undef;
+    $self->{parent} = undef;
+    $self->{position} = 0;
+    $self->{farthest} = 0;
+    $self->{debug} =
         exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
         defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
         0;
-    },
-);
+    $self->{throw_on_error} ||= 1;
+}
 
-has position => 0;
-has farthest => 0;
-
-has throw_on_error => 1;
-
+# XXX Add an optional $position argument. Default to 0. This is the position
+# to start parsing. Set position and farthest below to this value. Allows for
+# sub-parsing. Need to somehow return the finishing position of a subparse.
+# Maybe this all goes in a subparse() method.
 sub parse {
-    # XXX Add an optional $position argument. Default to 0. This is the
-    # position to start parsing. Set position and farthest below to this
-    # value. Allows for sub-parsing. Need to somehow return the finishing
-    # position of a subparse. Maybe this all goes in a subparse() method.
     my ($self, $input, $start) = @_;
 
     $start =~ s/-/_/g if $start;
@@ -141,7 +136,6 @@ sub match_next {
             if ($self->{position} = $position) > $self->{farthest};
     }
 
-    # YYY ($result ? $next->{'-skip'} ? [] : $match : 0) if $main::x;
     ($result ? $next->{'-skip'} ? [] : $match : 0);
 }
 
@@ -184,10 +178,10 @@ sub match_rgx {
         if $self->{position} > $self->{farthest};
 
     no strict 'refs';
-    my $match = [ map $$_, 1..$#+ ];
-    $match = [ $match ] if $#+ > 1;
+    my $captures = [ map $$_, 1..$#+ ];
+    $captures = [ $captures ] if $#+ > 1;
 
-    return $match;
+    return $captures;
 }
 
 sub match_all {

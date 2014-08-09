@@ -1,4 +1,10 @@
 ---
+version: 0.47
+date:    Sat Aug  9 12:00:13 PDT 2014
+changes:
+- Refactor to match CafeScript
+- https://github.com/ingydotnet/pegex-cafe
+---
 version: 0.46
 date:    Fri Aug  8 19:29:32 PDT 2014
 changes:
