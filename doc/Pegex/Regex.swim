@@ -29,7 +29,7 @@ parse. If the parse is successful, you get a data structure of the content in
 IMHO, building a recursive decscent parser entirely inside of a regular
 expression, is not the clearest way to code. But, of course, TMTOWTDI. :)
 
-= NOTE
+= Note
 
 This module is just for experimental fun. See [Pegex] for the right way to use
 the Pegex parsing framework.
