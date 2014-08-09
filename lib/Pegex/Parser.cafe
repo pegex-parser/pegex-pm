@@ -4,41 +4,40 @@ spec out what is needed in CafeScript.
 ###
 
 # CafeScript library meta section
-Cafe Pegex::Parser 0.0.1
+Cafe 0.0.1
+  Pegex::Parser 0.0.1
   require
     Pegex::Input
     Pegex::Optimizer
 
 # Define a class for constants.
-class Pegex::Constant
-
+Class Pegex::Constant
   Null = Object()
   Dummy = Object()
 
-class Pegex::Parser
+Class Pegex::Parser
 
-# A class variable:
-debug = False
+Bool Debug = False
 
 # The class constructor:
-@ = \(@grammar, @receiver, ...)
+\@ @grammar, @receiver, ...
   {@input} = ...
-  @rule
-  @parent
-  @error
+  @rule = ~
+  @parent = ~
+  @error = ~
   \@debug /= Env:PEGEX_DEBUG / debug | False
   @position = 0
   @farthest = 0
   \@throw_on_error = True
 
 # Define the `parse()` method:
-parse = \(input, start)
-  start &= start .= gsub '-', '_'
+\parse input, start
+  start &= start .= gsub '-' '_'
 
   @position = 0
   @farthest = 0
 
-  @input = Str? input
+  @input = input.Str?
     ? Pegex::Input(string: input)
     : input
 
@@ -73,11 +72,11 @@ parse = \(input, start)
     @parent = {}
     @receiver.initial
 
-  match = @debug
-    ? \()
-      method = optimizer.make-trace-wrapper @\match-ref
-      @.(method)(start-rule-ref, {'+asr': 0})
-    : match-ref start-rule-ref, {}
+  match = if @debug
+    method = optimizer.make-trace-wrapper @\match-ref
+    @.(method)(start-rule-ref, {'+asr': 0})
+  else
+    match-ref start-rule-ref, {}
 
   @input.close
 
@@ -92,11 +91,11 @@ parse = \(input, start)
 
   match:0
 
-match-next = \(next)
-  (rule, method, kind, min, max, assertion) =
+\match-next next
+  (rule method kind min max assertion) =
     next:<rule method kind +min +max +asr>
 
-  (position, match, count) = (@position, [], 0)
+  (position match count) = (@position, [], 0)
 
   while return = @.(method)(rule, next)
     position = @position unless assertion
@@ -109,7 +108,7 @@ match-next = \(next)
 
   if max != 1
     if next:'-flat'
-      match = match.map \(elem) { elem.Array? ? *elem : elem }
+      match = match.map \ elem { elem.Array? ? *elem : elem }
     else
       match = [ match ]
     @farthest = position
@@ -123,27 +122,29 @@ match-next = \(next)
 
   result ? next:'-skip' ? [] : match : 0
 
-match-rule = \(position, match=[])
+\match-rule position, match:[]
   @position = position
   @farthest = position
     if position > @farthest
   match = [ match ] if match > 1
-  {ref, parent} = @
+  {ref parent} = @
   rule = @grammar:tree:(ref)
     | !!! "No rule defined for '$ref'"
 
   [ @receiver.(rule:action)(*match) ]
 
-match-ref = \(ref, parent)
+\match-ref ref, parent
   rule = @grammar:tree:(ref)
     | !!! "No rule defined for '$ref'"
   match = match-next(rule) | return
   return Pegex::Constant:Dummy unless rule:action
   @:<rule parent> = (ref, parent)
 
+  # XXX Possible API mismatch.
+  # Not sure if we should "splat" the $match.
   [ @receiver.(rule:action)(*match) ]
 
-match-rgx = \(regexp)
+\match-rgx regexp
   match = (@buffer:@position: =~ regexp) | return
 
   @position = match.pos
@@ -156,11 +157,11 @@ match-rgx = \(regexp)
 
   captures
 
-match-all = \(list)
+\match-all list
   position = @position
   set = []
   len = 0
-  list.each \(elem)
+  list.each \ elem
     if match = match-next elem
       if ! (elem:'+asr' | elem:'-skip')
         set.extend match
@@ -172,16 +173,16 @@ match-all = \(list)
   set = [ set ] if len > 1
   set
 
-match-any = \(list)
-  list.each \(elem)
+\match-any list
+  list.each \ elem
     if match = match-next elem
       return match
   return
 
-match-err = \(error)
+\match-err error
   throw-error error
 
-trace = \(action)
+\trace action
   indent = (action =~ /^try_/) ? 1 : 0
   @indent |= 0
   @indent-- unless indent == 0
@@ -190,21 +191,21 @@ trace = \(action)
   snippet = @buffer:@position:
   snippet = snippet:0:30 + "..."
     if snippet > 30
-  snippet .= gsub "\n", '\n'
-  StdErr.printf "%-30s", action +
+  snippet .= gsub "\n" '\n'
+  StdErr.printf ("%-30s", action) +
     (indent ? " >$snippet<\n" : "\n")
 
-throw-error = \(msg)
+\throw-error msg
   @error = Error(format-error msg)
   return ~ unless throw-on-error
   @error.throw
 
-format-error = \(msg)
+\format-error msg
   position = @farthest
   real-pos = @position
 
   line = (@buffer:0:position).count("\n") + 1
-  column = position - @buffer.rindex "\n", position
+  column = position - @buffer.rindex "\n" position
 
   pretext = @buffer:(
       position < 50 ? 0 : position - 50
@@ -212,8 +213,8 @@ format-error = \(msg)
       position < 50 ? position : 50
   )
   context = @buffer:position:50
-  pretext .= gsub /.*\n/s, ''
-  context .= gsub "\n", '\n'
+  pretext .= gsub /.*\n/s ''
+  context .= gsub "\n" '\n'
 
   """
   Error parsing Pegex document:
@@ -226,7 +227,8 @@ format-error = \(msg)
   """
 
 # TODO Move this to a Parser helper role/subclass
-line-column = \({position}=@)
+\line-column position
+  {position} |= @
   line = (@buffer:0:position).count("\n") + 1
-  column = position - @buffer.rindex("\n", position)
+  column = position - @buffer.rindex "\n" position
   [line, position]

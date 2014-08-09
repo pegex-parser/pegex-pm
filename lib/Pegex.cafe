@@ -1,4 +1,5 @@
-Cafe Pegex 0.0.1
+Cafe 0.0.1
+  Pegex 0.0.1
   require
     Pegex::Parser
     Pegex::Grammar

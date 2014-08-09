@@ -34,11 +34,11 @@ has farthest => 0;
 
 has throw_on_error => 1;
 
+# XXX Add an optional $position argument. Default to 0. This is the
+# position to start parsing. Set position and farthest below to this
+# value. Allows for sub-parsing. Need to somehow return the finishing
+# position of a subparse. Maybe this all goes in a subparse() method.
 sub parse {
-    # XXX Add an optional $position argument. Default to 0. This is the
-    # position to start parsing. Set position and farthest below to this
-    # value. Allows for sub-parsing. Need to somehow return the finishing
-    # position of a subparse. Maybe this all goes in a subparse() method.
     my ($self, $input, $start) = @_;
 
     $start =~ s/-/_/g if $start;
@@ -184,10 +184,10 @@ sub match_rgx {
         if $self->{position} > $self->{farthest};
 
     no strict 'refs';
-    my $match = [ map $$_, 1..$#+ ];
-    $match = [ $match ] if $#+ > 1;
+    my $captures = [ map $$_, 1..$#+ ];
+    $captures = [ $captures ] if $#+ > 1;
 
-    return $match;
+    return $captures;
 }
 
 sub match_all {
