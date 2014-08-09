@@ -12,6 +12,7 @@ ZILD := $(PERL) -S zild
 
 ifneq (,$(shell which zild))
     NAMEPATH := $(shell $(ZILD) meta =cpan/libname)
+    NAMEPATH := $(subst ::,/,$(NAMEPATH))
 ifeq (,$(NAMEPATH))
     NAMEPATH := $(shell $(ZILD) meta name)
 endif
