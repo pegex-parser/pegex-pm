@@ -1,22 +1,30 @@
 use strict; use warnings;
 package Pegex;
-our $VERSION = '0.47';
+our $VERSION = '0.48';
 
 use Pegex::Parser;
-use Pegex::Grammar;
 
 use Exporter 'import';
 our @EXPORT = 'pegex';
 
 sub pegex {
     my ($grammar, $receiver) = @_;
-    if (not $receiver) {
+    die "Argument 'grammar' required in function 'pegex'"
+        unless $grammar;
+    if (not ref $grammar or $grammar->isa('Pegex::Input')) {
+        require Pegex::Grammar;
+        $grammar = Pegex::Grammar->new(text => $grammar),
+    }
+    if (not defined $receiver) {
         require Pegex::Tree::Wrap;
         $receiver = Pegex::Tree::Wrap->new;
     }
-    $receiver = $receiver->new unless ref $receiver;
+    elsif (not ref $receiver) {
+        eval "require $receiver; 1";
+        $receiver = $receiver->new;
+    }
     return Pegex::Parser->new(
-        grammar => Pegex::Grammar->new(text => $grammar),
+        grammar => $grammar,
         receiver => $receiver,
     );
 }

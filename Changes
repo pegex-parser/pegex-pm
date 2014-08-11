@@ -1,4 +1,9 @@
 ---
+version: 0.48
+date:    Sun Aug 10 18:18:35 PDT 2014
+changes:
+- Refactor Pegex.pm to match CafeScript
+---
 version: 0.47
 date:    Sat Aug  9 12:00:13 PDT 2014
 changes:
