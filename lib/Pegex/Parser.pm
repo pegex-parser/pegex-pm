@@ -5,13 +5,6 @@ use Pegex::Input;
 use Pegex::Optimizer;
 use Scalar::Util;
 
-# XXX Need to figure out what uses this. (sample.t)
-{
-    package Pegex::Constant;
-    our $Null = [];
-    our $Dummy = [];
-}
-
 has grammar => (required => 1);
 has 'debug' => ();
 sub BUILD {
@@ -20,6 +13,7 @@ sub BUILD {
     $self->{input} ||= undef;
     $self->{rule} = undef;
     $self->{parent} = undef;
+    $self->{error} = undef;
     $self->{position} = 0;
     $self->{farthest} = 0;
     $self->{debug} =
@@ -281,6 +275,13 @@ sub line_column {
     my $line = @{[substr($$buffer, 0, $position) =~ /(\n)/g]} + 1;
     my $column = $position - rindex($$buffer, "\n", $position);
     return [$line, $position];
+}
+
+# XXX Need to figure out what uses this. (sample.t)
+{
+    package Pegex::Constant;
+    our $Null = [];
+    our $Dummy = [];
 }
 
 1;
