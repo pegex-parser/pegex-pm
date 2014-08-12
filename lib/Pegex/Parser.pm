@@ -6,21 +6,21 @@ use Pegex::Optimizer;
 use Scalar::Util;
 
 has grammar => (required => 1);
-has 'debug' => ();
+has receiver => ();
+has input => ();
+has debug => (
+    exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
+    defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
+    0
+);
 sub BUILD {
     my ($self) = @_;
-    $self->{receiver} ||= undef;
-    $self->{input} ||= undef;
-    $self->{rule} = undef;
-    $self->{parent} = undef;
-    $self->{error} = undef;
-    $self->{position} = 0;
-    $self->{farthest} = 0;
-    $self->{debug} =
-        exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
-        defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
-        0;
     $self->{throw_on_error} ||= 1;
+    # $self->{rule} = undef;
+    # $self->{parent} = undef;
+    # $self->{error} = undef;
+    # $self->{position} = undef;
+    # $self->{farthest} = undef;
 }
 
 # XXX Add an optional $position argument. Default to 0. This is the position

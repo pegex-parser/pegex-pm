@@ -38,6 +38,9 @@ help:
 	@echo 'Makefile targets:'
 	@echo ''
 	@echo '    make test      - Run the repo tests'
+	@echo '    make test-dev  - Run the developer only tests'
+	@echo '    make test-all  - Run all tests'
+	@echo ''
 	@echo '    make install   - Install the dist from this repo'
 	@echo '    make prereqs   - Install the CPAN prereqs'
 	@echo '    make update    - Update generated files'
@@ -68,6 +71,13 @@ else
 	@echo "Testing not available. Use 'disttest' instead."
 endif
 
+test-dev:
+ifneq ($(wildcard test/devel),)
+	$(PERL) -S prove -lv test/devel
+endif
+
+test-all: test test-dev
+
 install: distdir
 	@echo '***** Installing $(DISTDIR)'
 	(cd $(DISTDIR); perl Makefile.PL; make install)
@@ -86,7 +96,7 @@ release:
 	make update
 	make check-release
 	make date
-	make test
+	make test-all
 	make disttest
 	@echo '***** Releasing $(DISTDIR)'
 	make dist

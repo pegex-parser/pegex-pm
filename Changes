@@ -1,4 +1,11 @@
 ---
+version: 0.49
+date:    Tue Aug 12 11:01:28 PDT 2014
+changes:
+- Add `receiver` accessor back into parser
+- Other modules use it
+- Add test for it
+---
 version: 0.48
 date:    Sun Aug 10 18:18:35 PDT 2014
 changes:
