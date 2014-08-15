@@ -1,4 +1,12 @@
 ---
+version: 0.50
+date:    Fri Aug 15 09:30:56 PDT 2014
+changes:
+- Fixed a Mo bug directly
+- Added regression test
+- Mo still needs fix
+- See https://github.com/ingydotnet/jsony-pm/issues/2
+---
 version: 0.49
 date:    Tue Aug 12 11:01:28 PDT 2014
 changes:

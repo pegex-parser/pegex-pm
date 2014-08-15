@@ -1,6 +1,6 @@
 use strict; use warnings;
 package Pegex;
-our $VERSION = '0.49';
+our $VERSION = '0.50';
 
 use Pegex::Parser;
 

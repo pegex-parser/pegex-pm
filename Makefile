@@ -100,6 +100,10 @@ release:
 	make disttest
 	@echo '***** Releasing $(DISTDIR)'
 	make dist
+ifneq ($(ZILLA_DIST_RELEASE_TIME),)
+	echo $$(( $$ZILLA_DIST_RELEASE_TIME - $$(date +%s) ))
+	sleep $$(( $$ZILLA_DIST_RELEASE_TIME - $$(date +%s) ))
+endif
 	cpan-upload $(DIST)
 	make clean
 	[ -z "$$(git status -s)" ] || zild-git-commit
@@ -178,6 +182,7 @@ check-release:
 	@echo '***** Checking readiness to release $(DIST)'
 	RELEASE_BRANCH=$(RELEASE_BRANCH) zild-check-release
 	git stash
+	rm -fr .git/rebase-apply
 	git pull --rebase origin $(RELEASE_BRANCH)
 	git stash pop
 
