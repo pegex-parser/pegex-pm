@@ -1,19 +1,25 @@
-=meta: 0.0.1
+=meta: 0.0.2
 
 name: Pegex
-version: 0.52
+version: 0.53
 abstract: Acmeist PEG Parser Framework
 homepage: http://pegex.org
-
+language: perl
 license: perl
-copyright: 2010-2014. Ingy döt Net.
+copyright: 2010-2014
+
 author:
   name: Ingy döt Net
   email: ingy@cpan.org
+  homepage: http://ingy.net
   github: ingydotnet
   twitter: ingydotnet
   freenode: ingy
-  homepage: http://ingy.net
+
+devel:
+  git: https://github.com/ingydotnet/pegex-pm
+  bug: https://github.com/ingydotnet/pegex-pm/issues
+  irc: irc.freenode.net#pegex
 
 requires:
   perl: 5.8.1
@@ -22,17 +28,10 @@ test:
   requires:
     YAML::XS: 0
 
-devel:
-  git: https://github.com/ingydotnet/pegex-pm
-  bug: https://github.com/ingydotnet/pegex-pm/issues
-  irc: irc.freenode.net#pegex
-
 =cpan:
   include_testml: 1
 
 =travis:
-  type: perl
-  irc: irc.freenode.net#pegex
   test:
     requires:
       TestML: 0

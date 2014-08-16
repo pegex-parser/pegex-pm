@@ -12,7 +12,7 @@ ZILD := $(PERL) -S zild
 LOG := $(PERL_ZILLA_DIST_RELEASE_LOG)
 
 ifneq (,$(shell which zild))
-    NAMEPATH := $(shell $(ZILD) meta =cpan/libname)
+    NAMEPATH := $(shell $(ZILD) meta =zild/libname)
     NAMEPATH := $(subst ::,/,$(NAMEPATH))
 ifeq (,$(NAMEPATH))
     NAMEPATH := $(shell $(ZILD) meta name)
