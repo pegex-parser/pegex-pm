@@ -1,4 +1,10 @@
 ---
+version: 0.51
+date:    Fri Aug 15 20:26:26 PDT 2014
+changes:
+- Remove Pegex::Mo
+- Add t/000-compile-modules.t
+---
 version: 0.50
 date:    Fri Aug 15 09:30:56 PDT 2014
 changes:
