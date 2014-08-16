@@ -124,7 +124,7 @@ endif
 	make check-release
 	make date
 	make test-all
-	make test-dist
+	RELEASE_TESTING=1 make test-dist
 	@echo '***** Releasing $(DISTDIR)'
 	make dist
 ifneq ($(PERL_ZILLA_DIST_RELEASE_TIME),)

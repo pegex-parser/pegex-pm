@@ -1,6 +1,5 @@
 use strict;
-use File::Basename;
-use lib dirname(__FILE__), 'inc';
+use lib (-e 't' ? 't' : 'test'), 'inc';
 use TestML;
 use TestML::Compiler::Lite;
 use TestMLBridge;
