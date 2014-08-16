@@ -19,8 +19,8 @@ perl:
 install:
 - cpanm --quiet --notest
   Devel::Cover::Report::Coveralls
-  TestML
   YAML::XS
+  TestML
 
 script:
 - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
