@@ -41,7 +41,7 @@ briefly:
   (if one exists) is called with the data that has been matched. It is the
   receiver's job to take action on the data, often building it into some new
   structure. Pegex will use [Pegex::Tree::Wrap] as the default receiver; it
-  produces a reasonably readable tree of the matched / captured data.
+  produces a reasonably readable tree of the matched/captured data.
 
 - [Pegex::Input]
 
