@@ -1,0 +1,17 @@
+--- grammar
+%grammar binary-record
+record: head body
+head: (label)+ {num = $COUNT} NULL
+label: / ( WORD+ ) NULL /
+body: (length text)$num
+length: / ( BYTE BYTE ) / {len = $1.int}
+text: / ( WORD{$len} ) /
+
+--- input
+name\x00description\x00\x00\x{0005}Billy\x{0008}The Bomb\x{0005}Davey\x{0008}The Dude
+
+--- output
+- name: Billy
+  description: The Bomb
+- name: Davey
+  description: The Dude

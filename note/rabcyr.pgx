@@ -1,0 +1,67 @@
+%grammar langlang
+%version 0.0.0
+
+sentences: sentence+
+
+sentence: qualifier expr+ % semi DOT - | expr+ % semi DOT -
+
+qualifier: signature | foreach
+
+foreach: /'for' + 'each'/ + var + 'from' + ( var | num ) + 'to' + ( var | num ) COLON +
+
+signature: var + 'has' + /arguments?/ + args COLON +
+
+expr: ( reserved | list | var | num | string | math )+ % +
+
+say: 'say' + list
+
+# oxford, but broken: args: (var comma)2+ - 'and' + var | var + 'and' + var | var
+args: var+ % comma + 'and' + var | var
+
+# oxford, but broken: list: ((var|num) comma)2+ - 'and' + (var|num) | (var|num) + 'and' + (var|num)
+list: (var|num|string)+ % comma + 'and' + (var|num|string) | var | num | string
+
+reserved: return | say | means | call
+
+return: 'return' + list
+
+means: var + 'means' + (call | var | num | string | list | math)+ % +
+
+call: var + 'with' + list
+
+comma: / COMMA +/
+
+semi: / SEMI +/
+
+var: /( ALPHA+)/
+
+num: /( DIGIT+)/
+
+math: /( PERCENT | CARET | AMP | STAR | DASH | PLUS | SLASH )/
+
+string: /
+    DOUBLE
+        (
+            (:
+                BACK (:       # Backslash escapes
+                    [
+                        DOUBLE      # Double Quote
+                        BACK        # Back Slash
+                        SLASH       # Foreward Slash
+                        'b'         # Back Space
+                        'f'         # Form Feed
+                        'n'         # New Line
+                        'r'         # Carriage Return
+                        't'         # Horizontal Tab
+                    ]
+                |
+                    'u' HEX{4}      # Unicode octet pair
+                )
+            |
+                [^ DOUBLE CONTROLS ]  # Anything else
+            )*
+        )
+    DOUBLE
+/
+
+comment: - LPAREN ALL* RPAREN -
