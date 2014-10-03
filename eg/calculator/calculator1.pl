@@ -2,11 +2,11 @@ use Pegex;
 
 my $grammar = <<'...';
 expr: add-sub
-add-sub: mul-div+ % /~([<PLUS><DASH>])~/
-mul-div: exp+ % /~([<STAR><SLASH>])~/
-exp: token+ % /~<CARET>~/
-token: /~<LPAREN>~/ expr /~<RPAREN>~/ | number
-number: /~(<DASH>?<DIGIT>+)~/
+add-sub: mul-div+ % /- ( [ PLUS DASH ])/
+mul-div: exp+ % /- ([ STAR SLASH ])/
+exp: token+ % /- CARET /
+token: /- LPAREN -/ expr /- RPAREN/ | number
+number: /- ( DASH? DIGIT+ )/
 ...
 
 {
@@ -44,14 +44,6 @@ number: /~(<DASH>?<DIGIT>+)~/
     }
 }
 
-while (1) {
-    print "\nEnter an equation: ";
-    my $input = <>;
-    chomp $input;
-    last unless length $input;
-    calc($input);
-}
-
 sub calc {
     my $expr = shift;
     my $calculator = pegex($grammar, 'Calculator');
@@ -59,16 +51,25 @@ sub calc {
     print $@ || "$expr = $result\n";
 }
 
-# calc '2';
-# calc '2 * 4';
-# calc '2 * 4 + 6';
-# calc '2 + 4 * 6 + 1';
-# calc '2 + (4 + 6) * 8';
-# calc '(((2 + (((4 + (6))) * (8)))))';
-# calc '2 ^ 3 ^ 2';
-# calc '2 ^ (3 ^ 2)';
-# calc '2 * 2^3^2';
-# calc '(2^5)^2';
-# calc '2^5^2';
-# calc '0*1/(2+3)-4^5';
-# calc '2/3+1';
+# while (1) {
+#     print "\nEnter an equation: ";
+#     my $input = <>;
+#     chomp $input;
+#     last unless length $input;
+#     calc($input);
+# }
+
+calc '2';
+calc '2 * 4';
+calc '2 * 4 + 6';
+calc '2 + 4 * 6 + 1';
+calc '2 + (4 + 6) * 8';
+calc '(((2 + (((4 + (6))) * (8)))))';
+calc '2 ^ 3 ^ 2';
+calc '2 ^ (3 ^ 2)';
+calc '(2 ^ 3) ^ 2';
+calc '2 * 2^3^2';
+calc '(2^5)^2';
+calc '2^5^2';
+calc '0*1/(2+3)-4^5';
+calc '2/3+1';

@@ -1,6 +1,6 @@
 %TestML 0.1.0
 
-Plan = 46
+Plan = 50
 
 *grammar1.bootstrap_compile.yaml == *grammar2.bootstrap_compile.yaml
 *grammar1.compile.yaml == *grammar2.compile.yaml
@@ -176,3 +176,19 @@ x: a -(b a)2-6
 x: <a>3-7 %% b
 --- grammar2
 x: a -(b a)2-6 b?
+
+=== Leading WS, mulitline regex
+--- grammar1
+a: /-
+  'foo'
+/
+--- grammar2
+a: /- 'foo'/
+
+=== Leading WS, mulitline regex (part2)
+--- grammar1
+a: /-
+  'foo'
+/
+--- grammar2
+a: /-foo/

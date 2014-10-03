@@ -138,9 +138,10 @@ sub got_whitespace_must {
     return +{ '.rgx' => '<__>'};
 }
 
-sub got_whitespace_must_start {
-    my ($self) = @_;
-    return +{ '.rgx' => '<__>'};
+sub got_whitespace_start {
+    my ($self, $got) = @_;
+    my $rule = $got eq '+' ? '__' : '_';
+    return +{ '.rgx' => "<$rule>"};
 }
 
 sub got_regular_expression {
@@ -249,7 +250,7 @@ sub set_separator {
     my ($rule, $op, $sep) = @_;
     my $extra = ($op eq '%%');
     if (not defined $rule->{'+max'} and not defined $rule->{'+min'}) {
-        $rule = {'.all' => [ $rule, {%$sep, '+max' => 1}, ] }
+        $rule = {'.all' => [ $rule, {%{clone($sep)}, '+max' => 1}, ] }
             if $extra;
         return $rule;
     }
@@ -266,14 +267,14 @@ sub set_separator {
                     '-flat' => 1,
                     '.all' => [
                         $sep,
-                        {%$rule},
+                        clone($rule),
                     ],
                 },
             ],
         };
     }
     elsif (not defined $rule->{'+max'}) {
-        my $copy = {%$rule};
+        my $copy = clone($rule);
         my $min = delete $copy->{'+min'};
         my $new = {
             '.all' => [
@@ -283,7 +284,7 @@ sub set_separator {
                     '-flat' => 1,
                     '.all' => [
                         $sep,
-                        {%$copy},
+                        clone($copy),
                     ],
                 },
             ],
@@ -305,11 +306,11 @@ sub set_separator {
         if ($rule->{'+max'} == 1) {
             delete $rule->{'+min'};
             $rule = {
-                %$rule,
+                %{clone($rule)},
                 '+max' => 1,
             };
             if ($extra) {
-                $rule = { '.all' => [$rule, {%$sep, '+max' => 1}] };
+                $rule = { '.all' => [$rule, {%{clone($sep)}, '+max' => 1}] };
             }
             return $rule;
         }
@@ -318,9 +319,16 @@ sub set_separator {
         }
     }
     if ($extra) {
-        push @{$rule->{'.all'}}, {%$sep, '+max' => 1};
+        push @{$rule->{'.all'}}, {%{clone($sep)}, '+max' => 1};
     }
     return $rule;
+}
+
+sub clone {
+    my ($o) = @_;
+    return ref($o) eq 'HASH'
+    ? { map { my $v = $o->{$_}; ($_, (ref($v) ? clone($v) : $v)) } keys %$o }
+    : [ map { ref($_) ? clone($_) : $_ } @$o ];
 }
 
 1;

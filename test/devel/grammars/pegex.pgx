@@ -52,7 +52,7 @@ quoted-regex:
 
 regular-expression:
   '/'
-  whitespace-must-start?
+  whitespace-start?
   (
   | whitespace-must
   | whitespace-maybe
@@ -63,11 +63,11 @@ regular-expression:
   )*
   '/'
 
-whitespace-must-start: / PLUS (= [ SPACE SLASH ]) /
+whitespace-start: / ([ PLUS DASH]) (! [ DASH TILDE ]) /
 
-whitespace-must: /+ (: PLUS | DASH DASH )  (= [ SPACE SLASH ]) /
+whitespace-must: /+ (: PLUS | DASH DASH )  (= [ SPACE SLASH CR NL ]) /
 
-whitespace-maybe: /- DASH (= [ SPACE SLASH ]) /
+whitespace-maybe: /- DASH (= [ SPACE SLASH CR NL ]) /
 
 regex-rule-reference:
   /

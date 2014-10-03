@@ -11,7 +11,7 @@ use constant file => '../pegex-pgx/pegex.pgx';
 #     Pegex::Bootstrap->new->compile($grammar)->tree;
 # }
 
-sub text {   # Generated/Inlined by Pegex::Grammar (0.43)
+sub text {   # Generated/Inlined by Pegex::Grammar (0.56)
 <<'...';
 # This is the Pegex grammar for Pegex grammars!
 
@@ -67,7 +67,7 @@ quoted-regex:
 
 regular-expression:
   '/'
-  whitespace-must-start?
+  whitespace-start?
   (
   | whitespace-must
   | whitespace-maybe
@@ -78,11 +78,11 @@ regular-expression:
   )*
   '/'
 
-whitespace-must-start: / PLUS (= [ SPACE SLASH ]) /
+whitespace-start: / ([ PLUS DASH]) (! [ DASH TILDE ]) /
 
-whitespace-must: /+ (: PLUS | DASH DASH )  (= [ SPACE SLASH ]) /
+whitespace-must: /+ (: PLUS | DASH DASH )  (= [ SPACE SLASH CR NL ]) /
 
-whitespace-maybe: /- DASH (= [ SPACE SLASH ]) /
+whitespace-maybe: /- DASH (= [ SPACE SLASH CR NL ]) /
 
 regex-rule-reference:
   /
@@ -257,7 +257,7 @@ ERROR-separation:
 ...
 }
 
-sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.43)
+sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.56)
   {
     '+grammar' => 'pegex',
     '+include' => 'pegex-atoms',
@@ -651,7 +651,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.43)
         },
         {
           '+max' => 1,
-          '.ref' => 'whitespace_must_start'
+          '.ref' => 'whitespace_start'
         },
         {
           '+min' => 0,
@@ -760,13 +760,13 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.43)
       '.rgx' => qr/\G((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
     },
     'whitespace_maybe' => {
-      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\-(?=[\ \/])/
+      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\-(?=[\ \/\r\n])/
     },
     'whitespace_must' => {
-      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(?:\+|\-\-)(?=[\ \/])/
+      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(?:\+|\-\-)(?=[\ \/\r\n])/
     },
-    'whitespace_must_start' => {
-      '.rgx' => qr/\G\+(?=[\ \/])/
+    'whitespace_start' => {
+      '.rgx' => qr/\G([\+\-])(?![\-\~])/
     },
     'whitespace_token' => {
       '.rgx' => qr/\G((?:\+|\-|\-\-|\~|\~\~))(?=(?:\s|\#.*(?:\n|\z))+)/

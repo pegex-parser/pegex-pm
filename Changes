@@ -1,4 +1,11 @@
 ---
+version: 0.56
+date:    Fri Oct  3 22:55:58 CEST 2014
+changes:
+- Upgrade Mo to 0.39
+- Fix problems with %
+- Fix whitespace matching at start of regex
+---
 version: 0.55
 date:    Sun Aug 24 10:03:26 PDT 2014
 changes:

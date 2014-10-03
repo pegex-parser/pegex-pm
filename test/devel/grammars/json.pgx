@@ -6,29 +6,27 @@
 %version 0.0.1
 %include pegex-atoms
 
-json: map | seq
+json: - value -
 
-node: map | seq | scalar
-
-map:
+object:
   /- '{' -/
   pair* % /- ',' -/
   /- '}' -/
 
-pair:
-  string
-  /- ':' -/
-  node
+pair: string /- ':' -/ value
 
-seq:
+array:
   /- '[' -/
-  node* % /- ',' -/
+  value* % /- ',' -/
   /- ']' -/
 
-scalar:
+value:
   | string
   | number
-  | boolean
+  | object
+  | array
+  | true
+  | false
   | null
 
 # string and number are interpretations of http://www.json.org/
@@ -63,8 +61,6 @@ number: /(
   (: DOT DIGIT* )?
   (: [eE] [ DASH PLUS ]? DIGIT+ )?
 )/
-
-boolean: true | false
 
 true: 'true'
 

@@ -475,9 +475,9 @@ has regexes => {
     ],
 
     regex => [
-        [qr/\A$WS+(?:\+|\~\~|\-\-)(?=[\s\/])/,
+        [qr/\A$WS+(?:\+|\~\~|\-\-)/,
             'whitespace-must'],
-        [qr/\A(?:\-|~)(?=[\s\/])/,
+        [qr/\A(?:\-|~)(?![-~])/,
             'whitespace-maybe'],
         $qr,
         [qr/\A$WS+()($NAME|<$NAME>)/,
