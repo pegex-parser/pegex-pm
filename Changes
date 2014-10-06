@@ -1,4 +1,10 @@
 ---
+version: 0.57
+date:    Mon Oct  6 14:30:28 CEST 2014
+changes:
+- Added 'rule' helper method to Pegex::Receiver
+- Refactored the calculator examples to be dry
+---
 version: 0.56
 date:    Fri Oct  3 22:55:58 CEST 2014
 changes:

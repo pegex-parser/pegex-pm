@@ -3,6 +3,8 @@ use Pegex::Base;
 
 has parser => (); # The parser object.
 
+sub rule { $_[0]->{parser}{rule} }
+
 # Flatten a structure of nested arrays into a single array in place.
 sub flatten {
     my ($self, $array, $times) = @_;

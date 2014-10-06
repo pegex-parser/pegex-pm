@@ -1,75 +1,51 @@
+use strict;
+use FindBin;
+use lib "$FindBin::Bin/lib";
+
 use Pegex;
+use Runner;
 
 my $grammar = <<'...';
+# Precedence Climbing grammar:
 expr: add-sub
-add-sub: mul-div+ % /- ( [ PLUS DASH ])/
-mul-div: exp+ % /- ([ STAR SLASH ])/
-exp: token+ % /- CARET /
-token: /- LPAREN -/ expr /- RPAREN/ | number
-number: /- ( DASH? DIGIT+ )/
+add-sub: mul-div+ % /- ( [ '+-' ])/
+mul-div: power+ % /- ([ '*/' ])/
+power: token+ % /- '^' /
+token: /- '(' -/ expr /- ')'/ | number
+number: /- ( '-'? DIGIT+ )/
 ...
 
 {
     package Calculator;
     use base 'Pegex::Tree';
 
-    sub got_add_sub {
+    sub gotrule {
         my ($self, $list) = @_;
-        $self->flatten($list);
-        while (@$list > 1) {
-            my ($a, $op, $b) = splice(@$list, 0, 3);
-            unshift @$list, ($op eq '+') ? ($a + $b) : ($a - $b);
-        }
-        @$list;
-    }
+        return $list unless ref $list;
 
-    sub got_mul_div {
-        my ($self, $list) = @_;
-        $self->flatten($list);
-        while (@$list > 1) {
-            my ($a, $op, $b) = splice(@$list, 0, 3);
-            unshift @$list, ($op eq '*') ? ($a * $b) : ($a / $b);
+        # Right associative:
+        if ($self->rule eq 'power') {
+            while (@$list > 1) {
+                my ($a, $b) = splice(@$list, -2, 2);
+                push @$list, $a ** $b;
+            }
         }
-        @$list;
-    }
-
-    sub got_exp {
-        my ($self, $list) = @_;
-        $self->flatten($list);
-        while (@$list > 1) {
-            my ($a, $b) = splice(@$list, -2, 2);
-            push @$list, $a ** $b;
+        # Left associative:
+        else {
+            while (@$list > 1) {
+                my ($a, $op, $b) = splice(@$list, 0, 3);
+                unshift @$list,
+                    ($op eq '+') ? ($a + $b) :
+                    ($op eq '-') ? ($a - $b) :
+                    ($op eq '*') ? ($a * $b) :
+                    ($op eq '/') ? ($a / $b) :
+                    die;
+            }
         }
-        @$list;
+        return @$list;
     }
 }
 
-sub calc {
-    my $expr = shift;
-    my $calculator = pegex($grammar, 'Calculator');
-    my $result = eval { $calculator->parse($expr) };
-    print $@ || "$expr = $result\n";
-}
-
-# while (1) {
-#     print "\nEnter an equation: ";
-#     my $input = <>;
-#     chomp $input;
-#     last unless length $input;
-#     calc($input);
-# }
-
-calc '2';
-calc '2 * 4';
-calc '2 * 4 + 6';
-calc '2 + 4 * 6 + 1';
-calc '2 + (4 + 6) * 8';
-calc '(((2 + (((4 + (6))) * (8)))))';
-calc '2 ^ 3 ^ 2';
-calc '2 ^ (3 ^ 2)';
-calc '(2 ^ 3) ^ 2';
-calc '2 * 2^3^2';
-calc '(2^5)^2';
-calc '2^5^2';
-calc '0*1/(2+3)-4^5';
-calc '2/3+1';
+Runner->new(args => \@ARGV)->run(
+    sub { pegex($grammar, 'Calculator')->parse($_[0]) }
+);

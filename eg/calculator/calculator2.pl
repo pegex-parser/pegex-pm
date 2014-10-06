@@ -3,13 +3,13 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 
 use Pegex;
-use RPN;
+use Runner;
 
 my $grammar = <<'...';
 expr: operand (operator operand)*
-operator: /~([<PLUS><DASH><STAR><SLASH><CARET>])~/
-operand: num | /~<LPAREN>~/ expr /~<RPAREN>~/
-num: /~(<DASH>?<DIGIT>+)~/
+operator: /- (['+-*/^'])/
+operand: num | /- '('/ expr /- ')'/
+num: /- ('-'? DIGIT+)/
 ...
 
 {
@@ -30,18 +30,34 @@ num: /~(<DASH>?<DIGIT>+)~/
     }
 }
 
-while (1) {
-    print "\nEnter an equation: ";
-    my $input = <>;
-    chomp $input;
-    last unless length $input;
-    calc($input);
+sub evaluate {
+    my ($expr) = @_;
+    return $expr->[0] if @$expr == 1;
+    my $op = pop @$expr;
+    my $b = get_value($expr);
+    my $a = get_value($expr);
+    return
+        $op eq '+' ? $a + $b :
+        $op eq '-' ? $a - $b :
+        $op eq '*' ? $a * $b :
+        $op eq '/' ? $a / $b :
+        $op eq '^' ? $a ** $b :
+        die "Unknown operator '$op'";
 }
 
-sub calc {
-    my $expr = shift;
-    my $calculator = pegex($grammar, 'Calculator');
-    my $rpn = eval { $calculator->parse($expr) };
-    my $result = RPN::evaluate($rpn);
-    print $@ || "$expr = $result\n";
+sub get_value {
+    my ($expr) = @_;
+    if (ref($expr->[-1]) eq 'ARRAY') {
+        evaluate(pop @$expr);
+    }
+    elsif ($expr->[-1] =~ m!^[-+*/^]$!) {
+        evaluate($expr);
+    }
+    else {
+        pop @$expr;
+    }
 }
+
+Runner->new(args => \@ARGV)->run(
+    sub { evaluate(pegex($grammar, 'Calculator')->parse($_[0])) }
+);
