@@ -203,7 +203,7 @@ uninstall: distdir
 	make clean
 
 clean purge:
-	rm -fr cpan .build $(DIST) $(DISTDIR)
+	rm -fr blib cpan .build $(DIST) $(DISTDIR)
 
 #------------------------------------------------------------------------------
 # Non-pulic-facing targets:
