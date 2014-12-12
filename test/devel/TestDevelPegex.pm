@@ -1,6 +1,7 @@
 package TestDevelPegex;
 use strict; use warnings;
 
+use File::Spec;
 use Test::More;
 use IO::All;
 use Time::HiRes qw(gettimeofday tv_interval);
@@ -72,8 +73,8 @@ sub test_grammar_paths {
 sub check_grammar {
     my ($source) = @_;
     (my $file = $source) =~ s!.*/!!;
-    my $xt = -e 'xt' ? 'xt' : 'test/devel';
-    my $path = "./$xt/grammars/$file";
+    my $xt = -e 'xt' ? 'xt' : File::Spec->catfile('test', 'devel');
+    my $path = File::Spec->catfile('.', $xt, 'grammars', $file);
     if (-e $source) {
         if (not -e $path) {
             diag "$path not found. Copying from $source\n";

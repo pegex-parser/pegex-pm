@@ -1,11 +1,12 @@
 use strict;
 use lib (-e 't' ? 't' : 'test'), 'inc';
+use File::Spec;
 use TestML;
 use TestML::Compiler::Lite;
 use TestMLBridge;
 
 TestML->new(
-    testml => 'testml/tree-pegex.tml',
+    testml => File::Spec->catfile(qw{testml tree-pegex.tml}),
     bridge => 'TestMLBridge',
     compiler => 'TestML::Compiler::Lite',
 )->run;
