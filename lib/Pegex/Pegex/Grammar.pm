@@ -11,7 +11,7 @@ use constant file => 'ext/pegex-pgx/pegex.pgx';
 #     Pegex::Bootstrap->new->compile($grammar)->tree;
 # }
 
-sub text {   # Generated/Inlined by Pegex::Grammar (0.56)
+sub text {   # Generated/Inlined by Pegex::Grammar (0.58)
 <<'...';
 # This is the Pegex grammar for Pegex grammars!
 
@@ -257,7 +257,7 @@ ERROR-separation:
 ...
 }
 
-sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.56)
+sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.58)
   {
     '+grammar' => 'pegex',
     '+include' => 'pegex-atoms',
