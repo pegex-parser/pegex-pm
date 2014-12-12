@@ -1,0 +1,54 @@
+This is a short list of all the current Pegex syntax:
+=====================================================
+
+# Directives
+%grammar name
+%version 1.2.3
+%include name
+%include name :alias
+%include name ~>1.2.3 :alias
+
+# Rule of a regex (all the same):
+a: /literal/
+a: 'literal'
+a: / 'literal' /
+
+# Explicit refs  (<x> is becoming deprecated)
+a: <b> / <c> 'd' <e> /
+
+# And
+a: b c
+a: (b c)
+
+# Or
+a: b | c
+a: ( b | c )
+a: (
+  | b
+  | c
+)
+
+# Separation
+a: b % c
+a: b %% c
+
+# Whitespace
+a: + b - c ~ d ~~     # ~ and ~~ are deprecated
+a: /+ b - c ~ d ~~/
+
+# Complex
+a: b (c | d) % (e f)
+
+#: Quantifiers
+a: b? c* d+ (e)5 (f)5+ (g)5-10
+a: (b c)+
+
+#: Assertions
+a: =b c !d
+a: =(b c)
+
+
+### Up coming
+
+# Namespace refs
+a: b:c | b:d

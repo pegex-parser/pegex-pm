@@ -1,0 +1,8 @@
+= Need a syntax for defining a keyword token:
+
+    a: true
+    true: 'true'
+
+Need something that makes does it all in one:
+
+    a: :true:       # maybe

@@ -1,0 +1,39 @@
+== These are grammars I would like to see:
+
+- pcre.pgx - PCRE Regular Expressions
+- tt2.pgx - Template Toolkit II
+- perl6.pgx - Perl 6
+- coffee.pgx - CoffeeScript
+- yaml.pgx - YAML
+- kwim.pgx - Kwim Markup
+- socialtext.pgx - Socialtext Markup
+
+== Refactor Changes (2.0)
+- Ship Pegex.pm with dzil.
+  - Can put TestML::Compiler::Lite into inc/
+- Remove <> rule braces
+- Support '…' literal text
+  - 'foo.bar baz' → /foo\.bar\ baz/
+  - / 'foo' . 'bar.' / → /foo.bar\./
+- A Grammar is really just an OO class
+- A pgx grammar file defines rules for the class
+- Rules are like methods
+- Rules can be actual methods too
+- Regexes or refs-to-regexes should be combined into a single regex
+- Support grammar names, inheritance, inclusion
+- Support symrules
+- Make Pegex::Grammar::Atoms a real class the is the default parent class
+- '-' always means '_' in a rulename
+- Atoms support:
+  %symrule + __
+  %symrule ~ _
+  %symrule ~~ __
+  _: /WS*/
+  __: /WS+/
+- Support rule namespacing: grammar-name:rule-name
+- Rules now must start: "(\n|;\ *)rule-name: "
+- %include error-class
+  - Names a pegex class containing error rules
+  - grammar name is 'error'
+  - foo: bar | baz | !! # same as:
+    - foo: bar | baz | error:foo

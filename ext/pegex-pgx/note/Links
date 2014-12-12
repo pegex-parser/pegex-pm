@@ -1,0 +1,38 @@
+Web Links
+=========
+
+# General PEG / Parser info
+- http://en.wikipedia.org/wiki/Parsing_expression_grammar
+- http://bford.info/pub/lang/peg — PEG paper
+- http://pdos.csail.mit.edu/~baford/packrat/icfp02/ — Packrat paper
+- http://bford.info/packrat/ — Lots of PEG links
+- http://www.romanredz.se/papers/FI2007.pdf
+- http://tratt.net/laurie/tech_articles/articles/parsing_the_solved_problem_that_isnt
+- http://en.wikipedia.org/wiki/Comparison_of_parser_generators
+- http://www.rsdn.ru/article/nemerle/PegGrammar-en.xml
+
+
+# Grammars / Definitions (some PEG)
+- http://flash-gordon.me.uk/ansi.c.txt — C grammar
+- http://ssw.jku.at/Coco/ — ATG grammars
+- www.yaml.org/spec/1.2/ — YAML grammar
+- http://www.w3.org/TR/xml11/ — XML grammar
+- https://github.com/PhilippeSigaud/Pegged/wiki/Grammar-Examples
+- https://github.com/jgm/peg-markdown — Markdown PEG
+- http://users.digitalkingdom.org/~rlpowell/hobbies/lojban/grammar/ — Lojban PEG
+- http://www.lojban.org/tiki/PEG
+- http://github.com/leafo/moonscript/blob/master/moonscript/parse.lua
+- https://github.com/tolmasky/language
+- https://developer.mozilla.org/en-US/docs/SpiderMonkey/Parser_API
+- https://github.com/Constellation/escodegen
+
+
+# PEG Frameworks / Implementations
+- http://treetop.rubyforge.org/ — PEG parser in Ruby
+- http://kschiess.github.io/parslet/ — PEG parser in Ruby
+- https://github.com/PhilippeSigaud/Pegged/wiki/_pages — PEG Parser in D
+- http://piumarta.com/software/peg/ — peg/leg PEG Parser in C
+
+
+# Language stuff
+- http://www.n-a-n-o.com/lisp/cmucl-tutorials/LISP-tutorial-17.html
