@@ -1,4 +1,10 @@
 ---
+version: 0.58
+date:    Fri Dec 12 11:10:16 PST 2014
+changes:
+- Fix test for windows (issue #26) vicash++
+- Share Pegex grammar for Pegex
+---
 version: 0.57
 date:    Mon Oct  6 14:30:28 CEST 2014
 changes:
