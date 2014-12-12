@@ -2,14 +2,16 @@ source_testml_dir: ../../pegex-tml
 local_testml_dir: ./testml
 test_file_prefix: testml-
 test_file_template: |
+  [% testml_setup_comment -%]
   use strict;
   use lib (-e 't' ? 't' : 'test'), 'inc';
+  use File::Spec;
   use TestML;
   use TestML::Compiler::Lite;
   use TestMLBridge;
 
   TestML->new(
-      testml => '[% file %]',
+      testml => File::Spec->catfile(qw{[% path.join(' ') %]}),
       bridge => 'TestMLBridge',
       compiler => 'TestML::Compiler::Lite',
   )->run;
