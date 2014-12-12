@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:ingydotnet/pegex-tml
+	branch = master
+	commit = 212c3ae5ec4d55a2fd2579ca21c2a573eab52f59
+	parent = 994ecf9a53a08aab387bb9e7688047a8d78c9940
+	cmdver = 0.1.0

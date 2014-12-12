@@ -1,0 +1,497 @@
+%TestML 0.1.0
+
+Plan = 58
+
+Label = '$BlockLabel - Pegex::Tree'
+parse_to_tree(*grammar, *input).yaml.clean == *tree
+Label = '$BlockLabel - Pegex::Tree::Wrap'
+parse_to_tree_wrap(*grammar, *input).yaml.clean == *wrap
+Label = '$BlockLabel - t::TestAST'
+parse_to_tree_test(*grammar, *input).yaml.clean == *ast
+
+=== Single Regex - Single Capture
+--- grammar
+a: /x*(y*)z* EOL/
+--- input
+xxxyyyyzzz
+--- tree
+yyyy
+--- wrap
+a: yyyy
+
+=== Single Regex - Multi Capture
+--- grammar
+a: /(x*)(y*)(z*) EOL/
+--- input
+xxxyyyyzzz
+--- tree
+- xxx
+- yyyy
+- zzz
+--- wrap
+a:
+- xxx
+- yyyy
+- zzz
+
+=== Multi Group Regex
+--- grammar
+t: /.*(x).*(y).*(z).*/
+--- input: aaaxbbbyccczddd
+--- tree
+- x
+- y
+- z
+--- wrap
+t:
+- x
+- y
+- z
+
+=== Single Regex - No Capture
+--- grammar
+a: /x*y*z* EOL/
+--- input
+xxxyyyyzzz
+--- tree
+[]
+--- wrap
+a: []
+
+=== Non capture Regex
+--- grammar
+a: b b* -c* .d*
+b: /b/
+c: /c+/
+d: /d/
+--- input: bbccdd
+--- tree
+- []
+--- wrap
+a:
+- []
+
+=== A subrule
+--- grammar
+a: b /(y+)/ EOL
+b: /(x+)/
+--- input
+xxxyyyy
+--- tree
+- xxx
+- yyyy
+--- wrap
+a:
+- b: xxx
+- yyyy
+
+=== Multi match regex in subrule
+--- grammar
+a: b
+b: /(x*)y*(z*) EOL/
+--- input
+xxxyyyyzzz
+--- tree
+- xxx
+- zzz
+--- wrap
+a:
+  b:
+  - xxx
+  - zzz
+
+=== Any rule group
+--- grammar
+a: (b | c)
+b: /(bleh)/
+c: /(x*)y*(z*) EOL?/
+--- input
+xxxyyyyzzz
+--- tree
+- xxx
+- zzz
+--- wrap
+a:
+  c:
+  - xxx
+  - zzz
+
+=== + Modifier
+--- grammar
+a: ( b c )+ EOL
+b: /(x*)/
+c: /(y+)/
+--- input
+xxyyxy
+--- tree
+- - - xx
+    - yy
+  - - x
+    - y
+--- wrap
+a:
+- - - b: xx
+    - c: yy
+  - - b: x
+    - c: y
+
+=== Wrap Pass and Skip
+--- grammar
+a: +b -c .d
+b: /(b+)/
+c: /(c+)/
+d: /(d+)/
+--- input: bbccdd
+--- tree
+- b: bb
+- cc
+--- wrap
+a:
+- b: bb
+- c: cc
+
+=== Flat and Skip Multi
+--- grammar
+a: b* -c* .d*
+b: /(b)/
+c: /(c)/
+d: /(d)/
+--- input: bccdd
+--- tree
+- - b
+- c
+- c
+--- wrap
+a:
+- - b: b
+- c: c
+- c: c
+
+=== Skip Bracketed
+--- grammar
+a: b .(c d)
+b: /(b)/
+c: /(c+)/
+d: /(d+)/
+--- input: bcccd
+--- tree
+b
+--- wrap
+a:
+  b: b
+
+=== Assertions
+--- grammar
+a: !b =c c
+b: /b/
+c: /(c+)/
+--- input: ccc
+--- tree
+ccc
+--- wrap
+a:
+  c: ccc
+
+=== Assertion not captured
+--- grammar
+a: =x x y EOL
+x: /(x+)/
+y: /(y+)/
+--- input
+xxxyyyy
+--- tree
+- xxx
+- yyyy
+--- wrap
+a:
+- x: xxx
+- y: yyyy
+
+=== Empty regex group plus rule
+--- grammar
+a: b* c EOL
+b: /xxx/
+c: /(yyy)/
+--- input
+xxxyyy
+--- tree
+- []
+- yyy
+--- wrap
+a:
+- []
+- c: yyy
+
+=== Rule to Rule to Rule
+--- grammar
+a: b
+b: c*
+c: d EOL
+d: /x(y)z/
+--- input
+xyz
+xyz
+--- tree
+- - y
+- - y
+--- wrap
+a:
+  b:
+  - c:
+    - d: y
+  - c:
+    - d: y
+
+=== List and Separators
+--- grammar
+a: b c+ % d
+b: /(b)/
+c: /(c+)/
+d: /(d+)/
+--- input: bcccdccddc
+--- tree
+- b
+- - ccc
+  - d
+  - cc
+  - dd
+  - c
+--- wrap
+a:
+- b: b
+- - c: ccc
+  - d: d
+  - c: cc
+  - d: dd
+  - c: c
+
+=== Rule with Separator
+--- grammar
+a: c* % d
+c: /(c+)/
+d: /d+/
+--- input: cccdccddc
+--- tree
+- ccc
+- cc
+- c
+--- wrap
+a:
+- c: ccc
+- c: cc
+- c: c
+
+=== List without Separators
+--- grammar
+a: b c* % d b
+b: /(b)/
+c: /(c+)/
+d: /d+/
+--- input: bb
+--- tree
+- b
+- []
+- b
+--- wrap
+a:
+- b: b
+- []
+- b: b
+
+=== Whitespace Matchers
+--- grammar
+TOP: / ws*( DOT ) - ( DOT* ) -/
+--- input
+  .  
+     ..    
+
+--- tree
+- .
+- ..
+--- wrap
+TOP:
+- .
+- ..
+
+=== Automatically Pass TOP
+--- grammar
+b: /(b)/
+TOP: b c*
+c: /(c)/
+--- input: bcc
+--- tree
+- b
+- - c
+  - c
+--- wrap
+TOP:
+- b: b
+- - c: c
+  - c: c
+
+=== Empty Stars
+--- grammar
+a: ( b* c )+ b*
+b: /(b)/
+c: /(c+)/
+--- input: cc
+--- tree
+- - - []
+    - cc
+- []
+--- wrap
+a:
+- - - []
+    - c: cc
+- []
+
+=== Exact Quantifier
+--- grammar
+a: <b>3
+b: /(b)/
+--- input: bbb
+--- tree
+- b
+- b
+- b
+--- wrap
+a:
+- b: b
+- b: b
+- b: b
+
+=== Quantifier with Separator
+--- grammar
+a: <b>2-4 %% /,/
+b: /(b)/
+--- input: b,b,b,
+--- tree
+- b
+- b
+- b
+--- wrap
+a:
+- b: b
+- b: b
+- b: b
+
+=== Quantifier with Separator, Trailing OK
+--- grammar
+a: <b>2-4 %% /,/
+b: /(b)/
+--- input: b,b,b,
+--- tree
+- b
+- b
+- b
+--- wrap
+a:
+- b: b
+- b: b
+- b: b
+
+=== Quantifier on the Separator
+--- grammar
+a: <b>2-4 %% c*
+b: /(b)/
+c: / COMMA /
+--- input: b,b,,,,bb,
+--- tree
+- b
+- []
+- b
+- []
+- b
+- []
+- b
+--- wrap
+a:
+- b: b
+- []
+- b: b
+- []
+- b: b
+- []
+- b: b
+
+=== Tilde matching
+--- grammar
+a: - b + b+
+b: /(b)/
+c: / COMMA /
+--- input: b  bb
+--- tree
+- b
+- - b
+  - b
+--- wrap
+a:
+- b: b
+- - b: b
+  - b: b
+
+=== False Values
+--- grammar
+a: zero empty undef
+zero: /(b+)/
+empty: /(c+)/
+undef: /(d+)/
+--- input: bbccdd
+--- ast
+- 0
+- ''
+- 
+
+=== Wrap
+--- grammar
+a: b c d
+b: /(b+)/
+c: /(c+)/
+d: /(d+)/
+--- input: bbccdd
+--- wrap
+a:
+- b: bb
+- c: cc
+- d: dd
+
+=== 2 + 1
+--- SKIP
+--- grammar
+a: <b>2 b
+b: /(b)/
+--- input: bbb
+--- ast
+- b
+- b
+- b
+
+=== Separated Group
+--- grammar
+a: (b | c)+ % d
+b: /(b)/
+c: /(c)/
+d: /(d)/
+--- input: bdcdb
+--- ast
+- b
+- d
+- c
+- d
+- b
+
+=== Separator Group
+--- grammar
+a: b+ %% (c | d)
+b: /(b)/
+c: /(c)/
+d: /(d)/
+--- input: bdbcbc
+--- ast
+- b
+- d
+- b
+- c
+- b
+- c
+
