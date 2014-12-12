@@ -1,4 +1,4 @@
-source_testml_dir: ../../pegex-tml
+source_testml_dir: ../ext/pegex-tml
 local_testml_dir: ./testml
 test_file_prefix: testml-
 test_file_template: |

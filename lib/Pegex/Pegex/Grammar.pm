@@ -2,7 +2,7 @@ package Pegex::Pegex::Grammar;
 use Pegex::Base;
 extends 'Pegex::Grammar';
 
-use constant file => '../pegex-pgx/pegex.pgx';
+use constant file => 'ext/pegex-pgx/pegex.pgx';
 
 # sub make_tree {
 #     use Pegex::Bootstrap;
