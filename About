@@ -57,6 +57,7 @@ Repository Layout
 
 This repoository contains the following top level files and directories:
 
+  About       - This file describing the repository. (generated)
   Changes     - Change log file in YAML.
   Meta        - All metadata for the project.
   ReadMe.pod  - Top level ReadMe file for GitHub. (generated)
@@ -64,9 +65,11 @@ This repoository contains the following top level files and directories:
 
   doc/        - Documentation directory.
   ext/        - External dependency repos.
+  ext/        - External dependency repos.
   .git/       - Git repository data.
   lib/        - All the source code libraries (modules).
   note/       - Random note files. To-Do lists, specs, etc.
+  share/      - Shared files for the release package.
 
 Resources
 ---------
