@@ -1,4 +1,9 @@
 ---
+version: 0.59
+date:    Sun Dec 28 14:25:13 PST 2014
+changes:
+- Release with new TestML-0.52
+---
 version: 0.58
 date:    Fri Dec 12 11:10:16 PST 2014
 changes:
