@@ -106,15 +106,4 @@ This section documents the methods that you can include in receiver subclass.
   Hashes are left unchanged. The array is modified in place, but is also the
   return value.
 
-= Author
-
-Ingy döt Net <ingy@cpan.org>
-
-= Copyright and License
-
-copyright 2010-2014. Ingy döt Net.
-
-This program is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.
-
-See http://www.perl.com/perl/misc/Artistic.html
+<<<cpan-tail>>>

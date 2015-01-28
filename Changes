@@ -1,4 +1,11 @@
 ---
+version: 0.60
+date:    Wed Jan 28 10:44:38 PST 2015
+changes:
+- Added EMPTY atom
+- Fix small bug in a helper function. Issue #28. @tadegenban++
+- Update docs and Meta for 2015
+---
 version: 0.59
 date:    Sun Dec 28 14:25:13 PST 2014
 changes:
