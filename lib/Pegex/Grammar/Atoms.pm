@@ -31,6 +31,7 @@ my $atoms = {
     EOL     => '\r?\n',     # Unix/DOS line ending
     DOS     => '\r\n',      # Windows/DOS line ending
     EOS     => '\z',        # End of stream/string/file
+    EMPTY   => '',          # Empty string
 
     # Common character classes
     WORD    => '\w',
