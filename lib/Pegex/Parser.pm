@@ -274,7 +274,7 @@ sub line_column {
     my $buffer = $self->{buffer};
     my $line = @{[substr($$buffer, 0, $position) =~ /(\n)/g]} + 1;
     my $column = $position - rindex($$buffer, "\n", $position);
-    return [$line, $position];
+    return [$line, $column];
 }
 
 # XXX Need to figure out what uses this. (sample.t)
