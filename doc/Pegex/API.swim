@@ -176,7 +176,7 @@ It will rewrite your module to look something like this:
   use constant file => './share/expr.pgx';
   sub make_tree {
     { '+toprule' => 'expr',
-      'PLUS' => { '.rgx' => qr/\G\+/ },
+      'PLUS' => { '.rgx' => qr/\A\+/ },
       'expr' => {
         '.all' => [
           { '.ref' => 'num' },
@@ -184,7 +184,7 @@ It will rewrite your module to look something like this:
           { '.ref' => 'num' }
         ]
       },
-      'num' => { '.rgx' => qr/\G([0-9]+)/ }
+      'num' => { '.rgx' => qr/\A([0-9]+)/ }
     }
   }
   1;
