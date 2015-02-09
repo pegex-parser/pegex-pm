@@ -4,6 +4,7 @@ use Pegex::Base;
 use Pegex::Input;
 use Pegex::Optimizer;
 use Scalar::Util;
+use String::Slice;
 
 has grammar => (required => 1);
 has receiver => ();
@@ -27,8 +28,10 @@ sub BUILD {
 # to start parsing. Set position and farthest below to this value. Allows for
 # sub-parsing. Need to somehow return the finishing position of a subparse.
 # Maybe this all goes in a subparse() method.
+my $slice;
 sub parse {
     my ($self, $input, $start) = @_;
+    $slice = '';
 
     $start =~ s/-/_/g if $start;
 
@@ -160,11 +163,12 @@ sub match_ref {
 }
 
 sub match_rgx {
+    # use re::engine::RE2;
     my ($self, $regexp) = @_;
     my $buffer = $self->{buffer};
 
-    substr($$buffer, $self->{position}) =~ $regexp
-        or return;
+    slice($slice, $$buffer, $self->{position});
+    $slice =~ $regexp or return;
 
     $self->{position} += $+[0];
 
