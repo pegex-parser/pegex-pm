@@ -159,11 +159,15 @@ sub match_ref {
     [ $rule->{action}->($self->{receiver}, @$match) ];
 }
 
+# XXX This is a placeholder for a performance hack.
+# Limiting substr, is important on huge strings.
+my @max = (grep $_, $ENV{PERL_PEGEX_MAX}); # :)
+
 sub match_rgx {
     my ($self, $regexp) = @_;
     my $buffer = $self->{buffer};
 
-    substr($$buffer, $self->{position}) =~ $regexp
+    substr($$buffer, $self->{position}, @max) =~ $regexp
         or return;
 
     $self->{position} += $+[0];
