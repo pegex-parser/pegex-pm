@@ -4,6 +4,7 @@ use Pegex::Base;
 use Pegex::Input;
 use Pegex::Optimizer;
 use Scalar::Util;
+
 use String::Slice;
 
 has grammar => (required => 1);
@@ -31,7 +32,7 @@ sub BUILD {
 my $slice;
 sub parse {
     my ($self, $input, $start) = @_;
-    $slice = '';
+    $slice = do {my $s = ''; \$s};
 
     $start =~ s/-/_/g if $start;
 
@@ -167,8 +168,8 @@ sub match_rgx {
     my ($self, $regexp) = @_;
     my $buffer = $self->{buffer};
 
-    slice($slice, $$buffer, $self->{position});
-    $slice =~ $regexp or return;
+    slice($$slice, $$buffer, $self->{position}) or return;
+    $$slice =~ $regexp or return;
 
     $self->{position} += $+[0];
 
