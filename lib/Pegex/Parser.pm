@@ -168,7 +168,7 @@ sub match_rgx {
     my ($self, $regexp) = @_;
     my $buffer = $self->{buffer};
 
-    slice($$slice, $$buffer, $self->{position}) or return;
+    slice($$slice, $$buffer, $self->{position});
     $$slice =~ $regexp or return;
 
     $self->{position} += $+[0];
