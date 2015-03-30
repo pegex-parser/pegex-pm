@@ -120,8 +120,6 @@ sub match_next {
         else {
             $match = [$match]
         }
-        $self->{farthest} = $position
-            if ($self->{position} = $position) > $self->{farthest};
     }
     my $result = ($count >= $min and (not $max or $count <= $max))
         ^ ($assertion == -1);
