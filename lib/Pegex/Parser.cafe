@@ -3,21 +3,29 @@ This is the Pegex::Parser ported to CafeScript. It is currently being used to
 spec out what is needed in CafeScript.
 ###
 
-# CafeScript library meta section
+
+# CafeScript library metadata section (using CafeScript v0.0.1 syntax)
 Cafe 0.0.1
+  # This source defines a "Library" called Pegex::Parser.
   Pegex::Parser 0.0.1
   require
     Pegex::Input
     Pegex::Optimizer
+  export
+    Pegex::Constant
+    Pegex::Parser
 
-# Define a class for constants.
+
+# Define a class for constants:
 Class Pegex::Constant
   Null = Object()
   Dummy = Object()
 
+
+# Main Parser class:
 Class Pegex::Parser
 
-Bool Debug = False
+debug = False
 
 # The class constructor:
 \@ @grammar, @receiver, ...
@@ -31,7 +39,7 @@ Bool Debug = False
   \@throw_on_error = True
 
 # Define the `parse()` method:
-\parse input, start
+\parse Str input, Str start
   start &= start .= gsub '-' '_'
 
   @position = 0
@@ -95,7 +103,7 @@ Bool Debug = False
   (rule method kind min max assertion) =
     next:<rule method kind +min +max +asr>
 
-  (position match count) = (@position, [], 0)
+  (position match count) = (@position, [] 0)
 
   while return = @.(method)(rule, next)
     position = @position unless assertion
