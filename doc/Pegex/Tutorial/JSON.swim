@@ -7,7 +7,7 @@ code lives on github here: [https://github.com/ingydotnet/pegex-json-pm].
 = Test First
 
 Have a look at
-[https://github.com/ingydotnet/pegex-json-pm/blob/master/t/test.t].  This
+[https://github.com/ingydotnet/pegex-json-pm/blob/master/test/test.t].  This
 simple test has a bunch of small pieces of JSON and their YAML equivalents. It
 asserts that when the JSON is decoded, it will match the YAML.
 
