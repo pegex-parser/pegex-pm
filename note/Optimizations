@@ -5,34 +5,24 @@ When a grammar is compiled, it gets turned into a tree of information defining
 the grammar. This consists of rules, regexes, groupings, quantifiers and other
 such things.
 
-== Combine Adjacent Regexes
+== Possible Optimizations
 
-Two plain regexes can be combined into one. The issue is to determine when it
-is appropriate, and what phase to do it in.
+- re-concat :: Concatenate resolved parts of regexes
+- re-combine :: Resolve refs to sub-regexps
+- re-reduce :: Combine non-special, adjacent rgx objects
+- resolve :: Turn grammar psuedonyms into real class names to use
+- extend :: Pull in rules from another grammar unless defined locally
+- include :: Pull in rules from another grammar (need to figure out when)
+- max-min :: Set all max, min and asr values explicitly
+- prune :: Remove non-referenced rules
+- finalize :: Apply all needed optimizations before using a grammar
+- compile :: Compile the text of an action rule into native code and link in
+- bind-parser :: Look up parser methods and link them into the grammar
+- bind-receiver :: Look up receiver methods and link them into the grammar
+- bind-trace :: Wrap parser methods with trace logic
 
-Plain regexes can be joined immediately:
+== Ideas
 
-    'foo'   / ( bar ) /
-    / 'foo' ( <bar> ) /
+- Sub grammars
 
-== Binding a receiver to a grammar
-
-Before a parse happens, 
-
-
-
-
-== Eliminating Separator Code
-
-    a % b           a
-    a %% b          a b?
-    a* % b          (a (b a)*)?
-    a* %% b         (a (b a)* b?)?
-    a+ % b          a (b a)*
-    a+ %% b         a (b a)* b?
-    a3 % b          a (b a)2
-    a3 %% b         a (b a)2 b?
-    a3+ % b         a (b a)2+
-    a3+ %% b        a (b a)2+ b?
-    a3-7 % b        a (b a)2-6
-    a3-7 %% b       a (b a)2-6 b?
+  * Start a new grammar with a `%grammar` statement

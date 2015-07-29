@@ -1,12 +1,42 @@
-indent: / SPACE{$indent-stack.last} ( SPACE+ ) (= NS) /
-        { indent-stack.push($1.length) }
+== Inline Action Overview
 
+Inline actions can be put into the grammar. Any action language can be used,
+but the default is a simple backend agnostic language called Shorty. To use
+another language syntax you need to specify that in the `actlang` meta tag.
 
+The source code for an action is placed between curly brackets and extracted as
+one unit. To accomplish this the following simple rules are applied:
 
+* If the `{` is followed by a newline, then the '}' must be on a line by itself.
+  * Leading whitespace will be removed until one line is left justified.
+* Try `{{ ... }}`
+* Try `{ ... }`
 
+Action functions will be tied to the rule part directly before them. When that
+part matches, they will be called as native functions with 2 arguments passed
+in: the parser object, and the current result set. The function returns a
+single value, which becomes the new result set.
 
-{
-    foo = $1;
-    bar = $2.upper;
-    baz = 'xyz' + $bar;
-}
+== Shorty Notes
+
+* Assignment `a = 0; b = ''; c = []`
+* Variable types: Str Num Arr
+* Implicit Typing
+
+    { x = $1 }
+    { s.push $1; }
+    { x = array(@_) }
+    { s[] += @_:0:1 }
+    { s--; s.last }
+    { s.pop; }
+
+== Examples
+
+    indent: / SPACE{$indent-stack.last} ( SPACE+ ) (= NS) /
+            { indent-stack.push($1.length) }
+
+    {
+        foo = $1;
+        bar = $2.upper;
+        baz = 'xyz' + $bar;
+    }
