@@ -1,5 +1,6 @@
 package Pegex::Parser;
 use Pegex::Base;
+no warnings qw( recursion );
 
 use Pegex::Input;
 use Pegex::Optimizer;
@@ -13,6 +14,10 @@ has debug => (
     defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
     0
 );
+
+has recursion_soft_limit => 100;
+has recursion_count      => 0;
+
 sub BUILD {
     my ($self) = @_;
     $self->{throw_on_error} ||= 1;
@@ -98,6 +103,14 @@ sub parse {
 sub match_next {
     my ($self, $next) = @_;
 
+    $self->recursion_count( $self->recursion_count + 1 );
+
+    warn ( sprintf
+        'Deep recursion (%d levels) on Pegex::Parser::match_next',
+        $self->recursion_count
+    ) if $self->recursion_soft_limit
+      && 0 == ( $self->recursion_count % $self->recursion_soft_limit );
+
     my ($rule, $method, $kind, $min, $max, $assertion) =
         @{$next}{'rule', 'method', 'kind', '+min', '+max', '+asr'};
 
@@ -127,6 +140,8 @@ sub match_next {
         $self->{farthest} = $position
             if ($self->{position} = $position) > $self->{farthest};
     }
+
+    $self->recursion_count( $self->recursion_count - 1 );
 
     ($result ? $next->{'-skip'} ? [] : $match : 0);
 }
