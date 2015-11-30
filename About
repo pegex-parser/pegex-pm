@@ -65,7 +65,6 @@ This repoository contains the following top level files and directories:
 
   doc/        - Documentation directory.
   ext/        - External dependency repos.
-  ext/        - External dependency repos.
   .git/       - Git repository data.
   lib/        - All the source code libraries (modules).
   note/       - Random note files. To-Do lists, specs, etc.
