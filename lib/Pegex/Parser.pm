@@ -42,6 +42,8 @@ sub parse {
     $self->{input}->open
         unless $self->{input}{_is_open};
     $self->{buffer} = $self->{input}->read;
+    $self->{last_line_pos} = 0;
+    $self->{last_line} = 1;
 
     die "No 'grammar'. Can't parse"
         unless $self->{grammar};
@@ -242,7 +244,7 @@ sub format_error {
     my $position = $self->{farthest};
     my $real_pos = $self->{position};
 
-    my $line = @{[substr($$buffer, 0, $position) =~ /(\n)/g]} + 1;
+    my $line = $self->line($position);
     my $column = $position - rindex($$buffer, "\n", $position);
 
     my $pretext = substr(
@@ -270,9 +272,30 @@ sub line_column {
     my ($self, $position) = @_;
     $position ||= $self->{position};
     my $buffer = $self->{buffer};
-    my $line = @{[substr($$buffer, 0, $position) =~ /(\n)/g]} + 1;
+    my $line = $self->line($position);
     my $column = $position - rindex($$buffer, "\n", $position);
     return [$line, $column];
+}
+
+sub line {
+    my ($self, $position) = @_;
+    $position ||= $self->{position};
+    my $buffer = $self->{buffer};
+    my $last_line = $self->{last_line};
+    my $last_line_pos = $self->{last_line_pos};
+    my $len = $position - $last_line_pos;
+    if ($len == 0) {
+        return $last_line;
+    }
+    my $line;
+    if ($len < 0) {
+        $line = $last_line - scalar substr($$buffer, $position, -$len) =~ tr/\n//;
+    } else {
+        $line = $last_line + scalar substr($$buffer, $last_line_pos, $len) =~ tr/\n//;
+    }
+    $self->{last_line} = $line;
+    $self->{last_line_pos} = $position;
+    return $line;
 }
 
 # XXX Need to figure out what uses this. (sample.t)
