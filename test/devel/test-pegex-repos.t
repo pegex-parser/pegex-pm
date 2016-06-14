@@ -20,7 +20,7 @@ my $repos = [
     'pegex-vcard-pm',
     'testml-pm',
     'vic',
-    'yaml-pegex-pm',
+    # 'yaml-pegex-pm',
 
     ### Pegex Grammars
 

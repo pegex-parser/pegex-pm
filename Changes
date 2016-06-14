@@ -1,4 +1,10 @@
 ---
+version: 0.61
+date:    Mon Jun 13 18:10:24 PDT 2016
+changes:
+- Performance improvements by @agentzh++
+- See PR/52
+---
 version: 0.60
 date:    Wed Jan 28 10:44:38 PST 2015
 changes:

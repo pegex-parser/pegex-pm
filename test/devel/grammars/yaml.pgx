@@ -95,11 +95,10 @@ block-mapping:
 block-mapping-pair:
   block-ondent
   block-key
-  block-mapping-separator
   block-value
 
 # block key scalar, has more limitations than a block value scalar.
-block-key: / block-scalar (= block-mapping-separator ) /
+block-key: / block-scalar block-mapping-separator /
 
 # A block value can be any block or flow node:
 block-value:
