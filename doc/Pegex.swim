@@ -85,6 +85,11 @@ structure of the parsed data.
 
 See [Pegex::API] for more details.
 
+= Pegex Debugging
+
+Pegex (Pegex::Parser) has many easy to use methods of debugging. See the
+"Debugging" section of [Pegex::Parser] for details.
+
 = See Also
 
 * [Pegex::Overview]
@@ -92,6 +97,7 @@ See [Pegex::API] for more details.
 * [Pegex::Syntax]
 * [Pegex::Tutorial]
 * [Pegex::Resources]
+* [Pegex::Parser]
 * http://github.com/ingydotnet/pegex-pm
 * [irc://freenode.net#pegex]
 

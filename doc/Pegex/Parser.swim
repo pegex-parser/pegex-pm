@@ -31,6 +31,63 @@ provided as the final result. If the grammar fails to match the input along
 the way, the parse method will throw an error with much information about the
 failure.
 
+= Attributes
+
+The Pegex::Parser `new` object constructor takes these attributes:
+
+- `grammar`
+
+  A Pegex::Grammar object. Required.
+
+- `receiver`
+
+  A Pegex::Receiver object.
+
+- `debug`
+
+  Boolean. Turn on debugging. Default false.
+
+- `recursion_limit`
+
+  Integer. Recursion level to terminate on. Default 0 (off).
+
+- `recursion_warn_limit`
+
+  Integer. Recursion level to warn on. Default 0 (off).
+
+- `iteration_limit`
+
+  Integer. Number of matches to try before terminating. Default 0 (off).
+
+= Debugging
+
+Pegex::Parser currently has 4 settings that are useful for debugging. These
+can be set as Pegex::Parser object attributes, global variables or environment
+variables:
+
+- `debug` or `$Pegex::Parser::Debug` or `$ENV{PERL_PEGEX_DEBUG}`
+
+  If set to a true value, it enables very useful trace messages for every
+  internal match operation.
+
+- `recursion_limit` or `Pegex::Parser::RecursionLimit` or `$ENV{PERL_PEGEX_RECURSION_LIMIT}`
+
+  If set to a number greater than 0, Pegex::Parser will terminate after that
+  recursion level number is reached.
+
+- `recursion_warn_limit` or `Pegex::Parser::RecursionWarnLimit` or `$ENV{PERL_PEGEX_RECURSION_WARN_LIMIT}`
+
+  If set to a number greater than 0, Pegex::Parser will issue a warning every
+  time that recursion level number is reached.
+
+- `iteration_limit` or `Pegex::Parser::IterationLimit` or `$ENV{PERL_PEGEX_ITERATION_LIMIT}`
+
+  If set to a number greater than 0, Pegex::Parser will terminate after that
+  number of matches has been attempted.
+
+Note: Using these variables incurs a slight performance hit, but if you don't
+use them all the debugging code is optimized away.
+
 = See Also
 
 * [Pegex::Grammar]

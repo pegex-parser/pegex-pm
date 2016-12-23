@@ -1,4 +1,9 @@
 ---
+version: 0.61_002
+date:    
+changes:
+- Apply PR/46 by @pdl++ (refactored)
+---
 version: 0.61_001
 date:    Tue Jan  3 22:44:13 PST 2017
 changes:

@@ -100,6 +100,11 @@ structure of the parsed data.
 
 See L<Pegex::API> for more details.
 
+=head1 Pegex Debugging
+
+Pegex (Pegex::Parser) has many easy to use methods of debugging. See the
+"Debugging" section of L<Pegex::Parser> for details.
+
 =head1 See Also
 
 =over
@@ -113,6 +118,8 @@ See L<Pegex::API> for more details.
 =item * L<Pegex::Tutorial>
 
 =item * L<Pegex::Resources>
+
+=item * L<Pegex::Parser>
 
 =item * L<http://github.com/ingydotnet/pegex-pm>
 
