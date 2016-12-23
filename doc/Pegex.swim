@@ -85,6 +85,33 @@ structure of the parsed data.
 
 See [Pegex::API] for more details.
 
+= Debugging
+
+Pegex has some environment variables that are useful for debugging:
+
+- `PERL_PEGEX_DEBUG`
+
+  If set to a true value, it enables very useful trace messages for every
+  internal match operation.
+
+- `PERL_PEGEX_RECURSION_LIMIT`
+
+  If set to a number greater than 0, Pegex::Parser will terminate after that
+  recursion level number is reached.
+
+- `PERL_PEGEX_RECURSION_WARN_LIMIT`
+
+  If set to a number greater than 0, Pegex::Parser will issue a warning every
+  time that recursion level number is reached.
+
+- `PERL_PEGEX_ITERATION_LIMIT`
+
+  If set to a number greater than 0, Pegex::Parser will terminate after that
+  number of matches has been attempted.
+
+Note: Using these variables incurs a slight performance hit, but if you don't
+use them all the debugging code is optimized away.
+
 = See Also
 
 * [Pegex::Overview]

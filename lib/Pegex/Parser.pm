@@ -9,18 +9,25 @@ use Scalar::Util;
 has grammar => (required => 1);
 has receiver => ();
 has input => ();
-has debug => (
-    exists($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
-    defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug :
-    0
-);
+has debug => ();
+has recursion_count => 0;
+has iteration_count => 0;
+has warn_limit => ();
+has die_limit => ();
+has iteration_limit => ();
 
-has recursion_soft_limit => 100;
-has recursion_count      => 0;
 
 sub BUILD {
     my ($self) = @_;
     $self->{throw_on_error} ||= 1;
+    $self->{debug} = $ENV{PERL_PEGEX_DEBUG} //
+        $Pegex::Parser::Debug // 0;
+    $self->{iteration_limit} = $ENV{PERL_PEGEX_ITERATION_LIMIT} //
+        $Pegex::Parser::IterationLimit // 0;
+    $self->{warn_limit} = $ENV{PERL_PEGEX_RECURSION_WARN_LIMIT} //
+        $Pegex::Parser::WarnLimit // 0;
+    $self->{die_limit} = $ENV{PERL_PEGEX_RECURSION_LIMIT} //
+        $Pegex::Parser::DieLimit // 0;
     # $self->{rule} = undef;
     # $self->{parent} = undef;
     # $self->{error} = undef;
@@ -79,6 +86,17 @@ sub parse {
         $self->{receiver}->initial();
     }
 
+    local *match_next;
+    {
+        no warnings 'redefine';
+        *match_next = (
+            $self->{warn_limit} or
+            $self->{die_limit} or
+            $self->{iteration_limit}
+         ) ? \&match_next_with_limit :
+             \&match_next_normal;
+    }
+
     my $match = $self->debug ? do {
         my $method = $optimizer->make_trace_wrapper(\&match_ref);
         $self->$method($start_rule_ref, {'+asr' => 0});
@@ -100,16 +118,8 @@ sub parse {
     $match->[0];
 }
 
-sub match_next {
+sub match_next_normal {
     my ($self, $next) = @_;
-
-    $self->recursion_count( $self->recursion_count + 1 );
-
-    warn ( sprintf
-        'Deep recursion (%d levels) on Pegex::Parser::match_next',
-        $self->recursion_count
-    ) if $self->recursion_soft_limit
-      && 0 == ( $self->recursion_count % $self->recursion_soft_limit );
 
     my ($rule, $method, $kind, $min, $max, $assertion) =
         @{$next}{'rule', 'method', 'kind', '+min', '+max', '+asr'};
@@ -141,9 +151,34 @@ sub match_next {
             if ($self->{position} = $position) > $self->{farthest};
     }
 
-    $self->recursion_count( $self->recursion_count - 1 );
-
     ($result ? $next->{'-skip'} ? [] : $match : 0);
+}
+
+sub match_next_with_limit {
+    my ($self, $next) = @_;
+
+    sub limit_msg {
+        "Deep recursion ($_[0] levels) on Pegex::Parser::match_next"
+    }
+
+    $self->{recursion_count}++;
+    $self->{iteration_count}++;
+
+    if ($self->{die_limit} and $self->{recursion_count} >= $self->{die_limit}) {
+        die limit_msg $self->{recursion_count};
+    }
+    elsif ($self->{warn_limit} and not ($self->{recursion_count} % $self->{warn_limit})) {
+        warn limit_msg $self->{recursion_count};
+    }
+    elsif ($self->{iteration_limit} and $self->{iteration_count} > $self->{iteration_limit}) {
+        die "Pegex iteration limit of $self->{iteration_limit} reached.";
+    }
+
+    my $result = $self->match_next_normal($next);
+
+    $self->{recursion_count}--;
+
+    return $result;
 }
 
 sub match_rule {

@@ -1,0 +1,239 @@
+ prog: - statement*
+
+ statement:
+   | assignment terminator
+
+ terminator: /-
+   ';'
+ -/
+
+ assignment:
+   variable
+   /- ':=' -/
+   union-query
+
+ integer: /(
+   DASH? DIGIT+ \b
+ )/
+
+ union-query:
+   | union-all-relations
+   | union-select-query
+
+ union-select-query:
+   select-query
+
+ union-all-relations:
+   relation+ % /- \b 'union' + 'all' \b -/
+
+ variable:
+   | array-variable
+   | scalar-variable
+
+ identifier: /
+   \b (! 'select' \b ) ( ALPHA WORD* )
+ /
+
+ scalar-variable:
+   '$'
+   variable-name
+   trait*
+
+ trait:
+   /- ':local' -/
+
+ array-variable:
+   '@'
+   variable-name
+   trait*
+
+ variable-name:
+   identifier
+
+ table:
+   <symbol>1-3 % '.'
+
+ location:
+   | scalar-variable
+
+ relation:
+   | array-relation
+   | aliased-union-query
+   | function-relation
+   | aliased-table
+
+ aliased-table:
+   table alias?
+
+ select-query:
+   /- \b 'select' \b -/
+   select-arg+ % comma
+   from-clause?
+   where-clause?
+   group-by-clause?
+
+ symbol:
+   | scalar-variable
+   | identifier
+
+ array-relation:
+   array-variable alias?
+
+ aliased-union-query:
+   / '(' -/
+   union-query
+   /- ')' /
+   alias?
+
+ function-relation:
+   function-call
+   alias?
+
+ alias:
+   | as identifier
+   | as scalar-variable
+
+ as:
+   /- \b 'as' \b -/
+
+ select-arg:
+   | aliased-arithmetic-expression
+   | match-all
+
+ aliased-arithmetic-expression:
+  arithmetic-expression alias?
+
+ match-all:
+   '*'
+
+ from-clause:
+   /- \b 'from' \b -/
+   data-source
+
+ where-clause:
+   /- \b 'where' \b -/
+   or-expression
+
+ group-by-clause:
+   /- \b 'group' + 'by' \b -/
+   column+ % comma
+
+ unsigned-integer: /(
+   DIGIT+
+ )/
+
+ function-call:
+   function
+   /- '(' -/
+   select-arg* % comma
+   /- ')' /
+
+ arithmetic-expression:
+   term+ % add-op
+
+ add-op: /-
+   ( [-+] )
+ -/
+
+ term:
+   factor+ % mul-op
+
+ mul-op: /-
+   ( ['*/'] )
+ -/
+
+ factor:
+   | /- '(' -/
+     arithmetic-expression
+     /- ')' -/
+   | atom
+
+ atom:
+   | value
+   | function-call
+   | qualified-column
+   | scalar-variable
+   | column
+
+ value:
+   number
+
+ number:
+   | real
+   | integer
+
+ real: /(
+   DASH?
+   DIGIT+
+   DOT
+   DIGIT+
+   \b
+ )/
+
+ data-source:
+   | explicit-join-query
+   | cross-join-query
+   | union-query
+   | relation
+
+ explicit-join-query:
+   relation
+   /- 'join' +/
+   relation
+   /- 'on' -/
+   and-expression
+
+ cross-join-query:
+   <relation>2+ % comma
+
+ or-expression:
+   and-expression+ % /+ 'or' +/
+
+ and-expression:
+   relational-expression+ % /+ 'and' +/
+
+ relational-expression:
+   | between-condition
+   | binary-relational-condition
+
+ between-condition:
+   arithmetic-expression
+   /- \b 'between' \b -/
+   arithmetic-expression
+   /- \b 'and' \b -/
+   arithmetic-expression
+
+ binary-relational-condition:
+   arithmetic-expression
+   comparison-op
+   arithmetic-expression
+
+ comparison-op: /-
+   ( '>='
+   | '='
+   )
+ -/
+
+ qualified-column:
+   <symbol>2-3 % '.'
+
+ column:
+   <symbol>1-3 % '.'
+
+ function:
+   <symbol>1-2 % '.'
+
+ ws: /
+   (: BLANK
+   | EOL
+   )
+ /
+
+ line: /
+   ANY* EOL?
+ /
+
+ comma: /-
+   ','
+ -/
+

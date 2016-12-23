@@ -25,6 +25,12 @@ sub make_text {
 
 sub make_tree {
     my ($self) = @_;
+    local (
+        $ENV{PERL_PEGEX_DEBUG},
+        $ENV{PERL_PEGEX_ITERATION_LIMIT},
+        $ENV{PERL_PEGEX_RECURSION_LIMIT},
+        $ENV{PERL_PEGEX_RECURSION_WARN_LIMIT},
+    );
     my $text = $self->text
         or die "Can't create a '" . ref($self) .
             "' grammar. No tree or text or file.";

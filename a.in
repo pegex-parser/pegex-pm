@@ -1,0 +1,17 @@
+ @result :=
+     select finclick, finprice, coll_num, foo_amt, foo_num, avg_finprice,
+         efficiency, roc
+     from (
+         select $group,
+             sum(finclick) as finclick, sum(finprice) as finprice,
+             sum(item_coll_num) + sum(shop_coll_num) as coll_num,
+             sum(foo_direct_amt) + sum(foo_indirect_amt) as foo_amt,
+             sum(foo_direct_num) + sum(foo_indirect_num) as foo_num,
+             ifnull(round(sum(finprice) / sum(finclick),4), 0) as avg_finprice,
+             ifnull(round(sum(finclick) * sum(finclick) / sum(finprice), 4), 0) as efficiency,
+             ifnull(round((sum(foo_direct_num) + sum(foo_indirect_num)) / sum(finclick), 4), 0) as roc
+         from A as a
+         where is_shop = $is_shop and campaign_id = $campaign_id
+         group by $group
+     ) as a;
+
