@@ -20,13 +20,13 @@ has iteration_limit => ();
 sub BUILD {
     my ($self) = @_;
     $self->{throw_on_error} ||= 1;
-    $self->{debug} = $ENV{PERL_PEGEX_DEBUG} //
+    $self->{debug} //= $ENV{PERL_PEGEX_DEBUG} //
         $Pegex::Parser::Debug // 0;
-    $self->{iteration_limit} = $ENV{PERL_PEGEX_ITERATION_LIMIT} //
+    $self->{iteration_limit} //= $ENV{PERL_PEGEX_ITERATION_LIMIT} //
         $Pegex::Parser::IterationLimit // 0;
-    $self->{warn_limit} = $ENV{PERL_PEGEX_RECURSION_WARN_LIMIT} //
+    $self->{warn_limit} //= $ENV{PERL_PEGEX_RECURSION_WARN_LIMIT} //
         $Pegex::Parser::WarnLimit // 0;
-    $self->{die_limit} = $ENV{PERL_PEGEX_RECURSION_LIMIT} //
+    $self->{die_limit} //= $ENV{PERL_PEGEX_RECURSION_LIMIT} //
         $Pegex::Parser::DieLimit // 0;
     # $self->{rule} = undef;
     # $self->{parent} = undef;
