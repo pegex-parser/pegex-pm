@@ -50,9 +50,6 @@ sub parse {
     $self->{last_line_pos} = 0;
     $self->{last_line} = 1;
 
-    die "No 'grammar'. Can't parse"
-        unless $self->{grammar};
-
     $self->{grammar}{tree} ||= $self->{grammar}->make_tree;
 
     my $start_rule_ref = $start ||
