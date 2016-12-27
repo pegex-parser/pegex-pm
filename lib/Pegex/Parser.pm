@@ -2,7 +2,6 @@ package Pegex::Parser;
 use Pegex::Base;
 
 use Pegex::Input;
-use Pegex::Optimizer;
 use Scalar::Util;
 
 has grammar => (required => 1);
@@ -58,7 +57,7 @@ sub parse {
     die "No 'receiver'. Can't parse"
         unless $self->{receiver};
 
-    my $optimizer = Pegex::Optimizer->new(
+    my $optimizer = Pegex::Compiler->new(
         parser => $self,
         grammar => $self->{grammar},
         receiver => $self->{receiver},
