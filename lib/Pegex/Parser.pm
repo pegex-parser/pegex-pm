@@ -36,12 +36,6 @@ sub BUILD {
     $self->{iteration_limit} //=
         $ENV{PERL_PEGEX_ITERATION_LIMIT} //
         $Pegex::Parser::IterationLimit // 0;
-
-    # $self->{rule} = undef;
-    # $self->{parent} = undef;
-    # $self->{error} = undef;
-    # $self->{position} = undef;
-    # $self->{farthest} = undef;
 }
 
 # XXX Add an optional $position argument. Default to 0. This is the position
