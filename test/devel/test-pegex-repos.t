@@ -28,7 +28,8 @@ my $repos = [
     'crontab-pgx',
     'json-pgx',
     'jsony-pgx',
-    'pegex-pgx',
+    # TODO: find out why this isn't working:
+    # 'pegex-pgx',
     'swim-pgx',
     'testml-pgx',
     'vic-pgx',

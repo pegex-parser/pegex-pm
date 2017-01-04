@@ -78,11 +78,14 @@ block-node:
 # A block sequence is an indented set of nodes each starting with a
 # dash+space:
 block-sequence:
+  block-indent
   block-sequence-entry+
+  block-undent
 
-# TODO This needs to support and block-node:
 block-sequence-entry:
-  / DASH SPACE+ block-scalar EOL /
+  block-ondent
+  / DASH SPACE+ /
+  block-value
 
 # A block mapping is an indented set of key / value pairs separated by
 # colon+space:

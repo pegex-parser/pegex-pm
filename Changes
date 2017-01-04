@@ -1,4 +1,9 @@
 ---
+version: 0.61_001
+date:    Tue Jan  3 22:44:13 PST 2017
+changes:
+- Support Perl regex look-behind assertions
+---
 version: 0.61
 date:    Mon Jun 13 18:10:24 PDT 2016
 changes:
