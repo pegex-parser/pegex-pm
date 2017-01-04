@@ -1,3 +1,9 @@
+# Release 0.62
+- Review docs
+- Fix calculator examples
+- Fix broken tests
+- Add tests for new limit options
+
 # new-syntax
 - Support new modifier forms
   - (rule)2-4
