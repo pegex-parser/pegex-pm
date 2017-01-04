@@ -11,7 +11,7 @@ use constant file => 'ext/pegex-pgx/pegex.pgx';
 #     Pegex::Bootstrap->new->compile($grammar)->tree;
 # }
 
-sub text {   # Generated/Inlined by Pegex::Grammar (0.58)
+sub text {   # Generated/Inlined by Pegex::Grammar (0.61)
 <<'...';
 # This is the Pegex grammar for Pegex grammars!
 
@@ -93,7 +93,13 @@ regex-rule-reference:
     (! BLANK* ':' )
   /
 
-regex-raw: / ([^ WS SLASH TICK LANGLE ]+) /
+regex-raw:
+  /
+    (
+      '(?'? '<' |
+      (?:[^ WS SLASH TICK LANGLE ])+
+    )
+  /
 
 bracketed-group:
     / ( group-modifier? ) '(' -/
@@ -257,7 +263,7 @@ ERROR-separation:
 ...
 }
 
-sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.58)
+sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
   {
     '+grammar' => 'pegex',
     '+include' => 'pegex-atoms',
@@ -639,7 +645,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.58)
       '.rgx' => qr/\G'([^']*)'/
     },
     'regex_raw' => {
-      '.rgx' => qr/\G([^\s\/'<]+)/
+      '.rgx' => qr/\G(\(\??<|(?:[^\s\/'<])+)/
     },
     'regex_rule_reference' => {
       '.rgx' => qr/\G(?:(?:\s|\#.*(?:\n|\z))+((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))\>))(?![\ \t]*:)/

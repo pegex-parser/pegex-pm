@@ -168,7 +168,8 @@ sub got_regular_expression {
             $_;
         }
     } @{$got->[0]};
-    $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
+    # $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
+    $regex =~ s{\(([ism]?\:|\=|\!|<[=!])}{(?$1}g;
     return +{ '.rgx' => $regex };
 }
 

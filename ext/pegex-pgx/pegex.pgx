@@ -78,7 +78,13 @@ regex-rule-reference:
     (! BLANK* ':' )
   /
 
-regex-raw: / ([^ WS SLASH TICK LANGLE ]+) /
+regex-raw:
+  /
+    (
+      '(?'? '<' |
+      (?:[^ WS SLASH TICK LANGLE ])+
+    )
+  /
 
 bracketed-group:
     / ( group-modifier? ) '(' -/
