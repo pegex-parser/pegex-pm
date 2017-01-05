@@ -1,0 +1,7 @@
+stream: record*
+
+record: length content
+
+length: /(..)/ { int as $len }
+
+content: /(.{$len})/
