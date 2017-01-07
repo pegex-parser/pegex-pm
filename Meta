@@ -1,7 +1,7 @@
 =meta: 0.0.2
 
 name: Pegex
-version: 0.61_002
+version: 0.61_003
 abstract: Acmeist PEG Parser Framework
 homepage: http://pegex.org
 language: perl
@@ -22,7 +22,7 @@ devel:
   irc: irc.freenode.net#pegex
 
 requires:
-  perl: 5.8.1
+  perl: 5.10.0
 
 test:
   requires:

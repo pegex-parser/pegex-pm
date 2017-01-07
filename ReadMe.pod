@@ -12,7 +12,7 @@ Pegex - Acmeist PEG Parser Framework
 
 =head1 Version
 
-This document describes L<Pegex> version B<0.61_002>.
+This document describes L<Pegex> version B<0.61_003>.
 
 =head1 Synopsis
 
