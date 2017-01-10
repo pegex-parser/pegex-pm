@@ -14,6 +14,8 @@ has recursion_count => 0;
 has iteration_count => 0;
 
 has debug => ();
+has debug_indent => ();
+has debug_color => ();
 has recursion_limit => ();
 has recursion_warn_limit => ();
 has iteration_limit => ();
@@ -24,9 +26,12 @@ sub BUILD {
 
     $self->{throw_on_error} ||= 1;
 
-    $self->{debug} //=
-        $ENV{PERL_PEGEX_DEBUG} //
-        $Pegex::Parser::Debug // 0;
+    $self->{debug_indent} //=
+        $ENV{PERL_PEGEX_DEBUG_INDENT} //
+        $Pegex::Parser::DebugIndent // 1;
+    $self->{debug_color} //=
+        $ENV{PERL_PEGEX_DEBUG_COLOR} //
+        $Pegex::Parser::DebugColor // 0;
     $self->{recursion_limit} //=
         $ENV{PERL_PEGEX_RECURSION_LIMIT} //
         $Pegex::Parser::RecursionLimit // 0;
@@ -273,7 +278,18 @@ sub trace {
     my $indent = ($action =~ /^try_/) ? 1 : 0;
     $self->{indent} ||= 0;
     $self->{indent}-- unless $indent;
-    print STDERR ' ' x $self->{indent};
+    if ($self->{debug_color} and -t STDERR) {
+        require Term::ANSIColor;
+        if ($action =~ m/^got/) {
+            my $color = "green";
+            $action = Term::ANSIColor::colored([$color], $action);
+        }
+        elsif ($action =~ m/^not/) {
+            my $color = "red";
+            $action = Term::ANSIColor::colored([$color], $action);
+        }
+    }
+    print STDERR ' ' x ($self->{indent} * $self->{debug_indent});
     $self->{indent}++ if $indent;
     my $snippet = substr(${$self->{buffer}}, $self->{position});
     $snippet = substr($snippet, 0, 30) . "..."
