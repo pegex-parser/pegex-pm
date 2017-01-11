@@ -85,6 +85,22 @@ variables:
   If set to a number greater than 0, Pegex::Parser will terminate after that
   number of matches has been attempted.
 
+- `debug_indent` or `$Pegex::Parser::DebugIndent` or `$ENV{PERL_PEGEX_DEBUG_INDENT}`
+
+  Tells the parser how many spaces should be used for indenting debugging
+  output. Default is 1.
+
+- `debug_color` or `$Pegex::Parser::DebugColor` or `$ENV{PERL_PEGEX_DEBUG_COLOR}`
+
+  If set to `auto` or 1, it will color `got` and `not` events in the debugging
+  output (green and red by default). It requires [Term::ANSIColor].
+
+  You can configure the used colors by appending them like this:
+
+    PERL_PEGEX_DEBUG_COLOR="auto,cyan bold,black on_yellow"
+
+  For available colors, see [Term::ANSIColor]
+
 Note: Using these variables incurs a slight performance hit, but if you don't
 use them all the debugging code is optimized away.
 

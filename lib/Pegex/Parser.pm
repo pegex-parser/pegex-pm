@@ -29,6 +29,11 @@ sub BUILD {
     $self->{debug_indent} //=
         $ENV{PERL_PEGEX_DEBUG_INDENT} //
         $Pegex::Parser::DebugIndent // 1;
+    $self->{debug_indent} = 1 if (
+        not length $self->{debug_indent}
+        or $self->{debug_indent} =~ tr/0-9//c
+        or $self->{debug_indent} < 0
+    );
     $self->{debug_color} //=
         $ENV{PERL_PEGEX_DEBUG_COLOR} //
         $Pegex::Parser::DebugColor // 0;
@@ -278,13 +283,23 @@ sub trace {
     my $indent = ($action =~ /^try_/) ? 1 : 0;
     $self->{indent} ||= 0;
     $self->{indent}-- unless $indent;
-    if ($self->{debug_color} and -t STDERR) {
-        my $colored = eval { require Term::ANSIColor };
-        if ($colored and $action =~ m/^(got|not)/) {
-            my $color = { got => ['green'], not => ['red'] }->{ $1 };
-            $action = Term::ANSIColor::colored($color, $action);
+
+    my $color_config = $self->{debug_color};
+    if ($color_config) {
+        my ($when, $got, $not) = map { $_ // '' } split / *, */, $color_config;
+        $got = 'green' unless length $got;
+        $not = 'bright_red' unless length $not;
+        $when = 'auto' if (not length $when or $when eq 1);
+        $_ = [split ' ', $_] for ($got, $not);
+        if ($when eq 'auto' and -t STDERR or $when eq 'always') {
+            my $ansicolor = eval { require Term::ANSIColor };
+            if ($ansicolor and $action =~ m/^(got|not)/) {
+                my $color = { got => $got, not => $not }->{ $1 };
+                $action = Term::ANSIColor::colored($color, $action);
+            }
         }
     }
+
     print STDERR ' ' x ($self->{indent} * $self->{debug_indent});
     $self->{indent}++ if $indent;
     my $snippet = substr(${$self->{buffer}}, $self->{position});
