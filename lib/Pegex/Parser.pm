@@ -279,14 +279,10 @@ sub trace {
     $self->{indent} ||= 0;
     $self->{indent}-- unless $indent;
     if ($self->{debug_color} and -t STDERR) {
-        require Term::ANSIColor;
-        if ($action =~ m/^got/) {
-            my $color = "green";
-            $action = Term::ANSIColor::colored([$color], $action);
-        }
-        elsif ($action =~ m/^not/) {
-            my $color = "red";
-            $action = Term::ANSIColor::colored([$color], $action);
+        my $colored = eval { require Term::ANSIColor };
+        if ($colored and $action =~ m/^(got|not)/) {
+            my $color = { got => ['green'], not => ['red'] }->{ $1 };
+            $action = Term::ANSIColor::colored($color, $action);
         }
     }
     print STDERR ' ' x ($self->{indent} * $self->{debug_indent});
