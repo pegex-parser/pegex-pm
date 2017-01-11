@@ -1,4 +1,9 @@
 ---
+version: 0.61_004
+date:    Wed Jan 11 23:55:02 CET 2017
+changes:
+- Debug color and indent options added by TINITA++
+---
 version: 0.61_003
 date:    Sat Jan  7 01:14:18 PST 2017
 changes:
