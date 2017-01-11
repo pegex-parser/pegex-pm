@@ -116,10 +116,9 @@ e: ( <f> !<g> )?
 --- grammar
 b: ( /x/ )+
 
-# XXX The \\# looks lie a testml bug. Should only need \#.
 === Comments
 --- grammar
-\\# line comment
+\# line comment
 
 a: b    # end of line comment
 
@@ -138,5 +137,5 @@ b: /
 === Comment between rules
 --- grammar
 a: b
-\\# comment
+\# comment
 b: c
