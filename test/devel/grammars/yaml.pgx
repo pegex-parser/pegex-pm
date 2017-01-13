@@ -38,37 +38,32 @@
 # but there can be ignorable comments on either side of an explicitly marked
 # document. NOTE: Not yet dealing with directives.
 yaml-stream:
-  stream-start
-  ignore-line* % EOL
+  ignore-line*
   (
     yaml-document
     ignore-line*
   )*
-  stream-end
-
-stream-start: ''
-stream-end: / EOL?/
 
 # A YAML Document is a single node of any kind. It may start with an optional
 # explicit head marker, and may be terminated with an optional explicit foot
 # marker.
 yaml-document:
-  (document-head | document-start)
-  (yaml-node EOL?)
+  document-head?
+  top-node
   # It is important to make sure we are on a line boundary here:
   ignore-line?
-  (document-foot | document-end)
+  document-foot?
 
 # A top level node can be quite a few distinct things:
-yaml-node:
-  yaml-alias |
-  yaml-prefix? (
-    | flow-sequence
+top-node:
+  node-prefix? (
+    | node-alias
     | flow-mapping
+    | flow-sequence
     | block-sequence
     | block-mapping
     | block-scalar
-  )
+  ) ( EOL? )
 
 #------------------------------------------------------------------------------
 # Block Constructs
@@ -83,29 +78,30 @@ block-node:
 # A block sequence is an indented set of nodes each starting with a
 # dash+space:
 block-sequence:
-  block-indent-sequence
+  block-indent
   block-sequence-entry+
   block-undent
 
 block-sequence-entry:
-  block-ondent-sequence
-  / DASH (: SPACE+ | SPACE* (= EOL))/ yaml-node
+  block-ondent
+  / DASH SPACE+ /
+  block-value
 
 # A block mapping is an indented set of key / value pairs separated by
 # colon+space:
 block-mapping:
   block-indent
-  block-mapping-pair+ %% (EOL ignore-line)*
+  block-mapping-pair+
   block-undent
 
 # A block mapping pair is a key / value separated by colon+space:
 block-mapping-pair:
   block-ondent
   block-key
-  yaml-node
+  block-value
 
 # block key scalar, has more limitations than a block value scalar.
-block-key: / block-plain-scalar block-mapping-separator /
+block-key: / block-scalar block-mapping-separator /
 
 # A block value can be any block or flow node:
 block-value:
@@ -114,12 +110,14 @@ block-value:
   | block-node
 
 # A scalar in block form can take one of these 5 forms:
-block-scalar:
-  | literal-scalar
+block-scalar: /
+  ( literal-scalar
   | folded-scalar
   | double-quoted-scalar
   | single-quoted-scalar
   | block-plain-scalar
+  )
+/
 
 #------------------------------------------------------------------------------
 # Flow Constructs:
@@ -127,18 +125,15 @@ block-scalar:
 
 # A flow node can be any one of these 3 kinds:
 flow-node:
-  yaml-prefix? (
-    | yaml-alias
-    | flow-sequence
-    | flow-mapping
-    | flow-scalar
-  )
+  | flow-sequence
+  | flow-mapping
+  | flow-scalar
 
 # A flow sequence is zero or more nodes, separated by commas, inside square
 # brackets. A trailing comma is allowed.
 flow-sequence:
   flow-sequence-start
-  flow-node* %% list-separator
+  flow-sequence-entry* %% list-separator
   flow-sequence-end
 
 # A flow mapping is key / value pairs, separated by commas, inside curly
@@ -149,10 +144,16 @@ flow-mapping:
   flow-mapping-end
 
 # A flow scalar only has 3 basic forms:
-flow-scalar:
-  | double-quoted-scalar
+flow-scalar: /
+  ( double-quoted-scalar
   | single-quoted-scalar
   | flow-plain-scalar
+  )
+/
+
+# A flow sequence entry is any flow node. This rule is an alias, and can maybe
+# go away later, but leaving this way now for clarity.
+flow-sequence-entry: flow-scalar
 
 # A flow mapping can have any node as key or value, but they must also be in
 # flow syntax.
@@ -163,9 +164,9 @@ flow-mapping-pair:
 
 # Starting and ending rules for flow collections:
 flow-sequence-start: /- '[' -/
-flow-sequence-end: /- ']' SPACE*/
+flow-sequence-end: /- ']' -/
 flow-mapping-start: /- '{' -/
-flow-mapping-end: /- '}' SPACE*/
+flow-mapping-end: /- '}' -/
 
 #------------------------------------------------------------------------------
 # Scalar Constructs
@@ -181,18 +182,17 @@ folded-scalar: / '>' EOL 'XXX' /
 
 # Double quoted scalar.
 # XXX Needs work.
-double-quoted-scalar: / DOUBLE ((: BACK DOUBLE | [^ DOUBLE])*) DOUBLE /
+double-quoted-scalar: / DOUBLE [^ DOUBLE]* DOUBLE /
 
 # Single quoted scalar.
 # XXX Needs work.
-single-quoted-scalar: / SINGLE ((: SINGLE SINGLE | [^ SINGLE])*) SINGLE /
+single-quoted-scalar: / SINGLE [^ SINGLE]* SINGLE /
 
 # Plain (unquoted) scalars can't start with syntax chars, and can't contain
 # colon+space.
 block-plain-scalar: /
   (! char-non-start)
-  ( ANY+? )
-  (: WS+ comment-text)?
+  ANY+?
   (= COLON WS | EOL | EOS)
 /
 
@@ -200,7 +200,7 @@ block-plain-scalar: /
 # context.
 flow-plain-scalar: /
   (! char-non-start)
-  ( ANY+? )
+  ANY+?
   (= [ chars-syntax COMMA ] | COLON SPACE | COMMA SPACE | EOL | EOS)
 /
 
@@ -213,56 +213,47 @@ flow-plain-scalar: /
 # block-undent: # This rule is written in code in the Grammar class.
 
 # A YAML header is 3 dashes followed by spaces or a newline:
-document-head: /
-  EOL? '---'
-  (: SPACE+ | (?= EOL))
-/
-
-# Implicit document start:
-document-start: /(= ALL* [^ EOL])/
+document-head: / '---' (: SPACE+ | (?= EOL)) /
 
 # A YAML footer is 3 dots followed by a newline:
 document-foot: / '...' EOL /
 
-# Implicit document ending:
-document-end: ''
-
 # A node prefix is a anchor and / or tag in any order.
 # XXX This construct is hard in PEG. Look for easier way.
-yaml-prefix:
-  | yaml-anchor yaml-tag?
-  | yaml-tag yaml-anchor?
+node-prefix:
+  | node-anchor (SPACE+ node-tag)?
+  | node-tag (SPACE+ node-anchor)?
 
-# An explicit node tag:
-yaml-tag: /('!' NS*) -/
+# An explicit node tag.
+# TODO This is very incomplete!
+node-tag: / BANG BANG? ( WORD+ ) /
 
 # A Node Anchor is a name for a node. Like '&this'.
 # TODO See spec for real definition.
-yaml-anchor: / '&' ( WORD+ ) -/
+node-anchor: / '&' ( WORD+ ) /
 
 # A Node Alias is a reference to an anchored node. Like '*this'.
-yaml-alias: / '*' ( WORD+ ) /
+node-alias: / '*' ( WORD+ ) /
 
 # Mapping key / value is always separated by ': ' (colon + space)
-flow-mapping-separator: /- ':' (: SPACE+ | SPACE* (= EOL)) /
+flow-mapping-separator: / ':' (: SPACE+ | SPACE* (= EOL)) /
 block-mapping-separator: / ':' (: SPACE+ | SPACE* (= EOL)) /
 
 # List items separated by ',' (comma)
 # XXX Check spec if SPACE is needed
-list-separator: /- ',' -/
+list-separator: / ',' SPACE+ /
 
 # List of single chars that are YAML syntax (and thus must be avoided in
 # various contexts.
 chars-syntax: /
   AMP
   STAR
+  HASH
   LCURLY
   RCURLY
   LSQUARE
   RSQUARE
   PERCENT
-  DOUBLE
-  SINGLE
 /
 
 # YAML's Reserved Chars
@@ -274,7 +265,6 @@ chars-reserved: /
 char-non-start: /[
   chars-syntax
   chars-reserved
-  HASH
 ]/
 
 
@@ -291,7 +281,7 @@ ignore-line: / ignore-text (= EOL) /
 ignore-text: / (: comment-text | blank-text ) /
 
 # A '#' starts a comment until end of line.
-comment-text: / BLANK* HASH ANY* /
+comment-text: / HASH ANY* /
 
 # Spaces and tabs.
 blank-text: / BLANK* /

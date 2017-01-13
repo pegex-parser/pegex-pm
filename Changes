@@ -1,4 +1,9 @@
 ---
+version: 0.61_005
+date:    Fri Jan 13 15:03:08 PST 2017
+changes:
+- Fix bug in new DEBUG options
+---
 version: 0.61_004
 date:    Wed Jan 11 23:55:02 CET 2017
 changes:
