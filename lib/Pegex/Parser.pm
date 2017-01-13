@@ -26,6 +26,10 @@ sub BUILD {
 
     $self->{throw_on_error} ||= 1;
 
+    $self->{debug} //=
+        $ENV{PERL_PEGEX_DEBUG} //
+        $Pegex::Parser::Debug // 0;
+
     $self->{debug_indent} //=
         $ENV{PERL_PEGEX_DEBUG_INDENT} //
         $Pegex::Parser::DebugIndent // 1;
