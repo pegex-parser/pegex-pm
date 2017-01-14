@@ -16,10 +16,12 @@ has iteration_count => 0;
 has debug => ();
 has debug_indent => ();
 has debug_color => ();
+has debug_got_color => ();
+has debug_not_color => ();
+
 has recursion_limit => ();
 has recursion_warn_limit => ();
 has iteration_limit => ();
-
 
 sub BUILD {
     my ($self) = @_;
@@ -38,9 +40,28 @@ sub BUILD {
         or $self->{debug_indent} =~ tr/0-9//c
         or $self->{debug_indent} < 0
     );
-    $self->{debug_color} //=
-        $ENV{PERL_PEGEX_DEBUG_COLOR} //
-        $Pegex::Parser::DebugColor // 0;
+
+    {
+        $self->{debug_color} //=
+            $ENV{PERL_PEGEX_DEBUG_COLOR} //
+            $Pegex::Parser::DebugColor // $self->{debug};
+        my ($got, $not);
+        ($self->{debug_color}, $got, $not) = split / *, */, $self->{debug_color};
+        $got ||= 'bright_green';
+        $not ||= 'bright_red';
+        $_ = [split ' ', $_] for ($got, $not);
+        $self->{debug_got_color} = $got;
+        $self->{debug_not_color} = $not;
+        my $c = $self->{debug_color} // $self->{debug};
+        $self->{debug_color} =
+            $c eq 'on' ? 1 :
+            $c eq 'auto' ? (-t STDERR ? 1 : 0) :
+            $c eq 'off' ? 0 :
+            $c =~ /^\d+$/ ? $c : 0;
+        $self->{debug_color} and
+            eval {require Term::ANSIColor; 1} or
+            $self->{debug_color} = 0;
+    }
     $self->{recursion_limit} //=
         $ENV{PERL_PEGEX_RECURSION_LIMIT} //
         $Pegex::Parser::RecursionLimit // 0;
@@ -288,21 +309,13 @@ sub trace {
     $self->{indent} ||= 0;
     $self->{indent}-- unless $indent;
 
-    my $color_config = $self->{debug_color};
-    if ($color_config) {
-        my ($when, $got, $not) = map { $_ // '' } split / *, */, $color_config;
-        $got = 'green' unless length $got;
-        $not = 'bright_red' unless length $not;
-        $when = 'auto' if (not length $when or $when eq 1);
-        $_ = [split ' ', $_] for ($got, $not);
-        if ($when eq 'auto' and -t STDERR or $when eq 'always') {
-            my $ansicolor = eval { require Term::ANSIColor };
-            if ($ansicolor and $action =~ m/^(got|not)/) {
-                my $color = { got => $got, not => $not }->{ $1 };
-                $action = Term::ANSIColor::colored($color, $action);
-            }
-        }
-    }
+    $action = (
+        $action =~ m/got_/ ?
+            Term::ANSIColor::colored($self->{debug_got_color}, $action) :
+        $action =~ m/not_/ ?
+            Term::ANSIColor::colored($self->{debug_not_color}, $action) :
+        $action
+    ) if $self->{debug_color};
 
     print STDERR ' ' x ($self->{indent} * $self->{debug_indent});
     $self->{indent}++ if $indent;

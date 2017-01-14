@@ -92,12 +92,25 @@ variables:
 
 - `debug_color` or `$Pegex::Parser::DebugColor` or `$ENV{PERL_PEGEX_DEBUG_COLOR}`
 
-  If set to `auto` or 1, it will color `got` and `not` events in the debugging
-  output (green and red by default). It requires [Term::ANSIColor].
+  If enabled, it will color `got` and `not` events in the debugging output
+  (`bright_green` and `bright_red` respectively). Color will be enabled by
+  default for debugging. It requires [Term::ANSIColor].
 
-  You can configure the used colors by appending them like this:
+  - `on` or `1`
 
-    PERL_PEGEX_DEBUG_COLOR="auto,cyan bold,black on_yellow"
+    Color is enabled.
+
+  - `auto`
+
+    Color is enabled when STDERR is a tty.
+
+  - `off` or 0
+
+    Color is disabled.
+
+  You can configure the specific colors used by appending them like this:
+
+    PERL_PEGEX_DEBUG_COLOR='on, cyan bold, black on_yellow'
 
   For available colors, see [Term::ANSIColor]
 
