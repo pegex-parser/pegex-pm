@@ -59,7 +59,7 @@ sub BUILD {
             $c eq 'off' ? 0 :
             $c =~ /^\d+$/ ? $c : 0;
         $self->{debug_color} and
-            eval {require Term::ANSIColor; 1} or
+            eval {use v5.14; require Term::ANSIColor; 1} or
             $self->{debug_color} = 0;
     }
     $self->{recursion_limit} //=
