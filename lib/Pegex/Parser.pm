@@ -41,26 +41,32 @@ sub BUILD {
         or $self->{debug_indent} < 0
     );
 
-    {
+    if ($self->{debug}) {
         $self->{debug_color} //=
             $ENV{PERL_PEGEX_DEBUG_COLOR} //
-            $Pegex::Parser::DebugColor // $self->{debug};
+            $Pegex::Parser::DebugColor // 1;
         my ($got, $not);
-        ($self->{debug_color}, $got, $not) = split / *, */, $self->{debug_color};
+        ($self->{debug_color}, $got, $not) =
+            split / *, */, $self->{debug_color};
         $got ||= 'bright_green';
         $not ||= 'bright_red';
         $_ = [split ' ', $_] for ($got, $not);
         $self->{debug_got_color} = $got;
         $self->{debug_not_color} = $not;
-        my $c = $self->{debug_color} // $self->{debug};
+        my $c = $self->{debug_color} // 1;
         $self->{debug_color} =
-            $c eq 'on' ? 1 :
+            $c eq 'always' ? 1 :
             $c eq 'auto' ? (-t STDERR ? 1 : 0) :
-            $c eq 'off' ? 0 :
+            $c eq 'never' ? 0 :
             $c =~ /^\d+$/ ? $c : 0;
-        $self->{debug_color} and
-            eval {require v5.14; require Term::ANSIColor; 1} or
-            $self->{debug_color} = 0;
+        if ($self->{debug_color}) {
+            require Term::ANSIColor;
+            if ($Term::ANSIColor::VERSION < 3.00) {
+                s/^bright_// for
+                    @{$self->{debug_got_color}},
+                    @{$self->{debug_not_color}};
+            }
+        }
     }
     $self->{recursion_limit} //=
         $ENV{PERL_PEGEX_RECURSION_LIMIT} //

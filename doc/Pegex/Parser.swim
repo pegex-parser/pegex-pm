@@ -96,7 +96,7 @@ variables:
   (`bright_green` and `bright_red` respectively). Color will be enabled by
   default for debugging. It requires [Term::ANSIColor].
 
-  - `on` or `1`
+  - `always` or `1`
 
     Color is enabled.
 
@@ -104,13 +104,13 @@ variables:
 
     Color is enabled when STDERR is a tty.
 
-  - `off` or 0
+  - `never` or 0
 
     Color is disabled.
 
   You can configure the specific colors used by appending them like this:
 
-    PERL_PEGEX_DEBUG_COLOR='on, cyan bold, black on_yellow'
+    PERL_PEGEX_DEBUG_COLOR='always, cyan bold, black on_yellow'
 
   For available colors, see [Term::ANSIColor]
 
