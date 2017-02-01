@@ -298,7 +298,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
           '-flat' => 1,
           '.all' => [
             {
-              '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*/
+              '.rgx' => qr/(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*/
             },
             {
               '.ref' => 'ERROR_all_group'
@@ -312,7 +312,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?![\-\.])(?=[^\w\(\)<\/\~\|`\s]\()/
+              '.rgx' => qr/(?![\-\.])(?=[^\w\(\)<\/\~\|`\s]\()/
             },
             {
               '.err' => 'Illegal group rule modifier (can only use .)'
@@ -322,7 +322,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
         {
           '.all' => [
             {
-              '.rgx' => qr/\G([\-\.]?)\((?:\s|\#.*(?:\n|\z))*/
+              '.rgx' => qr/([\-\.]?)\((?:\s|\#.*(?:\n|\z))*/
             },
             {
               '.ref' => 'rule_group'
@@ -343,7 +343,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
                 {
                   '.all' => [
                     {
-                      '.rgx' => qr/\G(?=(?:\s|\#.*(?:\n|\z))*\)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
+                      '.rgx' => qr/(?=(?:\s|\#.*(?:\n|\z))*\)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
                     },
                     {
                       '.err' => 'Illegal character in group rule quantifier'
@@ -361,7 +361,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=`[^`\r\n]*[\r\n][^`]*`)/
+              '.rgx' => qr/(?=`[^`\r\n]*[\r\n][^`]*`)/
             },
             {
               '.err' => 'Multi-line error messages not allowed!'
@@ -371,7 +371,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=`[^`]*(?:\s|\#.*(?:\n|\z))*\z)/
+              '.rgx' => qr/(?=`[^`]*(?:\s|\#.*(?:\n|\z))*\z)/
             },
             {
               '.err' => 'Runaway error message; no ending grave at EOF'
@@ -383,7 +383,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
     'ERROR_meta_definition' => {
       '.all' => [
         {
-          '.rgx' => qr/\G(?=%\w+)/
+          '.rgx' => qr/(?=%\w+)/
         },
         {
           '.err' => 'Illegal meta rule'
@@ -393,7 +393,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
     'ERROR_regular_expression' => {
       '.all' => [
         {
-          '.rgx' => qr/\G(?=\/([^\/]*)(?:\s|\#.*(?:\n|\z))*\z)/
+          '.rgx' => qr/(?=\/([^\/]*)(?:\s|\#.*(?:\n|\z))*\z)/
         },
         {
           '.err' => 'Runaway regular expression; no ending slash at EOF'
@@ -460,7 +460,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
           '-flat' => 1,
           '.all' => [
             {
-              '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+/
+              '.rgx' => qr/(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+/
             },
             {
               '.ref' => 'ERROR_rule_item'
@@ -474,7 +474,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])(?!\>))/
+              '.rgx' => qr/(?=[!=\+\-\.]?<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])(?!\>))/
             },
             {
               '.err' => 'Missing > in rule reference'
@@ -484,7 +484,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\>)/
+              '.rgx' => qr/(?=[!=\+\-\.]?(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\>)/
             },
             {
               '.err' => 'Missing < in rule reference'
@@ -494,7 +494,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\>)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
+              '.rgx' => qr/(?=[!=\+\-\.]?(?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\>)[^\w\(\)<\/\~\|`\s\*\+\?!=\+\-\.:;])/
             },
             {
               '.err' => 'Illegal character in rule quantifier'
@@ -504,7 +504,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
         {
           '.all' => [
             {
-              '.rgx' => qr/\G(?=[!=\+\-\.]?(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\-)/
+              '.rgx' => qr/(?=[!=\+\-\.]?(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\-)/
             },
             {
               '.err' => 'Unprotected rule name with numeric quantifier; please use <rule>#-# syntax!'
@@ -518,7 +518,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
               '.ref' => 'rule_modifier'
             },
             {
-              '.rgx' => qr/\G(?=[^\w\(\)<\/\~\|`\s](?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\>)(?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?(?![\ \t]*:))/
+              '.rgx' => qr/(?=[^\w\(\)<\/\~\|`\s](?:(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])|<(?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-])\>)(?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?(?![\ \t]*:))/
             },
             {
               '.err' => 'Illegal rule modifier (must be [=!.-+]?)'
@@ -530,7 +530,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
     'ERROR_rule_start' => {
       '.any' => [
         {
-          '.rgx' => qr/\G((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
+          '.rgx' => qr/((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
         },
         {
           '.err' => 'Rule header syntax error'
@@ -538,10 +538,10 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
       ]
     },
     '_' => {
-      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*/
+      '.rgx' => qr/(?:\s|\#.*(?:\n|\z))*/
     },
     '__' => {
-      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+/
+      '.rgx' => qr/(?:\s|\#.*(?:\n|\z))+/
     },
     'all_group' => {
       '.all' => [
@@ -564,7 +564,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
     'any_group' => {
       '.all' => [
         {
-          '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\|?(?:\s|\#.*(?:\n|\z))*/
+          '.rgx' => qr/(?:\s|\#.*(?:\n|\z))*\|?(?:\s|\#.*(?:\n|\z))*/
         },
         {
           '.ref' => 'all_group'
@@ -573,7 +573,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
           '+min' => 0,
           '.all' => [
             {
-              '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*/
+              '.rgx' => qr/(?:\s|\#.*(?:\n|\z))*\|(?:\s|\#.*(?:\n|\z))*/
             },
             {
               '.ref' => 'all_group'
@@ -585,24 +585,24 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
     'bracketed_group' => {
       '.all' => [
         {
-          '.rgx' => qr/\G([\-\.]?)\((?:\s|\#.*(?:\n|\z))*/
+          '.rgx' => qr/([\-\.]?)\((?:\s|\#.*(?:\n|\z))*/
         },
         {
           '.ref' => 'rule_group'
         },
         {
-          '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)/
+          '.rgx' => qr/(?:\s|\#.*(?:\n|\z))*\)((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)/
         }
       ]
     },
     'doc_ending' => {
-      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\z/
+      '.rgx' => qr/(?:\s|\#.*(?:\n|\z))*\z/
     },
     'ending' => {
-      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
+      '.rgx' => qr/(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
     },
     'error_message' => {
-      '.rgx' => qr/\G`([^`\r\n]*)`/
+      '.rgx' => qr/`([^`\r\n]*)`/
     },
     'grammar' => {
       '.all' => [
@@ -625,7 +625,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
       ]
     },
     'meta_definition' => {
-      '.rgx' => qr/\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
+      '.rgx' => qr/%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
     },
     'meta_section' => {
       '+min' => 0,
@@ -642,18 +642,18 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
       ]
     },
     'quoted_regex' => {
-      '.rgx' => qr/\G'([^']*)'/
+      '.rgx' => qr/'([^']*)'/
     },
     'regex_raw' => {
-      '.rgx' => qr/\G(\(\??<|(?:[^\s\/'<])+)/
+      '.rgx' => qr/(\(\??<|(?:[^\s\/'<])+)/
     },
     'regex_rule_reference' => {
-      '.rgx' => qr/\G(?:(?:\s|\#.*(?:\n|\z))+((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))\>))(?![\ \t]*:)/
+      '.rgx' => qr/(?:(?:\s|\#.*(?:\n|\z))+((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))\>))(?![\ \t]*:)/
     },
     'regular_expression' => {
       '.all' => [
         {
-          '.rgx' => qr/\G\//
+          '.rgx' => qr/\//
         },
         {
           '+max' => 1,
@@ -683,7 +683,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
           ]
         },
         {
-          '.rgx' => qr/\G\//
+          '.rgx' => qr/\//
         }
       ]
     },
@@ -726,7 +726,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
       ]
     },
     'rule_modifier' => {
-      '.rgx' => qr/\G[!=\+\-\.]/
+      '.rgx' => qr/[!=\+\-\.]/
     },
     'rule_part' => {
       '.all' => [
@@ -739,7 +739,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
           '-flat' => 1,
           '.all' => [
             {
-              '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+/
+              '.rgx' => qr/(?:\s|\#.*(?:\n|\z))+(%{1,2})(?:\s|\#.*(?:\n|\z))+/
             },
             {
               '.ref' => 'rule_item'
@@ -749,7 +749,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
       ]
     },
     'rule_reference' => {
-      '.rgx' => qr/\G([!=\+\-\.]?)(?:((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))\>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?![\ \t]*:)/
+      '.rgx' => qr/([!=\+\-\.]?)(?:((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))\>))((?:[\*\+\?]|[0-9]+(?:\-[0-9]+|\+)?)?)(?![\ \t]*:)/
     },
     'rule_section' => {
       '+min' => 0,
@@ -763,19 +763,19 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
       ]
     },
     'rule_start' => {
-      '.rgx' => qr/\G((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
+      '.rgx' => qr/((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*/
     },
     'whitespace_maybe' => {
-      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\-(?=[\ \/\r\n])/
+      '.rgx' => qr/(?:\s|\#.*(?:\n|\z))*\-(?=[\ \/\r\n])/
     },
     'whitespace_must' => {
-      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))+(?:\+|\-\-)(?=[\ \/\r\n])/
+      '.rgx' => qr/(?:\s|\#.*(?:\n|\z))+(?:\+|\-\-)(?=[\ \/\r\n])/
     },
     'whitespace_start' => {
-      '.rgx' => qr/\G([\+\-])(?![\-\~])/
+      '.rgx' => qr/([\+\-])(?![\-\~])/
     },
     'whitespace_token' => {
-      '.rgx' => qr/\G((?:\+|\-|\-\-|\~|\~\~))(?=(?:\s|\#.*(?:\n|\z))+)/
+      '.rgx' => qr/((?:\+|\-|\-\-|\~|\~\~))(?=(?:\s|\#.*(?:\n|\z))+)/
     }
   }
 }

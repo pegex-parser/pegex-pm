@@ -140,11 +140,7 @@ sub native {
 sub perl_regexes {
     my ($self, $node) = @_;
     if (ref($node) eq 'HASH') {
-        if (exists $node->{'.rgx'}) {
-            my $re = $node->{'.rgx'};
-            $node->{'.rgx'} = qr/\G$re/;
-        }
-        else {
+        if (not exists $node->{'.rgx'}) {
             for (keys %$node) {
                 $self->perl_regexes($node->{$_});
             }

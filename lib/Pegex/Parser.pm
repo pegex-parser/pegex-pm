@@ -257,10 +257,9 @@ sub match_rgx {
     my ($self, $regexp) = @_;
     my $buffer = $self->{buffer};
 
-    pos($$buffer) = $self->{position};
-    $$buffer =~ /$regexp/g or return;
+    substr($$buffer, $self->{position}) =~ $regexp or return;
 
-    $self->{position} = pos($$buffer);
+    $self->{position} += $+[0];
 
     $self->{farthest} = $self->{position}
         if $self->{position} > $self->{farthest};
