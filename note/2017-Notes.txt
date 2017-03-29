@@ -1,0 +1,45 @@
+== `pegex` CLI tool
+- Look at Pegex::Cmd
+- pegex show <grammar> [<receiver>]
+  pegex compile <grammar> <options>
+
+== Compilation + Optimization
+- parse:
+  - Parse Pegex syntax into basic AST
+- reduce:
+  - Reformat % clauses
+  - Remove unneeded groupings
+  - Combine adjacent regexes
+- include:
+  - Copy each %include statement recursively into grammar tree
+- resolve:
+  - Resolve regex <refs>
+  - Mark unresolved rgx-s
+  - Set number of captures
+- native:
+  - Native regexes
+- expand:
+  - Add min, max,asr to each rule
+  - Attach grammar 'rule_' methods to tree
+  - Attach action methods to rules
+- extend:
+  - Compile <extends> grammar recursively
+  - Copy in fully compiled 'extends' rules
+- optimize:
+  - Add specific, optimized methods to each rule
+- final:
+  - reduce again
+    - Reduce refs without actions
+  - Add trace wrappers
+  - Add error tracking wrappers
+  - Prune unused rules
+
+== New Ideas
+- Compilation requires an action class
+- Don't prune rules until compilation is complete
+- Rules have signatures (number of captures)
+
+%grammar <name of grammar>
+%version <semver>
+%include <name of grammar>
+%extends <name of grammar>

@@ -31,7 +31,61 @@ provided as the final result. If the grammar fails to match the input along
 the way, the parse method will throw an error with much information about the
 failure.
 
-= Attributes
+= The `parse()` Method
+
+The parse method takes one of the following 4 forms:
+
+- `$parser->parse($input)`
+
+  The most common form is to provide an input string to parse. You may also use
+  a Pegex::Input object instead of a string.
+
+- `$parser->parse($input, $options)`
+
+  You may also specify a hash reference of options. See the following "Options"
+  section for deatils.
+
+- `$parser->parse()`
+
+  With no arguments, the parser will continue parsing from the previous call to
+  `parse()`. This only makes sense if the `partial` option was used.
+
+- `$parser->parse($input, $start)`
+
+  This usage is deprecated. Use the `start` option instead.
+
+  (Use the named starting rule to perform the parse.)
+
+== Options for `parse()`
+
+If the options hash reference is specified, the following options are
+supported:
+
+- `start`
+
+  String. The name of the starting rule to use when starting a parse. By
+  default, Pegex with start with the first rule in the grammar, or the rule
+  named `TOP`, if provided.
+
+- `return`
+
+  Boolean. By default, Pegex::Parser will throw an error when a parse fails. If
+  `return` is set to true, then the `parse()` method will return a false value
+  on failure. The `->error` method can be called to get the actual error.
+
+- `partial`
+
+  Boolean. By default, a grammar must match all of its input. Setting this to
+  true allows for a partial match. The `completed` method can be used to check
+  if the end of the input has been matched.
+
+= Other API methods
+
+- `completed`
+
+  Check if a parse operation has completed.
+
+= Constructor
 
 The Pegex::Parser `new` object constructor takes these attributes:
 

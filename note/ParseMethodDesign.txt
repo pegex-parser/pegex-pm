@@ -1,0 +1,30 @@
+== New Tests
+* reuse parser object multiple times
+* ->parse($input, $start_rule, {options})
+* ->parse($input, {options})
+* ->parse({options})
+* partial + continue
+* return on error
+* parse to length
+* parse at position
+
+
+== API
+* $parser->parse($input);                       # legacy
+* $parser->parse($input, $start_rule);          # legacy
+* $parser->parse($input, $options_hash_ref);    # new (start rule is an option)
+* $parser->parse();                             # new ($input not needed on continue)
+
+
+== New parser options
+* start     - Str  - start rule name            (first || TOP)
+* return    - Bool - return false on error      (false; ie throw on error)
+* partial   - Bool - allow partial parse        (false)
+
+
+==New Methods
+- error     - Return object if exists. For use with 'return' option.
+
+
+== ToDo Notes
+- set farthest to position

@@ -4,14 +4,35 @@ no warnings qw( recursion );
 
 use Pegex::Input;
 use Pegex::Optimizer;
+use Pegex::Errors;
 use Scalar::Util;
 
+#------------------------------------------------------------------------------
+# Parser attributes:
+#------------------------------------------------------------------------------
+
+# Singleton object pointers:
 has grammar => (required => 1);
-has receiver => ();
+has receiver => (required => 1);
+has optimizer => ();
+
 has input => ();
+has error => ();
+
+has start => ();                    # Start rule name
+has return => 0;                    # return() on error
+has partial => 0;                   # Allow a partial parse
+
+has position => ();                 # Current parse position
+has farthest => ();                 # Farthest parse position
+has length => ();                   # Length of input to parse
+has continue => 0;                  # Continue parsing from previous partial
 
 has recursion_count => 0;
 has iteration_count => 0;
+has recursion_limit => ();
+has recursion_warn_limit => ();
+has iteration_limit => ();
 
 has debug => ();
 has debug_indent => ();
@@ -19,148 +40,72 @@ has debug_color => ();
 has debug_got_color => ();
 has debug_not_color => ();
 
-has recursion_limit => ();
-has recursion_warn_limit => ();
-has iteration_limit => ();
+#------------------------------------------------------------------------------
+# Object construction.
+#------------------------------------------------------------------------------
 
 sub BUILD {
     my ($self) = @_;
 
-    $self->{throw_on_error} ||= 1;
-
-    $self->{debug} //=
-        $ENV{PERL_PEGEX_DEBUG} //
-        $Pegex::Parser::Debug // 0;
-
-    $self->{debug_indent} //=
-        $ENV{PERL_PEGEX_DEBUG_INDENT} //
-        $Pegex::Parser::DebugIndent // 1;
-    $self->{debug_indent} = 1 if (
-        not length $self->{debug_indent}
-        or $self->{debug_indent} =~ tr/0-9//c
-        or $self->{debug_indent} < 0
-    );
-
-    if ($self->{debug}) {
-        $self->{debug_color} //=
-            $ENV{PERL_PEGEX_DEBUG_COLOR} //
-            $Pegex::Parser::DebugColor // 1;
-        my ($got, $not);
-        ($self->{debug_color}, $got, $not) =
-            split / *, */, $self->{debug_color};
-        $got ||= 'bright_green';
-        $not ||= 'bright_red';
-        $_ = [split ' ', $_] for ($got, $not);
-        $self->{debug_got_color} = $got;
-        $self->{debug_not_color} = $not;
-        my $c = $self->{debug_color} // 1;
-        $self->{debug_color} =
-            $c eq 'always' ? 1 :
-            $c eq 'auto' ? (-t STDERR ? 1 : 0) :
-            $c eq 'never' ? 0 :
-            $c =~ /^\d+$/ ? $c : 0;
-        if ($self->{debug_color}) {
-            require Term::ANSIColor;
-            if ($Term::ANSIColor::VERSION < 3.00) {
-                s/^bright_// for
-                    @{$self->{debug_got_color}},
-                    @{$self->{debug_not_color}};
-            }
-        }
-    }
-    $self->{recursion_limit} //=
-        $ENV{PERL_PEGEX_RECURSION_LIMIT} //
-        $Pegex::Parser::RecursionLimit // 0;
-    $self->{recursion_warn_limit} //=
-        $ENV{PERL_PEGEX_RECURSION_WARN_LIMIT} //
-        $Pegex::Parser::RecursionWarnLimit // 0;
-    $self->{iteration_limit} //=
-        $ENV{PERL_PEGEX_ITERATION_LIMIT} //
-        $Pegex::Parser::IterationLimit // 0;
+    $self->_check_deprecated;
+    $self->_set_debug;
+    $self->_set_limits;
 }
 
-# XXX Add an optional $position argument. Default to 0. This is the position
-# to start parsing. Set position and farthest below to this value. Allows for
-# sub-parsing. Need to somehow return the finishing position of a subparse.
-# Maybe this all goes in a subparse() method.
-sub parse {
-    my ($self, $input, $start) = @_;
-
-    $start =~ s/-/_/g if $start;
-
+sub reset {
+    my ($self) = @_;
     $self->{position} = 0;
     $self->{farthest} = 0;
+    return $self;
+}
 
-    $self->{input} = (not ref $input)
-      ? Pegex::Input->new(string => $input)
-      : $input;
+#------------------------------------------------------------------------------
+# Parser API.
+#------------------------------------------------------------------------------
 
-    $self->{input}->open
-        unless $self->{input}{_is_open};
-    $self->{buffer} = $self->{input}->read;
-    $self->{last_line_pos} = 0;
-    $self->{last_line} = 1;
-
-    $self->{grammar}{tree} ||= $self->{grammar}->make_tree;
-
-    my $start_rule_ref = $start ||
-        $self->{grammar}{tree}{'+toprule'} ||
-        $self->{grammar}{tree}{'TOP'} & 'TOP' or
-        die "No starting rule for Pegex::Parser::parse";
-
-    die "No 'receiver'. Can't parse"
-        unless $self->{receiver};
-
-    my $optimizer = Pegex::Optimizer->new(
-        parser => $self,
-        grammar => $self->{grammar},
-        receiver => $self->{receiver},
-    );
-
-    $optimizer->optimize_grammar($start_rule_ref);
-
-    # Add circular ref and weaken it.
-    $self->{receiver}{parser} = $self;
-    Scalar::Util::weaken($self->{receiver}{parser});
-
-    if ($self->{receiver}->can("initial")) {
-        $self->{rule} = $start_rule_ref;
-        $self->{parent} = {};
-        $self->{receiver}->initial();
-    }
+sub parse {
+    my $self = shift;
 
     local *match_next;
-    {
-        no warnings 'redefine';
-        *match_next = (
-            $self->{recursion_warn_limit} or
-            $self->{recursion_limit} or
-            $self->{iteration_limit}
-         ) ? \&match_next_with_limit :
-             \&match_next_normal;
-    }
+    $self->_setup_parser(@_);
 
-    my $match = $self->debug ? do {
-        my $method = $optimizer->make_trace_wrapper(\&match_ref);
-        $self->$method($start_rule_ref, {'+asr' => 0});
-    } : $self->match_ref($start_rule_ref, {});
+    # TODO: Don't reset on 'continue'. Trigger continue from parse().
+    $self->reset;
 
-    $self->{input}->close;
+    my $start = $self->{start};
 
-    if (not $match or $self->{position} < length ${$self->{buffer}}) {
+    my $match = $self->debug
+        ? do {
+            my $method = $self->{optimizer}->make_trace_wrapper(\&match_ref);
+            $self->$method($start, {'+asr' => 0});
+        }
+        : $self->match_ref($start, {});
+    my $completed = $self->completed;
+
+    $self->{input}->close if $completed;
+
+    if (not ($match and ($completed or $self->{partial}))) {
         $self->throw_error("Parse document failed for some reason");
-        return;  # In case $self->throw_on_error is off
+        return;  # In case $self->return is on
     }
 
     if ($self->{receiver}->can("final")) {
-        $self->{rule} = $start_rule_ref;
+        $self->{rule} = $start;
         $self->{parent} = {};
         $match = [ $self->{receiver}->final(@$match) ];
     }
 
-    $match->[0];
+    return $match->[0];
 }
 
+sub completed {
+    my ($self) = @_;
+    return $self->{position} >= $self->{length} ? 1 : 0;
+}
+
+#------------------------------------------------------------------------------
+# Match logic functions.
+#------------------------------------------------------------------------------
 sub match_next_normal {
     my ($self, $next) = @_;
 
@@ -200,25 +145,21 @@ sub match_next_normal {
 sub match_next_with_limit {
     my ($self, $next) = @_;
 
-    sub limit_msg {
-        "Deep recursion ($_[0] levels) on Pegex::Parser::match_next\n";
-    }
-
     $self->{iteration_count}++;
     $self->{recursion_count}++;
 
     if (
         $self->{recursion_limit} and
         $self->{recursion_count} >= $self->{recursion_limit}
-    ) { die limit_msg $self->{recursion_count} }
+    ) { die err_deep_recursion $self->{recursion_count} }
     elsif (
         $self->{recursion_warn_limit} and
         not ($self->{recursion_count} % $self->{recursion_warn_limit})
-    ) { warn limit_msg $self->{recursion_count} }
+    ) { warn err_deep_recursion $self->{recursion_count} }
     elsif (
         $self->{iteration_limit} and
         $self->{iteration_count} > $self->{iteration_limit}
-    ) { die "Pegex iteration limit of $self->{iteration_limit} reached." }
+    ) { die err_iteration_limit $self->{iteration_limit} }
 
     my $result = $self->match_next_normal($next);
 
@@ -235,7 +176,7 @@ sub match_rule {
     $match = [ $match ] if @$match > 1;
     my ($ref, $parent) = @{$self}{'rule', 'parent'};
     my $rule = $self->{grammar}{tree}{$ref}
-        or die "No rule defined for '$ref'";
+        or die err_no_rule_defined $ref;
 
     [ $rule->{action}->($self->{receiver}, @$match) ];
 }
@@ -243,7 +184,7 @@ sub match_rule {
 sub match_ref {
     my ($self, $ref, $parent) = @_;
     my $rule = $self->{grammar}{tree}{$ref}
-        or die "No rule defined for '$ref'";
+        or die err_no_rule_defined $ref;
     my $match = $self->match_next($rule) or return;
     return $Pegex::Constant::Dummy unless $rule->{action};
     @{$self}{'rule', 'parent'} = ($ref, $parent);
@@ -309,34 +250,14 @@ sub match_err {
     $self->throw_error($error);
 }
 
-sub trace {
-    my ($self, $action) = @_;
-    my $indent = ($action =~ /^try_/) ? 1 : 0;
-    $self->{indent} ||= 0;
-    $self->{indent}-- unless $indent;
-
-    $action = (
-        $action =~ m/got_/ ?
-            Term::ANSIColor::colored($self->{debug_got_color}, $action) :
-        $action =~ m/not_/ ?
-            Term::ANSIColor::colored($self->{debug_not_color}, $action) :
-        $action
-    ) if $self->{debug_color};
-
-    print STDERR ' ' x ($self->{indent} * $self->{debug_indent});
-    $self->{indent}++ if $indent;
-    my $snippet = substr(${$self->{buffer}}, $self->{position});
-    $snippet = substr($snippet, 0, 30) . "..."
-        if length $snippet > 30;
-    $snippet =~ s/\n/\\n/g;
-    print STDERR sprintf("%-30s", $action) .
-        ($indent ? " >$snippet<\n" : "\n");
-}
+#------------------------------------------------------------------------------
+# Error handing and debugging code.
+#------------------------------------------------------------------------------
 
 sub throw_error {
     my ($self, $msg) = @_;
     $@ = $self->{error} = $self->format_error($msg);
-    return undef unless $self->{throw_on_error};
+    return () if $self->{return};
     require Carp;
     Carp::croak($self->{error});
 }
@@ -400,6 +321,216 @@ sub line {
     $self->{last_line_pos} = $position;
     return $line;
 }
+
+sub trace {
+    my ($self, $action) = @_;
+    my $indent = ($action =~ /^try_/) ? 1 : 0;
+    $self->{indent} ||= 0;
+    $self->{indent}-- unless $indent;
+
+    $action = (
+        $action =~ m/got_/ ?
+            Term::ANSIColor::colored($self->{debug_got_color}, $action) :
+        $action =~ m/not_/ ?
+            Term::ANSIColor::colored($self->{debug_not_color}, $action) :
+        $action
+    ) if $self->{debug_color};
+
+    print STDERR ' ' x ($self->{indent} * $self->{debug_indent});
+    $self->{indent}++ if $indent;
+    my $snippet = substr(${$self->{buffer}}, $self->{position});
+    $snippet = substr($snippet, 0, 30) . "..."
+        if length $snippet > 30;
+    $snippet =~ s/\n/\\n/g;
+    print STDERR sprintf("%-30s", $action) .
+        ($indent ? " >$snippet<\n" : "\n");
+}
+
+#------------------------------------------------------------------------------
+# Private methods.
+#------------------------------------------------------------------------------
+
+sub _check_deprecated {
+    my ($self) = @_;
+
+    die err_throw_on_error_deprecated
+        if exists $self->{throw_on_error};
+}
+
+sub _setup_parser {
+    my $self = shift;
+
+    my ($input, $options) = (undef, {});
+    $self->{continue} = 0;
+    # Possible call signatures:
+    # * $parser->parse($input);
+    # * $parser->parse($input, $options_hash_ref);
+    # * $parser->parse();
+    # * $parser->parse($input, $start_rule);
+    if (@_ == 0) {
+        die err_no_previous_parse unless defined $self->position;
+        $self->{continue} = 1;
+    }
+    elsif (@_ == 1) {
+        die err_first_arg_not_input
+            unless not(ref $_[0]) or ref($_[0]) eq 'Pegex::Input';
+        $input = shift;
+    }
+    elsif (@_ == 2) {
+        $input = shift;
+        if (not ref $_[0]) {
+            $options->{start} = shift;
+        }
+        else {
+            $options = shift;
+            die err_second_arg_not_options
+                unless ref $options eq 'HASH';
+        }
+    }
+    else {
+        die err_invalid_parse_args;
+    }
+
+    # Get an open Pegex::Input object:
+    if (defined $input) {
+        $self->{input} = (not ref $input)
+        ? Pegex::Input->new(string => $input)
+        : $input;
+    }
+
+    die err_invalid_parse_input
+        unless defined $self->{input} and
+            ref($self->{input}) eq 'Pegex::Input' and
+            $self->{input}->open;
+
+    # Check that options are valid:
+    for my $key (keys %$options) {
+        die err_invalid_parse_option $key unless $key =~
+            /^(start|return|partial)$/;
+    }
+
+    # Make sure grammar tree is built:
+    $self->{grammar}{tree} ||= $self->{grammar}->make_tree;
+
+    # Get the desired start rule:
+    $self->{start} =
+        $options->{start} ||
+        $self->{start} ||
+        $self->{grammar}->{tree}{'+toprule'} ||
+        $self->{grammar}->{tree}{'TOP'} && 'TOP' or
+        die err_no_starting_rule;
+    $self->{start} =~ s/-/_/g;
+
+    if (not defined $self->{optimizer}) {
+        $self->{optimizer} = Pegex::Optimizer->new(
+            parser => $self,
+            grammar => $self->{grammar},
+            receiver => $self->{receiver},
+        );
+        # XXX this should optimize all rules, not just the tree starting at
+        # $start. Otherwise we can reuse the parser with differing start rules.
+        $self->optimizer->optimize_grammar($self->{start});
+
+        $self->{position} = 0;
+        $self->{farthest} = 0;
+    }
+    else {
+        # This is a subsequent $parser->parse() call:
+    }
+
+
+    # Add circular ref and weaken it.
+    $self->{receiver}{parser} = $self;
+    Scalar::Util::weaken($self->{receiver}{parser});
+
+    if ($self->{receiver}->can("initial")) {
+        $self->{rule} = $self->{start};
+        $self->{parent} = {};
+        $self->{receiver}->initial();
+    }
+
+    {
+        no warnings 'redefine';
+        *match_next = (
+            $self->{recursion_warn_limit} or
+            $self->{recursion_limit} or
+            $self->{iteration_limit}
+         )
+            ? \&match_next_with_limit
+            : \&match_next_normal;
+    }
+
+    $self->{input}->open
+        unless $self->{input}{_is_open};
+    my $buffer = $self->{buffer} = $self->{input}->read;
+    $self->{length} = length $$buffer;
+    $self->{last_line_pos} = 0;
+    $self->{last_line} = 1;
+}
+
+sub _set_debug {
+    my ($self) = @_;
+
+    $self->{debug} //=
+        $ENV{PERL_PEGEX_DEBUG} //
+        $Pegex::Parser::Debug // 0;
+
+    $self->{debug_indent} //=
+        $ENV{PERL_PEGEX_DEBUG_INDENT} //
+        $Pegex::Parser::DebugIndent // 1;
+    $self->{debug_indent} = 1 if (
+        not length $self->{debug_indent}
+        or $self->{debug_indent} =~ tr/0-9//c
+        or $self->{debug_indent} < 0
+    );
+
+    if ($self->{debug}) {
+        $self->{debug_color} //=
+            $ENV{PERL_PEGEX_DEBUG_COLOR} //
+            $Pegex::Parser::DebugColor // 1;
+        my ($got, $not);
+        ($self->{debug_color}, $got, $not) =
+            split / *, */, $self->{debug_color};
+        $got ||= 'bright_green';
+        $not ||= 'bright_red';
+        $_ = [split ' ', $_] for ($got, $not);
+        $self->{debug_got_color} = $got;
+        $self->{debug_not_color} = $not;
+        my $c = $self->{debug_color} // 1;
+        $self->{debug_color} =
+            $c eq 'always' ? 1 :
+            $c eq 'auto' ? (-t STDERR ? 1 : 0) :
+            $c eq 'never' ? 0 :
+            $c =~ /^\d+$/ ? $c : 0;
+        if ($self->{debug_color}) {
+            require Term::ANSIColor;
+            if ($Term::ANSIColor::VERSION < 3.00) {
+                s/^bright_// for
+                    @{$self->{debug_got_color}},
+                    @{$self->{debug_not_color}};
+            }
+        }
+    }
+}
+
+sub _set_limits {
+    my ($self) = @_;
+
+    $self->{recursion_limit} //=
+        $ENV{PERL_PEGEX_RECURSION_LIMIT} //
+        $Pegex::Parser::RecursionLimit // 0;
+    $self->{recursion_warn_limit} //=
+        $ENV{PERL_PEGEX_RECURSION_WARN_LIMIT} //
+        $Pegex::Parser::RecursionWarnLimit // 0;
+    $self->{iteration_limit} //=
+        $ENV{PERL_PEGEX_ITERATION_LIMIT} //
+        $Pegex::Parser::IterationLimit // 0;
+}
+
+
+#------------------------------------------------------------------------------
+# Constants.
+#------------------------------------------------------------------------------
 
 # XXX Need to figure out what uses this. (sample.t)
 {

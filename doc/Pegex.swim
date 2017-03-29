@@ -16,11 +16,14 @@ or more explicitly:
 
   use Pegex::Parser;
   use Pegex::Grammar;
+  use ReceiverClass;
   my $pegex_grammar = Pegex::Grammar->new(
       text => $grammar,
   );
+  my $receiver_object = ReceiverClass->new();
   my $parser = Pegex::Parser->new(
       grammar => $pegex_grammar,
+      receiver => $receiver_object,
   );
   my $result = $parser->parse($input);
 
