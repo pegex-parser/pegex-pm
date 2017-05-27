@@ -195,6 +195,8 @@ This command found the file where your grammar is, compiled it, and used
 This is what a compiled Pegex grammar looks like. As soon as this module is
 loaded, the grammar is ready to be used by Pegex.
 
+=== Automatically rebuilding during development with environment variable
+
 If you find yourself needing to compile your grammar module a lot during
 development, just set this environment variable like so:
 
@@ -205,6 +207,20 @@ to be recompiled, and do it on the fly.
 
 If you have more than one grammar to recompile, just list all the names
 separated by commas.
+
+=== Automatically rebuilding during development using `make`
+
+Alternatively, if your module uses `ExtUtils::MakeMaker`, you can have `make`
+automatically rebuild your `Grammar` class if your `.pgx` file is updated.
+
+Simply add this at the bottom of your `Makefile.PL`:
+
+  sub MY::postamble {
+    <<EOF;
+  lib/MyThing/Grammar.pm : share/expr.pgx
+  \t\$(PERL) -Ilib -MMyThing::Grammar=compile
+  EOF
+  }
 
 = See Also
 
