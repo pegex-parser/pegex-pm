@@ -131,6 +131,7 @@ formally.
   use Pegex::Grammar;
   use Pegex::Tree;
   use Pegex::Input;
+  use YAML;
 
   $grammar_text = "
   expr: num PLUS num
@@ -145,7 +146,7 @@ formally.
   );
   $input = Pegex::Input->new(string => '2+2');
 
-  print Dump parser->parse($input);
+  print Dump $parser->parse($input);
 
 This code does the same thing as the first example, but this time we've made
 all the objects ourselves.
