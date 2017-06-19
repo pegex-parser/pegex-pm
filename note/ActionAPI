@@ -1,0 +1,101 @@
+This document describes changes that will be made to the Pegex::Compiler.
+
+The main goal is to make the action callback API, more regular and predictable.
+Another goal is to use the type signatures to generate more custom (and thus
+faster) matching functions.  It is my hypothesis that a Grammar class and a
+Receiver class can be compiled together into a single function; then there is
+no Pegex::Parser or other runtime.
+
+One side effect of this is that the compilation of a grammar can be used to
+print a report of the Receiver method signatures.
+
+Currently there is a Pegex::Compiler and a Pegex::Optimizer. The Compiler
+parses Pegex syntax into a tree and then walks the tree to make real regexes.
+The Optimizer does several phases of things to make the tree more normal up
+front, so that the Parser runtime can do less at parse time.
+
+In reality the Optimizer is just a multiphase addition to the already
+multiphase Compiler. So all the phases (and many more new ones) will be put
+into a new unified Compiler class. As each compilation phase happens it is
+marked in the grammar. Thus a partial compilation can be done, which is useful
+for various reasons.
+
+It should be noted that this new API will break old receivers, so we can make
+this back-compat, by adding an API version directive to new grammars, while we
+deprecate the old style.
+
+```
+%pegex v0.2.0
+```
+
+== New Pegex Compilation Phases
+
+This is a list of the phases that the new compiler will do:
+
+- parse:
+  - Parse Pegex syntax into basic AST
+- reduce:
+  - Reformat % clauses:
+      a<n,m> % b   =>   a (b a)<n-1,m-1>
+      a<n,m> %% b  =>   a (b a)<n-1,m-1> b?
+  - Remove unneeded groupings
+  - Combine adjacent regexes into single regex
+- include:
+  - Copy each %include statement recursively into grammar tree.
+    - This copies over rules verbatim, unless they have local overrides.
+- resolve:
+  - Resolve regex <refs>
+  - Mark unresolved rgx-s
+    - For dynamic regexes that change at parse time
+  - Keep the number of regex captures in the rgx tree node
+    - This is basically the type signature of that rules action
+- native:
+  - Native regexes
+    - \G for Perl, etc
+- expand:
+  - Add min, max,asr to each rule
+  - Store 'match' function pointers into the grammar tree for each rule
+  - Attach 'rule_' methods as 'match_' functions
+  - Attach 'action' receiver function pointers to rules
+    - Pulled from the receiver class and its parent classes
+- extend:
+  - Compile %extends grammars recursively
+  - Copy in fully compiled %extends rules
+    - This is like %include but the rules are already compiled, possibly to
+      different subrules and receiver classes.
+- optimize:
+  - Add specific, optimized methods to each rule
+- final:
+  - reduce again
+    - Reduce refs without actions
+  - Add trace wrappers
+  - Add error tracking wrappers
+  - Prune unused rules
+
+== New API
+
+To see the type signatures for a grammar's receiving methods, you will run:
+
+```
+pegex api grammar.pgx
+```
+
+or something like that.
+
+First off, a regex match returns the array of its captures. Simple.
+
+```
+r0: /abc/               => []
+r1: /(a)/               => [a]
+r2: /(a)b(c)/           => [a,c]
+r3: /(a)(b)(c)/         => [a,b,c]
+a1: /(a)/
+b1: /(b)/
+c1: /(c)/
+r3: /(a)/ b1 /(c)/      => [a,b,c]  # adjacent regexes are concatenated
+r4: (a1 b1 c1)          => [[a],[b],[c]]
+r5: (a1 | b1 | c1)      => [?,[b],?]  # ? is null. only one matches.
+r6: a1                  => [a]
+r7: a1?                 => [] or [[a]]
+r8: a1*                 => [] or [[a]] or [[a],[a]] ...
+r9: a1+                 => [[a]] or [[a],[a]] ...
