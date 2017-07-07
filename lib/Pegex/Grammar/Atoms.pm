@@ -98,7 +98,7 @@ my $atoms = {
 
     # Special rules for named control chars
     BS      => '\x08',    # Backspace
-    FF      => '\x12',    # Formfeed
+    FF      => '\x0C',    # Formfeed
 };
 
 sub atoms { return $atoms }
