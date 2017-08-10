@@ -1,3 +1,6 @@
+use strict;
+use warnings;
+
 use Test::More;
 
 eval "use YAML::XS; 1" or
