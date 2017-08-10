@@ -22,7 +22,7 @@ sub run {
 sub run_file {
     my ($self) = @_;
     my $file = shift(@{$self->args});
-    open IN, $file or die "Can't open '$file' for input";
+    open IN, "<", $file or die "Can't open '$file' for input";
     while (<IN>) {
         next if /^(?:#|$)/;
         chomp;

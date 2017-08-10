@@ -36,7 +36,7 @@ sub open {
         $self->{_buffer} = \ do { local $/; <$handle> };
     }
     elsif (my $path = $self->{file}) {
-        open my $handle, $path
+        open my $handle, "<", $path
             or die "Pegex::Input can't open $path for input:\n$!";
         $self->{_buffer} = \ do { local $/; <$handle> };
     }
