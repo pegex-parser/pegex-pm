@@ -1,3 +1,6 @@
+use strict;
+use warnings;
+
 # BEGIN { $Pegex::Parser::Debug = 1 }
 use Test::More tests => 8;
 
