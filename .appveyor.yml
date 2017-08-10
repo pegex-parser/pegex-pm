@@ -1,0 +1,14 @@
+cache:
+    - C:\Strawberry -> .appveyor_clear_cache.txt
+
+shallow_clone: true
+
+install:
+  - if not exist "C:\Strawberry" cinst strawberryperl
+  - set
+    PATH=C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
+  - cd C:\projects\%APPVEYOR_PROJECT_NAME%
+  - cpanm --quiet --notest YAML::XS TestML
+
+build_script:
+  - prove -lv test
