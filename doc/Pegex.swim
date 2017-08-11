@@ -56,7 +56,7 @@ language *Perl 6* is based on. Pegex brings this beauty to the other
 /just/modern languages that have a normal regular expression engine available.
 
 Pegex gets it name by combining Parsing Expression Grammars (PEG), with
-Regular Expessions (Regex). That's actually what Pegex does.
+Regular Expressions (Regex). That's actually what Pegex does.
 
 PEG is the cool new way to elegantly specify recursive descent grammars. The
 Perl 6 language is defined in terms of a self modifying PEG language called
