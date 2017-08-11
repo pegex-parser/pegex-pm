@@ -13,7 +13,7 @@ expressions.
 
 This tutorial is the Pegex version of that. Pegex actually comes with an
 examples directory that contains two arithmetic expression parser/evaluator
-caclulator programs:
+calculator programs:
 
 * https://github.com/ingydotnet/pegex-pm/blob/master/eg/calculator1.pl
 * https://github.com/ingydotnet/pegex-pm/blob/master/eg/calculator2.pl

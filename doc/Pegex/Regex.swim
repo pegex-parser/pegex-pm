@@ -26,7 +26,7 @@ You put a grammar into a `qr{...}x` and apply it the input string you want to
 parse. If the parse is successful, you get a data structure of the content in
 `%/`.
 
-IMHO, building a recursive decscent parser entirely inside of a regular
+IMHO, building a recursive descent parser entirely inside of a regular
 expression, is not the clearest way to code. But, of course, TMTOWTDI. :)
 
 = Note
