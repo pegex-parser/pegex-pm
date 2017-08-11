@@ -15,8 +15,8 @@ This tutorial is the Pegex version of that. Pegex actually comes with an
 examples directory that contains two arithmetic expression parser/evaluator
 caclulator programs:
 
-* https://github.com/ingydotnet/pegex-pm/blob/master/eg/calculator1.pl
-* https://github.com/ingydotnet/pegex-pm/blob/master/eg/calculator2.pl
+* https://github.com/ingydotnet/pegex-pm/blob/master/eg/calculator/calculator1.pl
+* https://github.com/ingydotnet/pegex-pm/blob/master/eg/calculator/calculator2.pl
 
 They both do the same thing but using different parsing approaches. We'll
 cover both of them in detail. I hope you'll find that Pegex handles operator
@@ -211,7 +211,7 @@ a separate base class called [example/lib/Precedence.pm].
 This is an implementation of Edsger Dijkstra's famous Shunting-yard
 Algorithm from 1961! It's only 20 lines of Perl. I won't include it
 inline here, but have a look at it for yourself.
-[https://github.com/ingydotnet/pegex-pm/blob/master/eg/lib/Precedence.pm]
+[https://github.com/ingydotnet/pegex-pm/blob/master/eg/calculator/lib/Precedence.pm]
 
 The Shunting-yard algorithm simply takes a list of expression tokens
 and transforms them into an RPN stack. It uses information from a

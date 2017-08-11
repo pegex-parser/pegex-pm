@@ -12,8 +12,8 @@ This document is just an index to the current tutorials.
 
 - [Pegex::Tutorial::Calculator]
 
-  Pegex comes with an `examples/` directory. One example is
-  [Pegex/examples/calculator.pl]. It's a simple precedence parser (and
+  Pegex comes with an `eg/` directory. One example is
+  [Pegex/eg/calculator/calculator1.pl]. It's a simple precedence parser (and
   evaluator) for arithmetic expressions like this one:
 
     1 * (2 + 3) / (4 ^ 5 ^ 6 - -7)
