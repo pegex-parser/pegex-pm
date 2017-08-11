@@ -233,11 +233,6 @@ changed the runner code to look like this:
       print $@ || "$expr = $result\n";
   }
 
-As you can see I also moved the evaluator code into a
-separate/reusable module: [example/lib/RPN.pm]. This is another 30
-lines of Perl. Please take a look at it.
-[https://github.com/ingydotnet/pegex-pm/blob/master/eg/lib/RPN.pm]
-
 So overall, this second solution was a bit more code, but also feels
 more solid on several levels.
 
