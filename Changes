@@ -1,4 +1,9 @@
 ---
+version: 0.64
+date:    Sun Sep 17 19:26:03 PDT 2017
+changes:
+- Applied 3 small PRs from @mohawk2++ (60,61,62)
+---
 version: 0.63
 date:    Sat Jan 14 09:31:43 PST 2017
 changes:
