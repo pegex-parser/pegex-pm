@@ -22,7 +22,7 @@ and possibly doing something with what is found.
 Usually a parser gets its instructions of what means what from something
 called a grammar. A grammar is a set of rules that defines how the input must
 be structured. In many parsing methodologies, input is preprocessed (possibly
-into tokesn) before the parser/grammar get to look at it. Although this is
+into tokens) before the parser/grammar get to look at it. Although this is
 a common method, it is not the only approach.
 
 = How Pegex Works

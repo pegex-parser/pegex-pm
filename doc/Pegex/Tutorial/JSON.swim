@@ -159,7 +159,7 @@ Pegex. This is the same as Perl's 'x' regex flag.
 
 Finally the '-' is Pegex's 'possible whitespace' indicator, and usually
 expands to `\s*`. It actually expands to `ws1`, which expands to `ws*`, which
-expands to `WS*`, which exapands to `\s*` (unless you override any of those
+expands to `WS*`, which expands to `\s*` (unless you override any of those
 rules).
 
 Getting back to JSON...
@@ -213,7 +213,7 @@ Let's take a look at that rule after Pegex compilation:
     - .rgx: \s*\}\s*
 
 The rule for 'map' says that the text must match 3 thing: a regex (opening
-curly brace), zero or more occurences of a rule called 'pair' separated by a
+curly brace), zero or more occurrences of a rule called 'pair' separated by a
 regex (comma), and finally another regex (closing curly).
 
 One thing that we have silently covered is the AND operator. That's because
@@ -275,7 +275,7 @@ Next we have the definition for a JSON string:
                       [
                           DOUBLE      # Double Quote
                           BACK        # Back Slash
-                          SLASH       # Foreward Slash
+                          SLASH       # Forward Slash
                           b           # Back Space
                           f           # Form Feed
                           n           # New Line
@@ -299,7 +299,7 @@ which Pegex compiles to this (simple and obvious;) regex:
 Let's see what's new here...
 
 First off, we have lots of whitespace and comments. This should make it pretty
-easy to at least get the overall picture of what is being accomlished.
+easy to at least get the overall picture of what is being accomplished.
 
 Understanding how the text between a pair of '/' characters gets transformed
 into a real regular expression, is the key to really understanding Pegex.
@@ -373,7 +373,7 @@ matching text was (even though in this case it has to be exactly the string
 
 = Pegex::JSON::Grammar - The Pegex Grammar Class
 
-The Pegex JSON grammar that we just looked at in excrucuating detail gets
+The Pegex JSON grammar that we just looked at in excruciating detail gets
 compiled into a Perl data structure and then embedded into a grammar class. A
 [Pegex::Parser] object (the thing that does the parsing) requires a grammar
 object (what to look for) and a receiver object (what to do when you find it).
@@ -383,7 +383,7 @@ this grammar: https://github.com/ingydotnet/pegex-pgx/blob/master/pegex.pgx
 is used by Pegex to parse our json.pgx grammar (and yes, it can parse
 pegex.pgx too).
 
-It is conceivable that everytime we wanted to parse JSON, we could parse the
+It is conceivable that every time we wanted to parse JSON, we could parse the
 json.pgx grammar first, but that would be a waste of time. So we cache the big
 grammar tree as a pure Perl data structure inside [Pegex::JSON::Grammar].
 

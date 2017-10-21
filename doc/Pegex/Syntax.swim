@@ -90,7 +90,7 @@ error message.
 `LSQUARE`, `RSQUARE` and `COMMA` are also rule references. Rules may be
 referred to inside of regexes, as long as they refer to regexes themselves. In
 this way big regexes can be assembled from smaller ones, thus leading to reuse
-and readability. Finally, the '*' after `node` is called a "quntifier". More
+and readability. Finally, the '*' after `node` is called a "quantifier". More
 about those later.
 
 == Rule References
@@ -134,7 +134,7 @@ Note that you must use angle brackets if you are using a numbered modifier:
 There is a special set of predefined "[Atoms|Pegex::Grammar::Atoms]" that
 refer to regular expression fragments. Atoms exist for every punctuation
 character and for characters commonly found in regular expressions. Atoms
-enchance readability in grammar texts, and allow special characters (like
+enhance readability in grammar texts, and allow special characters (like
 slash or hash) to be used as Pegex syntax.
 
 For example, a regex to match a comment might be '#' followed by anything,

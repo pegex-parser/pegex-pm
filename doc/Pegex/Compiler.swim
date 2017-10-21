@@ -61,7 +61,7 @@ The following public methods are available:
   Pegex::Parser.
 
   NOTE: While the parse phase of a compile is always the same for various
-  programming langugaes, the combinate phase takes into consideration and
+  programming languages, the combinate phase takes into consideration and
   special needs of the target language. Pegex::Compiler only combinates for
   Perl, although this is often sufficient in similar languages like Ruby or
   Python (PCRE based regexes). Languages like Java probably need to use their

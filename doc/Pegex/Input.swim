@@ -13,7 +13,7 @@ Pegex Parser Input Abstraction
 
 Pegex::Parser parses input. The input can be a string, a string reference, a
 file path, or an open file handle. Pegex::Input is an abstraction over any type
-of input. It provides a uniform inteface to the parser.
+of input. It provides a uniform interface to the parser.
 
 = Usage
 

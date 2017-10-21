@@ -51,7 +51,7 @@ briefly:
   concept you will encounter the least, but it is covered here for
   completeness.
 
-All of these object classes can be subclassed to acheive various results.
+All of these object classes can be subclassed to achieve various results.
 Normally, you will write your own Pegex grammar and a Pegex receiver to
 achieve a task.
 
