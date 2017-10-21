@@ -1,3 +1,6 @@
+use strict;
+use warnings;
+
 use Test::More;
 
 # 2015-02-03 Safe.pm fails to load on Travis + 5.14
