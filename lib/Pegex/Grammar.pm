@@ -18,7 +18,7 @@ sub make_text {
     my ($self) = @_;
     my $filename = $self->file
         or return '';
-    open TEXT, $filename
+    open TEXT, "<", $filename
         or die "Can't open '$filename' for input\n:$!";
     return do {local $/; <TEXT>}
 }
@@ -73,7 +73,7 @@ sub import {
 sub compile_into_module {
     my ($package) = @_;
     my $grammar_file = $package->file;
-    open GRAMMAR, $grammar_file
+    open GRAMMAR, "<", $grammar_file
         or die "Can't open $grammar_file for input";
     my $grammar_text = do {local $/; <GRAMMAR>};
     close GRAMMAR;
@@ -94,7 +94,7 @@ sub compile_into_module {
         require Pegex::Compiler;
         $perl = Pegex::Compiler->new->compile($grammar_text, @rules)->to_perl;
     }
-    open IN, $file or die $!;
+    open IN, "<", $file or die $!;
     my $module_text = do {local $/; <IN>};
     require Pegex;
     my $msg = "   # Generated/Inlined by Pegex::Grammar ($Pegex::VERSION)";
