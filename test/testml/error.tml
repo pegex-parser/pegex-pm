@@ -1,6 +1,6 @@
-%TestML 0.1.0
+#!/usr/bin/env testml
 
-parse_input(*grammar, *input).Catch ~~ *error
+parse-input(*grammar, *input).Catch.Msg ~~ *error
 
 === Error fails at furthest match
 # XXX This one not testing much.

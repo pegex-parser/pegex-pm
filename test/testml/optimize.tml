@@ -1,4 +1,4 @@
-%TestML 0.1.0
+#!/usr/bin/env testml
 
 # XXX Skipping this test for now. Might need a %Skip in TestML
 '1' == '1'

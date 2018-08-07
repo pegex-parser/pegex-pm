@@ -1,13 +1,13 @@
-%TestML 0.1.0
+#!/usr/bin/env testml
 
 Plan = 74
 Diff = 1
 
-Label = "$BlockLabel (bootstrap compile)"
-*grammar.bootstrap_compile.yaml.clean == *yaml
+*grammar.bootstrap-compile.yaml.clean == *yaml
+  :"+ (bootstrap compile)"
 
-Label = "$BlockLabel (pegex compile)"
 *grammar.compile.yaml.clean == *yaml
+  :"+ (pegex compile)"
 
 === Empty Grammar
 --- grammar
@@ -408,8 +408,8 @@ a:
 
 === Directives
 --- grammar
-\%grammar foo
-\%version 1.2.3
+%grammar foo
+%version 1.2.3
 
 --- yaml
 +grammar: foo
@@ -417,9 +417,9 @@ a:
 
 === Multiple Duplicate Directives
 --- grammar
-\%grammar foo
-\%include bar
-\%include baz
+%grammar foo
+%include bar
+%include baz
 
 --- yaml
 +grammar: foo
@@ -429,10 +429,10 @@ a:
 
 === Meta Lines
 --- grammar
-\%grammar        foo
-\%version    1.1.1
-\%extends bar bar  
-\%include   bazzy 
+%grammar        foo
+%version    1.1.1
+%extends bar bar  
+%include   bazzy 
 a: /b/
 --- yaml
 +extends: bar bar
