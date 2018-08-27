@@ -22,13 +22,17 @@ perl:
 - '5.10'
 
 install:
+- git clone --depth=1
+  git://github.com/testml-lang/testml ../testml
 - cpanm --quiet --notest
   Devel::Cover::Report::Coveralls
   Test::Simple
   YAML::XS
 
 script:
-- true && [ ! -e test/ ] ||
+- true &&
+  source ../testml/.rc &&
+  [ ! -e test/ ] ||
   PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
   prove -lv test/
 - true && [ ! -e test/ ] || cover
