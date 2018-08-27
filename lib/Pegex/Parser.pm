@@ -28,13 +28,15 @@ sub BUILD {
 
     $self->{throw_on_error} ||= 1;
 
-    $self->{debug} //=
-        $ENV{PERL_PEGEX_DEBUG} //
-        $Pegex::Parser::Debug // 0;
+    $self->{debug} =
+        defined($ENV{PERL_PEGEX_DEBUG}) ? $ENV{PERL_PEGEX_DEBUG} :
+        defined($Pegex::Parser::Debug) ? $Pegex::Parser::Debug : 0
+        unless defined($self->{debug});
 
-    $self->{debug_indent} //=
-        $ENV{PERL_PEGEX_DEBUG_INDENT} //
-        $Pegex::Parser::DebugIndent // 1;
+    $self->{debug_indent} =
+        defined($ENV{PERL_PEGEX_DEBUG_INDENT}) ? $ENV{PERL_PEGEX_DEBUG_INDENT} :
+        defined($Pegex::Parser::DebugIndent) ? $Pegex::Parser::DebugIndent : 1
+        unless defined($self->{debug_indent});
     $self->{debug_indent} = 1 if (
         not length $self->{debug_indent}
         or $self->{debug_indent} =~ tr/0-9//c
@@ -42,9 +44,10 @@ sub BUILD {
     );
 
     if ($self->{debug}) {
-        $self->{debug_color} //=
-            $ENV{PERL_PEGEX_DEBUG_COLOR} //
-            $Pegex::Parser::DebugColor // 1;
+        $self->{debug_color} =
+            defined($ENV{PERL_PEGEX_DEBUG_COLOR}) ? $ENV{PERL_PEGEX_DEBUG_COLOR} :
+            defined($Pegex::Parser::DebugColor) ? $Pegex::Parser::DebugColor : 1
+            unless defined($self->{debug_color});
         my ($got, $not);
         ($self->{debug_color}, $got, $not) =
             split / *, */, $self->{debug_color};
@@ -53,7 +56,7 @@ sub BUILD {
         $_ = [split ' ', $_] for ($got, $not);
         $self->{debug_got_color} = $got;
         $self->{debug_not_color} = $not;
-        my $c = $self->{debug_color} // 1;
+        my $c = defined($self->{debug_color}) ? $self->{debug_color} : 1;
         $self->{debug_color} =
             $c eq 'always' ? 1 :
             $c eq 'auto' ? (-t STDERR ? 1 : 0) :
@@ -68,15 +71,18 @@ sub BUILD {
             }
         }
     }
-    $self->{recursion_limit} //=
-        $ENV{PERL_PEGEX_RECURSION_LIMIT} //
-        $Pegex::Parser::RecursionLimit // 0;
-    $self->{recursion_warn_limit} //=
-        $ENV{PERL_PEGEX_RECURSION_WARN_LIMIT} //
-        $Pegex::Parser::RecursionWarnLimit // 0;
-    $self->{iteration_limit} //=
-        $ENV{PERL_PEGEX_ITERATION_LIMIT} //
-        $Pegex::Parser::IterationLimit // 0;
+    $self->{recursion_limit} =
+        defined($ENV{PERL_PEGEX_RECURSION_LIMIT}) ? $ENV{PERL_PEGEX_RECURSION_LIMIT} :
+        defined($Pegex::Parser::RecursionLimit) ? $Pegex::Parser::RecursionLimit : 0
+        unless defined($self->{recursion_limit});
+    $self->{recursion_warn_limit} =
+        defined($ENV{PERL_PEGEX_RECURSION_WARN_LIMIT}) ? $ENV{PERL_PEGEX_RECURSION_WARN_LIMIT} :
+        defined($Pegex::Parser::RecursionWarnLimit) ? $Pegex::Parser::RecursionWarnLimit : 0
+        unless defined($self->{recursion_warn_limit});
+    $self->{iteration_limit} =
+        defined($ENV{PERL_PEGEX_ITERATION_LIMIT}) ? $ENV{PERL_PEGEX_ITERATION_LIMIT} :
+        defined($Pegex::Parser::IterationLimit) ? $Pegex::Parser::IterationLimit : 0
+        unless defined($self->{iteration_limit});
 }
 
 # XXX Add an optional $position argument. Default to 0. This is the position

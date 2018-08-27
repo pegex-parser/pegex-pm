@@ -6,7 +6,7 @@ abstract: Acmeist PEG Parser Framework
 homepage: http://pegex.org
 language: perl
 license: perl
-copyright: 2010-2017
+copyright: 2010-2018
 
 author:
   name: Ingy döt Net
@@ -22,10 +22,11 @@ devel:
   irc: irc.freenode.net#pegex
 
 requires:
-  perl: 5.10.0
+  perl: 5.8.3
 
 test:
   requires:
+    Test::Simple: 0.88
     YAML::XS: 0
 
 =zild:

@@ -4,7 +4,7 @@ our $VERSION = '0.64';
 
 use Pegex::Parser;
 
-use Exporter 'import';
+use base 'Exporter';
 our @EXPORT = 'pegex';
 
 sub pegex {
