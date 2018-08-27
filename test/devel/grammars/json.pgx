@@ -49,7 +49,7 @@ string: /
           'u' HEX{4}    # Unicode octet pair
         )
       |
-        [^ DOUBLE CONTROLS ]  # Anything else
+        [^ DOUBLE CONTROLS BACK ]  # Anything else
       )*
     )
   DOUBLE
@@ -58,7 +58,7 @@ string: /
 number: /(
   DASH?
   (: '0' | [1-9] DIGIT* )
-  (: DOT DIGIT* )?
+  (: DOT DIGIT+ )?
   (: [eE] [ DASH PLUS ]? DIGIT+ )?
 )/
 
