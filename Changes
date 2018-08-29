@@ -1,6 +1,6 @@
 ---
-version: 0.64_01
-date:    Mon Aug 27 07:15:52 PDT 2018
+version: 0.65
+date:    Wed Aug 29 09:53:13 PDT 2018
 changes:
 - Use new TestML for tests
 - Support back to perl5.8.3
