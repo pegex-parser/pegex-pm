@@ -1,4 +1,9 @@
 ---
+version: 0.66
+date:    Sat Sep  1 11:20:12 PDT 2018
+changes:
+- Support back to perl5.8.1
+---
 version: 0.65
 date:    Wed Aug 29 09:53:13 PDT 2018
 changes:
