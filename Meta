@@ -22,7 +22,7 @@ devel:
   irc: irc.freenode.net#pegex
 
 requires:
-  perl: 5.8.3
+  perl: 5.8.1
 
 test:
   requires:
