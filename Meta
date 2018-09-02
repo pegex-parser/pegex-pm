@@ -23,6 +23,7 @@ devel:
 
 requires:
   perl: 5.8.1
+  Scalar::Util: 0
 
 test:
   requires:
