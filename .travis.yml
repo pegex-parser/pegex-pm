@@ -26,7 +26,7 @@ install:
   git://github.com/testml-lang/testml ../testml
 - cpanm --quiet --notest
   Devel::Cover::Report::Coveralls
-  Test::Simple
+  Scalar::Util
   YAML::XS
 
 script:

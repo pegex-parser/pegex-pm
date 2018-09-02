@@ -1,4 +1,10 @@
 ---
+version: 0.67
+date:    Sun Sep  2 09:30:23 PDT 2018
+changes:
+- https://github.com/ingydotnet/pegex-pm/pull/70 @manwar++
+- https://github.com/ingydotnet/pegex-pm/pull/67 @paultcochrane++
+---
 version: 0.66
 date:    Sat Sep  1 11:20:12 PDT 2018
 changes:
