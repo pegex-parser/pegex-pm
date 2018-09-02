@@ -105,7 +105,7 @@ https://github.com/ingydotnet/testml-pgx/blob/master/testml.pgx.json
 
 Pegex::Compiler further compiles this into a Perl 5 only grammar tree, which
 becomes this module:
-https://github.com/ingydotnet/testml-pm/blob/master/lib/TestML/Grammar.pm
+https://github.com/ingydotnet/testml-pm/blob/master/lib/TestML/Compiler/Pegex/Grammar.pm
 
 TestML::Parser::Grammar is a subclass of Pegex::Grammar. It can be used to
 parse TestML files. TestML::Parser calls the [parse()] method of the grammar

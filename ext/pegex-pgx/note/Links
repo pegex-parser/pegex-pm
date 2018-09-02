@@ -13,7 +13,7 @@ Web Links
 
 
 # Grammars / Definitions (some PEG)
-- http://flash-gordon.me.uk/ansi.c.txt — C grammar
+- http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf — C grammar
 - http://ssw.jku.at/Coco/ — ATG grammars
 - www.yaml.org/spec/1.2/ — YAML grammar
 - http://www.w3.org/TR/xml11/ — XML grammar
@@ -28,7 +28,7 @@ Web Links
 
 
 # PEG Frameworks / Implementations
-- http://treetop.rubyforge.org/ — PEG parser in Ruby
+- https://github.com/nathansobo/treetop/ — PEG parser in Ruby
 - http://kschiess.github.io/parslet/ — PEG parser in Ruby
 - https://github.com/PhilippeSigaud/Pegged/wiki/_pages — PEG Parser in D
 - http://piumarta.com/software/peg/ — peg/leg PEG Parser in C

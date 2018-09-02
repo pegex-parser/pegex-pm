@@ -30,7 +30,7 @@ in, needs to be converted.
 
 See:
 
-* https://github.com/michaelficarra/CoffeeScriptRedux/blob/master/src/grammar.pegjs
+* https://github.com/michaelficarra/CoffeeScriptRedux/blob/master/src/grammar.pegcoffee
 * https://github.com/ingydotnet/pegex-pm
 * https://github.com/ingydotnet/testml-pm
 

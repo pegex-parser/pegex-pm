@@ -44,6 +44,6 @@ parsers:
 
 * "The Pegex Perl Module"[https://github.com/ingydotnet/pegex-pm]
 * "The TestML Perl Module"[https://github.com/ingydotnet/testml-pm]
-* "A JSON Decoder Perl Module"[https://github.com/ingydotnet/pegex-json-pgx]
+* "Pegex JSON Parser for Perl"[https://github.com/ingydotnet/pegex-json-pm]
 * "A JSONY Decoder Perl Module"[https://github.com/ingydotnet/json-pgx]
 * "A CronTab Parser Perl Module"[https://github.com/ingydotnet/pegex-crontab-pm]
