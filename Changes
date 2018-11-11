@@ -1,4 +1,9 @@
 ---
+version: 0.69
+date:    Sun Nov 11 12:10:38 PST 2018
+changes:
+- https://github.com/ingydotnet/pegex-pm/pull/72 @mohawk2++
+---
 version: 0.68
 date:    Sun Nov 11 10:57:31 PST 2018
 changes:
