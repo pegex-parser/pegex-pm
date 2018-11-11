@@ -5,10 +5,32 @@ shallow_clone: true
 
 install:
 - if not exist "C:\Strawberry" cinst strawberryperl
+- set TESTML_ROOT=C:\testml
 - set
   PATH=C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
 - cd C:\projects\%APPVEYOR_PROJECT_NAME%
+- git clone --depth=1 git://github.com/testml-lang/testml %TESTML_ROOT%
 - cpanm --quiet --notest YAML::XS TestML
+  Scalar::Util Tie::IxHash
+- mkdir inc\bin
+- copy %TESTML_ROOT%\src\perl5\pkg\bin\* inc\bin
+- mkdir t
+- copy test\mice.pgx t
+- mkdir inc\t
+- perl -MConfig -e "my $f = shift; open my $h, $f; my @l = <$h>; $l[0] = qq{#!$Config{perlpath}\r\n}; open my $h2, '>', $f; print $h2 @l" inc/bin/testml-cpan
+- perl -I%TESTML_ROOT%\src\testml-compiler-perl5\lib -MTestML::Compiler
+  -e "p($_) for glob 'test/*.t';"
+  -e "tf('inc/bin/testml-cpan.cmd', qq{if exist \"%%%%~dpn0\" perl %%%%0 %%%%*\n}); "
+  -e "sub p {"
+    -e "my $f = shift;"
+    -e "my $c = ff($f);"
+    -e "if ($c =~ /\Atestml/) { $c = ff(qq{test/$c}) }"
+    -e "$f =~ s#\Atest#t#;"
+    -e "if ($c =~ /\A#!.*testml$/m) { (my $cf = $f) =~ s#(.*)\.t$#inc/$1.tml.json#; tf($cf, TestML::Compiler->new->compile($c)); $c = qq{#!inc\\bin\\testml-cpan\r\n}; }"
+    -e "tf($f, $c);"
+  -e "}"
+  -e "sub ff { local $/; open my $fh, shift; <$fh> }"
+  -e "sub tf { open my $fh, '>', shift; print $fh shift }"
 
 build_script:
-- prove -lv test
+- prove -I%TESTML_ROOT%/src/perl5/lib -Itest -lv t
