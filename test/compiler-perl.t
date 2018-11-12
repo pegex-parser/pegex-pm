@@ -1,14 +1,43 @@
-use Test::More 0.88;
+#!/usr/bin/env testml-pl5
+
+# XXX Bug in testml perl5 runtime for exec_func
+# % *pgx.compile.(compiled)=>
+#   compiled.ok == True :"+: '{*pgx}' compiled"
+#   compiled.perl !=~ *not :"+: No '{*not}'"
+
+*pgx.compile.ok == True :"+: '{*pgx}' compiled"
+*pgx.compile.perl !=~ *not :"+: No '{*not}'"
+
+
+%Bridge perl5
+
 use Pegex::Compiler;
+use TestML::Boolean;
 
-my $text = <<'EOF';
+sub compile {
+    my ($self, $pgx) = @_;
+    my $unit = Pegex::Compiler->new->compile($pgx);
+    return $unit;
+}
+
+sub ok {
+    my ($self, $compiled) = @_;
+    return $compiled->tree ? true : false;
+}
+
+sub perl {
+    my ($self, $compiled) = @_;
+    return $compiled->to_perl;
+}
+
+
+=== Test 1
+--- pgx
 all: /\x{FEFF}/
-EOF
-my $compiler = Pegex::Compiler->new;
-my $compiled = $compiler->compile($text);
-ok $compiled->tree, 'compiled';
+--- not(/): /u$
 
-my $perl = $compiled->to_perl;
-unlike $perl, qr#/u$#m, 'no /u';
+=== Test 2
+--- pgx
+all: 'xxx' /\x{FEFF}/ 'yyy'
+--- ^not
 
-done_testing;
