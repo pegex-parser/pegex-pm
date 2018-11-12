@@ -1,4 +1,9 @@
 ---
+version: 0.70
+date:    Sun Nov 11 16:47:51 PST 2018
+changes:
+- Use new Dist-Zilla-Plugin-TestMLIncluder (spaces in windows paths)
+---
 version: 0.69
 date:    Sun Nov 11 12:10:38 PST 2018
 changes:
