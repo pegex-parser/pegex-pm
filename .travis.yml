@@ -26,7 +26,12 @@ install:
   git://github.com/testml-lang/testml ../testml
 - cpanm --quiet --notest
   Devel::Cover::Report::Coveralls
+  Carp
+  File::ShareDir::Install
+  JSON::XS
   Scalar::Util
+  Test::Pod
+  XXX
   YAML::XS
 
 script:

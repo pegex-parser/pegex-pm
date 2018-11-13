@@ -27,12 +27,11 @@ requires:
   Carp: 0
   File::ShareDir::Install: 0
   JSON::XS: 0
-  YAML::XS: 0
+  YAML::XS: 0.74
   XXX: 0
 
 test:
   requires:
-    YAML::XS: 0.74
     Test::Pod: 0
 
 =zild:
