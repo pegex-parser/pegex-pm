@@ -26,7 +26,7 @@ install:
     -e "my $c = ff($f);"
     -e "if ($c =~ /\Atestml/) { $c = ff(qq{test/$c}) }"
     -e "$f =~ s#\Atest#t#;"
-    -e "if ($c =~ /\A#!.*testml$/m) { (my $cf = $f) =~ s#(.*)\.t$#inc/$1.tml.json#; tf($cf, TestML::Compiler->new->compile($c)); $c = qq{#!inc\\bin\\testml-cpan\r\n}; }"
+    -e "if ($c =~ /\A#!.*testml/m) { (my $cf = $f) =~ s#(.*)\.t$#inc/$1.tml.json#; tf($cf, TestML::Compiler->new->compile($c)); $c = qq{#!inc\\bin\\testml-cpan\r\n}; }"
     -e "tf($f, $c);"
   -e "}"
   -e "sub ff { local $/; open my $fh, shift; <$fh> }"
