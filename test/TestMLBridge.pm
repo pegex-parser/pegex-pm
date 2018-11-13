@@ -10,6 +10,24 @@ use Pegex::Tree;
 use Pegex::Tree::Wrap;
 use TestAST;
 use YAML::XS;
+use TestML::Boolean;
+
+sub compile_pegex {
+    my ($self, $pgx) = @_;
+    my $unit = Pegex::Compiler->new->compile($pgx);
+    return $unit;
+}
+
+sub ok {
+    my ($self, $compiled) = @_;
+    return $compiled->tree ? true : false;
+}
+
+sub perl {
+    my ($self, $compiled) = @_;
+    return $compiled->to_perl;
+}
+
 
 sub compile {
     my ($self, $grammar) = @_;

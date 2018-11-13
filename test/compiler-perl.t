@@ -5,30 +5,8 @@
 #   compiled.ok == True :"+: '{*pgx}' compiled"
 #   compiled.perl !=~ *not :"+: No '{*not}'"
 
-*pgx.compile.ok == True :"+: '{*pgx}' compiled"
-*pgx.compile.perl !=~ *not :"+: No '{*not}'"
-
-
-%Bridge perl5
-
-use Pegex::Compiler;
-use TestML::Boolean;
-
-sub compile {
-    my ($self, $pgx) = @_;
-    my $unit = Pegex::Compiler->new->compile($pgx);
-    return $unit;
-}
-
-sub ok {
-    my ($self, $compiled) = @_;
-    return $compiled->tree ? true : false;
-}
-
-sub perl {
-    my ($self, $compiled) = @_;
-    return $compiled->to_perl;
-}
+*pgx.compile-pegex.ok == True :"+: '{*pgx}' compiled"
+*pgx.compile-pegex.perl !=~ *not :"+: No '{*not}'"
 
 
 === Test 1
