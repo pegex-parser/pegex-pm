@@ -1,13 +1,13 @@
 #!/usr/bin/env testml
 
-Plan = 74
-Diff = 1
+
 
 *grammar.bootstrap-compile.yaml.clean == *yaml
   :"+ (bootstrap compile)"
 
 *grammar.compile.yaml.clean == *yaml
   :"+ (pegex compile)"
+
 
 === Empty Grammar
 --- grammar
@@ -35,7 +35,6 @@ b:
 a: ( b c* )+
 b: /x/
 c: x
-
 --- yaml
 a:
   +min: 1
@@ -65,9 +64,7 @@ a:
 === Single Rule brackets
 --- grammar
 a: <x>
---- yaml
-a:
-  .ref: x
+--- ^yaml
 
 === All Rules
 --- grammar
@@ -159,10 +156,7 @@ a:
 === Single Rule With Trailing Quantifier (no angles)
 --- grammar
 a: x*
---- yaml
-a:
-  +min: 0
-  .ref: x
+--- ^yaml
 
 === Single Rule With Leading Assertion
 --- grammar

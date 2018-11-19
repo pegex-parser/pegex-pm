@@ -2,9 +2,12 @@
 
 Plan = 50
 
-*grammar1.bootstrap-compile.yaml == *grammar2.bootstrap-compile.yaml
+=>
+  *grammar1.bootstrap-compile.yaml == *grammar2.bootstrap-compile.yaml
+    :"+ (bootstrap compile)"
 
-*grammar1.compile.yaml == *grammar2.compile.yaml
+  *grammar1.compile.yaml == *grammar2.compile.yaml
+    :"+ (pegex compile)"
 
 
 
