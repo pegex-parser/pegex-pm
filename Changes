@@ -1,4 +1,11 @@
 ---
+version: 0.72
+date:    Sun Jan  5 14:03:42 PST 2020
+changes:
+- Apply https://github.com/ingydotnet/pegex-pm/pull/75 (for real)
+  Fix P::P::Grammar title - not "::Name"
+  @mohawk2++
+---
 version: 0.71
 date:    Sun Jan  5 10:59:17 PST 2020
 changes:
