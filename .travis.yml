@@ -42,6 +42,7 @@ install:
   JSON::XS
   Scalar::Util
   Test::Pod
+  Tie::IxHash
   XXX
   YAML::XS
 

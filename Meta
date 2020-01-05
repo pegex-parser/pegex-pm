@@ -33,6 +33,7 @@ requires:
 test:
   requires:
     Test::Pod: 0
+    Tie::IxHash: 0
 
 =zild:
   include_testml: 1
