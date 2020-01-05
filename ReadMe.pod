@@ -12,7 +12,7 @@ Pegex - Acmeist PEG Parser Framework
 
 =head1 Version
 
-This document describes L<Pegex> version B<0.70>.
+This document describes L<Pegex> version B<0.71>.
 
 =head1 Synopsis
 
@@ -133,7 +133,7 @@ Ingy döt Net <ingy@cpan.org>
 
 =head1 Copyright and License
 
-Copyright 2010-2018. Ingy döt Net.
+Copyright 2010-2020. Ingy döt Net.
 
 This program is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
