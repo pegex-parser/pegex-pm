@@ -3,6 +3,7 @@ use strict; use warnings;
 package TestMLBridge;
 use base 'TestML::Bridge';
 
+use lib 'lib';
 use Pegex;
 use Pegex::Compiler;
 use Pegex::Bootstrap;

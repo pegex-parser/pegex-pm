@@ -11,6 +11,7 @@
 
 %Bridge perl5
 
+use lib 'lib';
 use Pegex::Compiler;
 use TestML::Boolean;
 
