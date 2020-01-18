@@ -1,1 +1,1 @@
-testml/compiler-equivalence.tml
+pegex-tml/compiler-equivalence.tml

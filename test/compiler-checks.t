@@ -1,1 +1,1 @@
-testml/compiler-checks.tml
+pegex-tml/compiler-checks.tml
