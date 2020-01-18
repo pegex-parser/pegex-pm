@@ -11,6 +11,7 @@
 
 %Bridge perl5
 
+use lib 'lib';  # Avoid using testml/ext/perl5/Pegex*
 use Pegex::Compiler;
 use TestML::Boolean;
 
