@@ -54,6 +54,8 @@ for my $repo (@$repos) {
     }
 }
 
+pass 'at least one pass else makes test fail spuriously';
+
 done_testing;
 
 sub assert_git_ok {
