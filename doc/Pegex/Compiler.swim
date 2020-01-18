@@ -102,7 +102,7 @@ Simply use this command:
   perl -Ilib -MMyThing::Grammar=compile
 
 and Pegex::Grammar will call Pegex::Compile to put your compiled grammar inside
-your `tree` subroutine. It will actually write the text into your module. This
+your `make_tree` subroutine. It will actually write the text into your module. This
 makes it trivial to update your grammar module after making changes to the
 grammar file.
 
