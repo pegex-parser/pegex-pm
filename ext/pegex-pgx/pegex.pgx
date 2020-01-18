@@ -52,7 +52,7 @@ quoted-regex:
 
 regular-expression:
   /( group-modifier? )/
-  '/'
+  .('/')
   whitespace-start?
   (
   | whitespace-must
@@ -62,7 +62,7 @@ regular-expression:
   | +
   | regex-raw
   )*
-  '/'
+  .('/')
 
 whitespace-start: / ([ PLUS DASH]) (! [ DASH TILDE ]) /
 

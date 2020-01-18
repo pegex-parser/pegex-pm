@@ -11,7 +11,7 @@ use constant file => 'ext/pegex-pgx/pegex.pgx';
 #     Pegex::Bootstrap->new->compile($grammar)->tree;
 # }
 
-sub text {   # Generated/Inlined by Pegex::Grammar (0.72)
+sub text {   # Generated/Inlined by Pegex::Grammar (0.74)
 <<'...';
 # This is the Pegex grammar for Pegex grammars!
 
@@ -67,7 +67,7 @@ quoted-regex:
 
 regular-expression:
   /( group-modifier? )/
-  '/'
+  .('/')
   whitespace-start?
   (
   | whitespace-must
@@ -77,7 +77,7 @@ regular-expression:
   | +
   | regex-raw
   )*
-  '/'
+  .('/')
 
 whitespace-start: / ([ PLUS DASH]) (! [ DASH TILDE ]) /
 
@@ -264,7 +264,7 @@ ERROR-separation:
 ...
 }
 
-sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.72)
+sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.74)
   {
     '+grammar' => 'pegex',
     '+include' => 'pegex-atoms',
@@ -657,6 +657,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.72)
           '.rgx' => qr/\G([\-\.]?)/
         },
         {
+          '-skip' => 1,
           '.rgx' => qr/\G\//
         },
         {
@@ -687,6 +688,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.72)
           ]
         },
         {
+          '-skip' => 1,
           '.rgx' => qr/\G\//
         }
       ]

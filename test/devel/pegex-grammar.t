@@ -164,7 +164,7 @@ comment:
 doc_ending:
   .rgx: <_><EOS>
 ending:
-  .rgx: ~?(?:<BREAK><_><SEMI>?<_>|<comment><_><SEMI>?<_>|<SEMI><_>|<EOS>)
+  .rgx: <_>(?:<BREAK><_><SEMI>?<_>|<comment><_><SEMI>?<_>|<SEMI><_>|<EOS>)
 error_message:
   .rgx: '`([^`<DOS>]*)`'
 grammar:
@@ -200,7 +200,9 @@ regex_rule_reference:
   .rgx: (?:<__>(<rule-name>)|(?:<(<rule-name>)\>))(?!<BLANK>*:)
 regular_expression:
   .all:
-  - .rgx: /
+  - .rgx: (<group-modifier>?)
+  - -skip: 1
+    .rgx: /
   - +max: 1
     .ref: whitespace_start
   - +min: 0
@@ -211,7 +213,8 @@ regular_expression:
     - .ref: regex_rule_reference
     - .ref: __
     - .ref: regex_raw
-  - .rgx: /
+  - -skip: 1
+    .rgx: /
 rule_definition:
   .all:
   - .ref: rule_start
