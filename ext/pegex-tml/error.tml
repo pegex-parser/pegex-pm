@@ -1,6 +1,9 @@
-%TestML 0.1.0
+#!/usr/bin/env testml
 
-parse_input(*grammar, *input).Catch ~~ *error
+
+parse-input(*grammar, *input).Catch.Msg ~~ *error
+ :"Test error message: +"
+
 
 === Error fails at furthest match
 # XXX This one not testing much.
@@ -12,6 +15,7 @@ c: /c/
 bbbbddddd
 --- error: ddddd\n
 
+
 ### TODO ###
 # === Pegex: Illegal meta rule
 # --- grammar
@@ -22,6 +26,7 @@ bbbbddddd
 # aaa
 # --- error: Illegal meta rule
 
+
 === Pegex: Rule header syntax error
 --- grammar
 a|: /a+/
@@ -29,12 +34,14 @@ a|: /a+/
 aaa
 --- error: Rule header syntax error
 
+
 === Pegex: Rule ending syntax error
 --- grammar
 a: /a+/ |
 --- input
 aaa
 --- error: Rule ending syntax error
+
 
 === Pegex: Illegal rule modifier
 --- grammar
@@ -44,6 +51,7 @@ b: ^<a>1-2
 aaa
 --- error: Illegal rule modifier
 
+
 === Pegex: Missing > in rule reference
 --- grammar
 a: /a+/
@@ -51,6 +59,7 @@ b: !<a1-2
 --- input
 aaa
 --- error: Missing > in rule reference
+
 
 === Pegex: Missing < in rule reference
 --- grammar
@@ -61,6 +70,7 @@ aaa
 --- error: Rule ending syntax error
 # --- error: Missing < in rule reference
 
+
 === Pegex: Illegal character in rule quantifier
 --- grammar
 a: /a+/
@@ -69,6 +79,7 @@ b: !a^1-2
 aaa
 --- error: Rule ending syntax error
 # --- error: Illegal character in rule quantifier
+
 
 === Pegex: Unprotected rule name with numeric quantifier
 --- grammar
@@ -80,12 +91,14 @@ aaa
 # --- error: Rule ending syntax error
 # --- error: Unprotected rule name with numeric quantifier
 
+
 === Pegex: Runaway regular expression
 --- grammar
 a: /a+
 --- input
 aaa
 --- error: Runaway regular expression
+
 
 === Pegex: Illegal group rule modifier
 --- grammar
@@ -95,6 +108,7 @@ b: !(a =<a>)1-2
 aaa
 --- error: Illegal group rule modifier
 
+
 === Pegex: Runaway rule group
 --- grammar
 a: /a+/
@@ -102,6 +116,7 @@ b: .(a =<a>1-2
 --- input
 aaa
 --- error: Runaway rule group
+
 
 === Pegex: Illegal character in group rule quantifier
 --- grammar
@@ -111,6 +126,7 @@ b: .(a =<a>)^2
 aaa
 --- error: Rule ending syntax error
 # --- error: Illegal character in group rule quantifier
+
 
 === Pegex: Multi-line error messages not allowed
 --- grammar
@@ -123,6 +139,7 @@ illegal`
 aaa
 --- error: Multi-line error messages not allowed
 
+
 === Pegex: Runaway error message
 --- grammar
 a: /a+/
@@ -134,6 +151,7 @@ illegal
 aaa
 --- error: Runaway error message
 
+
 === Pegex: Leading separator form (BOK) no longer supported
 --- grammar
 a: /a+/ %%% ~
@@ -141,6 +159,7 @@ a: /a+/ %%% ~
 aaa
 --- error: Rule ending syntax error
 # --- error: Leading separator form (BOK) no longer supported
+
 
 === Pegex: Illegal characters in separator indicator
 --- grammar

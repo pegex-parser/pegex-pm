@@ -6,6 +6,7 @@
 [subrepo]
 	remote = git@github.com:ingydotnet/pegex-tml
 	branch = master
-	commit = 212c3ae5ec4d55a2fd2579ca21c2a573eab52f59
-	parent = 994ecf9a53a08aab387bb9e7688047a8d78c9940
-	cmdver = 0.1.0
+	commit = 33a5faf9dab4eaed7ad452c6e274ea05d5e34ec7
+	parent = 222f376b1bf311392309cb88fe232e29f2cfa2e2
+	cmdver = 0.4.1
+	method = merge

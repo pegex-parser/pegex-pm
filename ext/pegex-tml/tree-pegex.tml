@@ -1,17 +1,19 @@
-%TestML 0.1.0
+#!/usr/bin/env testml
 
-Plan = 2
 
-Label = '$BlockLabel - Pegex::Tree'
-parse_to_tree(*grammar, *input).yaml.clean == *tree
-Label = '$BlockLabel - Pegex::Tree::Wrap'
-parse_to_tree_wrap(*grammar, *input).yaml.clean == *wrap
-Label = '$BlockLabel - TestAST'
-parse_to_tree_test(*grammar, *input).yaml.clean == *ast
+parse-to-tree(*grammar, *input).yaml.clean == *tree
+  :"+ - Pegex::Tree"
+
+parse-to-tree-wrap(*grammar, *input).yaml.clean == *wrap
+  :"+ - Pegex::Tree::Wrap"
+
+parse-to-tree-test(*grammar, *input).yaml.clean == *ast
+  :"+ - TestAST"
+
 
 === Part of Pegex Grammar
---- grammar
-\# This is the Pegex grammar for Pegex grammars!
+--- grammar(#)
+# This is the Pegex grammar for Pegex grammars!
 grammar: ( <comment>* <rule_definition> )+ <comment>*
 rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
 rule_name: /(<ALPHA><WORD>*)/
@@ -19,8 +21,8 @@ comment: /<HASH><line><EOL>/
 line: /<ANY>*/
 rule_line: /(<line>)<EOL>/
 
---- input
-\# This is the Pegex grammar for Pegex grammars!
+--- input(#)
+# This is the Pegex grammar for Pegex grammars!
 grammar: ( <comment>* <rule_definition> )+ <comment>*
 rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
 --- tree
@@ -31,6 +33,7 @@ rule_definition: /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
     - - rule_definition
       - /<WS>*/ <rule_name> /<COLON><WS>*/ <rule_line>
 - []
+
 --- wrap
 grammar:
 - - - []
