@@ -140,8 +140,8 @@ b: ( /x/ )+
 
 # XXX The \\# looks lie a testml bug. Should only need \#.
 === Comments
---- grammar
-\\# line comment
+--- grammar(#)
+# line comment
 
 a: b    # end of line comment
 
@@ -159,7 +159,7 @@ b: /
 
 
 === Comment between rules
---- grammar
+--- grammar(#)
 a: b
-\\# comment
+# comment
 b: c
