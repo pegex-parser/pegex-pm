@@ -270,12 +270,17 @@ sub got_list_sep {
 
 sub got_rule_reference {
     my ($self, $token) = @_;
-    my $name = $token->[2];
+    my @args = @$token;
+    if (@args > 4) {
+        # from the RE, fix up
+        @args = ($args[0], undef, $args[5] || $args[6], undef);
+    }
+    my $name = $args[2];
     $name =~ s/-/_/g;
     $name =~ s/^<(.*)>$/$1/;
     my $rule = { '.ref' => $name };
-    Pegex::Pegex::AST::set_modifier($rule, $token->[1]);
-    Pegex::Pegex::AST::set_quantity($rule, $token->[3]);
+    Pegex::Pegex::AST::set_modifier($rule, $args[1]);
+    Pegex::Pegex::AST::set_quantity($rule, $args[3]);
     push @{$self->{stack}}, $rule;
 }
 
@@ -423,11 +428,12 @@ my $UNDER  = '\_';
 my $HASH  = '\#';
 my $EOL   = '\r?\n';
 my $WORD  = "$DASH$UNDER$ALPHA$DIGIT";
-my $WS    = "(?:[\ \t]|$HASH.*$EOL)";
+my $BLANK = "[\ \t]";
+my $WS    = "(?:$BLANK|$HASH.*$EOL)";
 my $MOD   = '[\!\=\-\+\.]';
 my $GMOD  = '[\.\-]';
 my $QUANT = '(?:[\?\*\+]|\d+(?:\+|\-\d+)?)';
-my $NAME  = "$UNDER?[$UNDER$ALPHA](?:[$WORD]*[$ALPHA$DIGIT])?";
+my $NAME  = "(?:[$ALPHA][$ALPHA$DIGIT]*(?:[\-_][$ALPHA$DIGIT]+)*|\-+|_+)(?=[^$WORD\-])";
 
 # Repeated Rules:
 my $rem   = [qr/\A(?:$WS+|$EOL+)/];
@@ -493,9 +499,9 @@ has regexes => {
         [qr/\A(?:\-|~)(?![-~])/,
             'whitespace-maybe'],
         $qr,
-        [qr/\A$WS+()($NAME|<$NAME>)/,
+        [qr/\A ()()()() (?: $WS+($NAME) | <($NAME)> ) (?!$BLANK*\:) /x,
             'rule-reference'],
-        [qr/\A([^\s\'\/]+)/,
+        [qr/\A( (?:\(<?[=!]) | (?:[^\s\/\'<]+) )/x,
             'regex-raw'],
         [qr/\A$WS+/],
         [qr/\A$EOL+/],
