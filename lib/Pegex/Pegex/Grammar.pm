@@ -97,7 +97,7 @@ regex-rule-reference:
 regex-raw:
   /
     (
-      '(?'? '<' |
+      (: LPAREN LANGLE? [ EQUAL BANG ] ) | # look-ahead and -behind
       (?:[^ WS SLASH TICK LANGLE ])+
     )
   /
@@ -646,7 +646,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.74)
       '.rgx' => qr/\G'([^']*)'/
     },
     'regex_raw' => {
-      '.rgx' => qr/\G(\(\??<|(?:[^\s\/'<])+)/
+      '.rgx' => qr/\G((?:\(<?[=!])|(?:[^\s\/'<])+)/
     },
     'regex_rule_reference' => {
       '.rgx' => qr/\G(?:(?:\s|\#.*(?:\n|\z))+((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))\>))(?![\ \t]*:)/

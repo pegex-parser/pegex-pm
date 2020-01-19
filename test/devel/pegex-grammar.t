@@ -195,7 +195,7 @@ meta_value:
 quoted_regex:
   .rgx: <TICK>([^<TICK>]*)<TICK>
 regex_raw:
-  .rgx: (\(\??<|(?:[^<WS><SLASH><TICK><LANGLE>])+)
+  .rgx: ((?:<LPAREN><LANGLE>?[<EQUAL><BANG>])|(?:[^<WS><SLASH><TICK><LANGLE>])+)
 regex_rule_reference:
   .rgx: (?:<__>(<rule-name>)|(?:<(<rule-name>)\>))(?!<BLANK>*:)
 regular_expression:

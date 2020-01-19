@@ -82,7 +82,7 @@ regex-rule-reference:
 regex-raw:
   /
     (
-      '(?'? '<' |
+      (: LPAREN LANGLE? [ EQUAL BANG ] ) | # look-ahead and -behind
       (?:[^ WS SLASH TICK LANGLE ])+
     )
   /
