@@ -6,6 +6,14 @@ use Pegex::Pegex::Grammar;
 use Pegex::Pegex::AST;
 use Pegex::Grammar::Atoms;
 
+use constant DEBUG => $ENV{PERL_PEGEX_COMPILER_DEBUG};
+
+sub _debug {
+    my ($label, @data) = @_;
+    print STDERR "$label: ";
+    print STDERR _dumper_nice(@data > 1 ? \@data : $data[0]);
+}
+
 has tree => ();
 
 sub compile {
@@ -57,9 +65,11 @@ sub combinate {
     $self->{_tree} = {
         map {($_, $self->{tree}->{$_})} grep { /^\+/ } keys %{$self->{tree}}
     };
+    DEBUG and _debug "combinate", $self->{tree}, $self->{_tree};
     for my $rule (@rule) {
         $self->combinate_rule($rule);
     }
+    DEBUG and _debug "combinate DONE", $self->{_tree};
     $self->{tree} = $self->{_tree};
     delete $self->{_tree};
     return $self;
@@ -67,6 +77,7 @@ sub combinate {
 
 sub combinate_rule {
     my ($self, $rule) = @_;
+    DEBUG and _debug "combinate_rule($rule)";
     return if exists $self->{_tree}->{$rule};
 
     my $object = $self->{_tree}->{$rule} = $self->{tree}->{$rule};
@@ -75,6 +86,7 @@ sub combinate_rule {
 
 sub combinate_object {
     my ($self, $object) = @_;
+    DEBUG and _debug "combinate_object", $object;
     if (exists $object->{'.rgx'}) {
         $self->combinate_re($object);
     }
@@ -111,9 +123,11 @@ sub combinate_object {
 
 sub combinate_re {
     my ($self, $regexp) = @_;
+    DEBUG and _debug "combinate_re", $regexp;
     my $atoms = Pegex::Grammar::Atoms->atoms;
     my $re = $regexp->{'.rgx'};
     while (1) {
+        DEBUG and _debug "combinate_re sofar($re)";
         $re =~ s[(?<!\\)(~+)]['<ws' . length($1) . '>']ge;
         $re =~ s[<([\w\-]+)>][
             (my $key = $1) =~ s/-/_/g;
@@ -174,14 +188,19 @@ sub to_json {
     return JSON::PP->new->utf8->canonical->pretty->encode($self->tree);
 }
 
-sub to_perl {
-    my $self = shift;
+sub _dumper_nice {
+    my ($data) = @_;
     require Data::Dumper;
     no warnings 'once';
-    $Data::Dumper::Terse = 1;
-    $Data::Dumper::Indent = 1;
-    $Data::Dumper::Sortkeys = 1;
-    my $perl = Data::Dumper::Dumper($self->tree);
+    local $Data::Dumper::Terse = 1;
+    local $Data::Dumper::Indent = 1;
+    local $Data::Dumper::Sortkeys = 1;
+    return Data::Dumper::Dumper($data);
+}
+
+sub to_perl {
+    my $self = shift;
+    my $perl = _dumper_nice($self->tree);
     $perl =~ s/\?\^u?:/?-xism:/g; # the "u" is perl 5.14-18 equiv of /u
     $perl =~ s!(\.rgx.*?qr/)\(\?-xism:(.*)\)(?=/)!$1$2!g;
     $perl =~ s!/u$!/!gm; # perl 5.20+ put /u, older perls don't understand

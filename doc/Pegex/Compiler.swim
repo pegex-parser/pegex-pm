@@ -24,6 +24,8 @@ The grammar tree can be serialized to YAML, JSON, Perl, or any other
 programming language. This makes it extremely portable. Pegex::Grammar has
 methods for serializing to all these forms.
 
+Set `$ENV{PERL_PEGEX_COMPILER_DEBUG}` to true to see debugging output.
+
 NOTE: Unless you are developing Pegex based modules, you can safely ignore this
 module. Even if you are you probably won't use it directly. See [In Place
 Compilation] below.
