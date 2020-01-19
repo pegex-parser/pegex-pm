@@ -204,7 +204,7 @@ a:
 a: '*** <foo>  + - bar '
 --- yaml
 a:
-  .rgx: '\*\*\*\ <foo\>\ \ \+\ \-\ bar\ '
+  .lit: '*** <foo>  + - bar '
 
 
 === Quoted String in Regex

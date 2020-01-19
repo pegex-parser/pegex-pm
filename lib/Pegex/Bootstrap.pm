@@ -294,11 +294,16 @@ sub got_whitespace_must {
     $self->got_rule_reference(['whitespace-maybe', undef, '__', undef]);
 }
 
+sub _quote_literal_to_re {
+    my ($got) = @_;
+    $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
+    return $got;
+}
+
 sub got_quoted_regex {
     my ($self, $token) = @_;
     my $regex = $token->[1];
-    $regex =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
-    push @{$self->{stack}}, { '.rgx' => $regex };
+    push @{$self->{stack}}, { '.lit' => $regex };
 }
 
 sub got_regex_start {
@@ -314,6 +319,9 @@ sub got_regex_end {
             my $part;
             if (defined($part = $_->{'.rgx'})) {
                 $part;
+            }
+            elsif (defined($part = $_->{'.lit'})) {
+                _quote_literal_to_re($part);
             }
             elsif (defined($part = $_->{'.ref'})) {
                 "<$part>";

@@ -87,6 +87,11 @@ sub combinate_rule {
 sub combinate_object {
     my ($self, $object) = @_;
     DEBUG and _debug "combinate_object", $object;
+    if (exists $object->{'.lit'}) {
+        my $got = delete $object->{'.lit'};
+        $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
+        $object->{'.rgx'} = $got;
+    }
     if (exists $object->{'.rgx'}) {
         $self->combinate_re($object);
     }

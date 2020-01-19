@@ -202,7 +202,7 @@ regular_expression:
   .all:
   - .rgx: (<group-modifier>?)
   - -skip: 1
-    .rgx: /
+    .lit: /
   - +max: 1
     .ref: whitespace_start
   - +min: 0
@@ -214,7 +214,7 @@ regular_expression:
     - .ref: __
     - .ref: regex_raw
   - -skip: 1
-    .rgx: /
+    .lit: /
 rule_definition:
   .all:
   - .ref: rule_start

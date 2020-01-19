@@ -116,10 +116,15 @@ sub got_rule_reference {
     return $node;
 }
 
+sub _quote_literal_to_re {
+    my ($got) = @_;
+    $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
+    return $got;
+}
+
 sub got_quoted_regex {
     my ($self, $got) = @_;
-    $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
-    return +{ '.rgx' => $got };
+    return +{ '.lit' => $got };
 }
 
 sub got_regex_rule_reference {
@@ -157,6 +162,9 @@ sub got_regular_expression {
             my $part;
             if (defined($part = $_->{'.rgx'})) {
                 $part;
+            }
+            elsif (defined($part = $_->{'.lit'})) {
+                _quote_literal_to_re($part);
             }
             elsif (defined($part = $_->{'.ref'})) {
                 "<$part>";
