@@ -93,7 +93,7 @@ sub combinate_object {
         $object->{'.rgx'} = $got;
     }
     if (exists $object->{'.rgx'}) {
-        $self->combinate_re($object);
+        $object->{'.rgx'} = $self->combinate_re($object->{'.rgx'});
     }
     elsif (exists $object->{'.ref'}) {
         my $rule = $object->{'.ref'};
@@ -127,10 +127,10 @@ sub combinate_object {
 }
 
 sub combinate_re {
-    my ($self, $regexp) = @_;
-    DEBUG and _debug "combinate_re", $regexp;
+    my ($self, $re) = @_;
+    DEBUG and _debug "combinate_re", $re;
     my $atoms = Pegex::Grammar::Atoms->atoms;
-    my $re = $regexp->{'.rgx'};
+    my $prev = $re;
     while (1) {
         DEBUG and _debug "combinate_re sofar($re)";
         $re =~ s[(?<!\\)(~+)]['<ws' . length($1) . '>']ge;
@@ -143,9 +143,10 @@ sub combinate_re {
             or $atoms->{$key}
             or die "'$key' not defined in the grammar"
         ]e;
-        last if $re eq $regexp->{'.rgx'};
-        $regexp->{'.rgx'} = $re;
+        last if $re eq $prev;
+        $prev = $re;
     }
+    return $re;
 }
 
 #-----------------------------------------------------------------------------#
