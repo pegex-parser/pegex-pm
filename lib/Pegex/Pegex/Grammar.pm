@@ -134,7 +134,7 @@ meta-value:
         ending
     /
 
-rule_name: /
+rule-name: /
   (:
     ALPHA ALNUM* (:[ DASH UNDER ] ALNUM+)* |
     DASH+ |
