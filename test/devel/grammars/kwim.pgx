@@ -12,9 +12,7 @@ block-top:
   | block-blank
   | block-comment
   | line-comment
-  | block-rule
   | block-head
-  | block-code
   | block-pref
   | block-list
   | block-title
@@ -37,30 +35,12 @@ line-comment: /
   line-blank?
 /
 
-block-rule: /
-  DASH{4} EOL
-  line-blank?
-/
-
 block-head: /
   ( EQUAL{1,4} ) SPACE+ (:
     ( ANY+? ) SPACE+ EQUAL+ EOL
   | ( ANY+ EOL (: [^ WS ] ANY* EOL )* [^ WS ] ANY*? ) SPACE+ EQUAL+ EOL
   | ( ANY+ EOL (: [^ WS ] ANY* EOL )*) (= [ marker-block-start ] | EOL | EOS)
   ) line-blank?
-/
-
-block-code: /
-  BACK BACK BACK
-/
-block-pref: /
-  (
-    (:
-      line-blank*
-      SPACE SPACE ANY* EOL
-    )+
-  )
-  line-blank?
 /
 
 block-pref: /
@@ -80,13 +60,13 @@ block-list:
 
 block-list-bullet: /(
   line-list-item-bullet
-  (: line-list-item-bullet | line-blank | line-indented )*
+  (: line-list-item-bullet | line-blank* line-indented )*
   line-blank?
 )/
 
 block-list-number: /(
   line-list-item-number
-  (: line-list-item-number | line-blank | line-indented )*
+  (: line-list-item-number | line-blank* line-indented )*
   line-blank?
 )/
 
@@ -155,7 +135,6 @@ phrase-markup:
   | phrase-bold
   | phrase-emph
   | phrase-del
-  | phrase-under
   | phrase-hyper
   | phrase-link
   | marker-next
@@ -194,11 +173,6 @@ phrase-del:
   / marker-del (= NS) (! marker-del) /
   ( !marker-del phrase-markup )+
   marker-del
-
-phrase-under:
-  / marker-under (= NS) (! marker-under) /
-  ( !marker-under phrase-markup )+
-  marker-under
 
 phrase-hyper:
   | phrase-hyper-named
@@ -262,7 +236,6 @@ marker-code: / GRAVE /
 marker-bold: / STAR /
 marker-emph: / SLASH /
 marker-del: / DASH DASH /
-marker-under: / UNDER /
 marker-link: / DOUBLE LSQUARE /
 marker-esc: / BACK /
 

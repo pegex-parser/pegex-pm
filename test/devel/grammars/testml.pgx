@@ -1,238 +1,326 @@
-%grammar testml
-%version 0.0.1
-%include atom
-
+#------------------------------------------------------------------------------
+# Pegex grammar for TestML 0.3.0
+#------------------------------------------------------------------------------
 testml-document:
+  head-section
   code-section
-  data-section?
+  bridge-section
+  data-section
 
-# General Tokens
-escape: / [0nt] /
-line: / ANY* EOL /
-blanks: / BLANK+ /
-blank-line: / BLANK* EOL /
-comment: / '#' line /
-ws: /(: BLANK | EOL | comment )/
+head-section:
+  comment-lines*
+  testml-directive?
+  head-statement*
 
-# Strings
-quoted-string:
-  | single-quoted-string
-  | double-quoted-string
+head-statement:
+  | head-directive
+  | comment-lines
 
-single-quoted-string:
-  /(:
-    SINGLE
-    ((:
-      [^ BREAK BACK SINGLE ] |
-      BACK SINGLE |
-      BACK BACK
-    )*?)
-    SINGLE
-  )/
+head-directive: xxx
 
-double-quoted-string:
-  /(:
-    DOUBLE
-    ((:
-      [^ BREAK BACK DOUBLE] |
-      BACK DOUBLE |
-      BACK BACK |
-      BACK escape
-    )*?)
-    DOUBLE
-  )/
+testml-directive:
+  / '%TestML' + version-number ending /
 
-unquoted-string:
-  /(
-    [^ BLANKS BREAK HASH]
-    (:
-      [^ BREAK HASH]*
-      [^ BLANKS BREAK HASH]
-    )?
-  )/
+import-directive:
+  '%Import' + (module-name (+ module-name)*) ending
 
-number: / ( DIGIT+ ) /
-
-
-# TestML Code Section
-code-section: (
-  | +
-  | assignment-statement
-  | code-statement
-)*
-
-assignment-statement:
-  variable-name
-  / WS+ '=' WS+ /
-  code-expression
-  ending
-
-variable-name: /( ALPHA WORD* )/
+#------------------------------------------------------------------------------
+code-section:
+  code-statement*
 
 code-statement:
+  | import-directive
+  | comment-lines
+  | assignment-statement
+  | loop-statement
+  | pick-statement
+  | function-statement
+  | expression-statement
+
+assignment-statement:
+  / ( variable-name ) +
+    ( assignment-operator ) +/
   code-expression
-  assertion-call?
   ending
 
-ending: /(: ';' | EOL )/ | =ending2
+loop-statement:
+  /'%' +/
+  ( pick-statement
+  | function-statement
+  | expression-statement
+  )
 
-ending2: /- '}'/
+pick-statement:
+  pick-expression
+  ( function-statement
+  | expression-statement
+  )
+
+function-statement:
+  function-object
+
+expression-statement:
+  expression-label?
+  code-expression
+  assertion-expression?
+  suffix-label?
+  ending
+
+expression-label:
+  / double-string COLON WS* /
+
+suffix-label:
+  / WS* COLON double-string /
+
+pick-expression:
+  LANGLE
+  (
+    pick-argument (/ COMMA -/ pick-argument)*
+  )
+  RANGLE +
+
+pick-argument:
+  /( BANG? STAR LOWER [\-\_a-z0-9]* )/
 
 code-expression:
   code-object
-  call-call*
-
-call-call:
-  !assertion-call-test
-  call-indicator
-  code-object
+  function-call*
+  each-call?
 
 code-object:
-  | function-object
   | point-object
   | string-object
   | number-object
+  | regex-object
+  | list-object
+  | function-object
   | call-object
+
+point-object:
+  / STAR ( LOWER [\-\_a-z0-9]* ) /
+  lookup-indices
+
+string-object:
+  | double-string
+  | single-string
+
+double-string:
+  / DOUBLE
+    ( (: [^ BREAK BACK DOUBLE] | BACK [ BACK DOUBLE '0nt'])*? )
+    DOUBLE /
+
+single-string:
+  / SINGLE
+    ( (: [^ BREAK BACK SINGLE] | BACK [ BACK SINGLE ])*? )
+    SINGLE /
+
+number-object: /( DASH? DIGIT+ (: DOT DIGIT+)? )/
+
+regex-object:
+  / SLASH
+    ( (: [^ BREAK BACK SLASH] | BACK [ BACK SLASH 'ntwds{}[]?*+'])*? )
+    SLASH /
+
+list-object:
+  '[' ( code-object ( /- ',' -/ code-object )* )? ']'
 
 function-object:
   function-signature?
-  function-start
-  ( + | assignment-statement | code-statement )*
-  /- '}'/
+  /- '=>' ending/
+  .indent
+  (.ondent code-statement)+
+  .undent
+  /(?= ALL | EOS)/
 
-function-start: /- ( '{' ) -/
+callable-function-object:
+  function-signature
+  /- '=>' ending/
+  .indent
+  (.ondent code-statement)+
+  .undent
+  /(?= ALL | EOS)/
 
 function-signature:
-  /'(' -/
-  function-variables?
-  /- ')'/
+  / LPAREN -/
+  function-variables
+  /-  RPAREN/
 
 function-variables:
-  function-variable+ % /- ',' -/
-
-function-variable: /( ALPHA WORD* )/
-
-point-object: /( '*' LOWER WORD* )/
-
-string-object: quoted-string
-
-number-object: number
+  (function-variable ( / COMMA -/ function-variable )* )?
 
 call-object:
   call-name
-  call-argument-list?
+  call-arguments?
+  lookup-indices
 
-call-name: user-call | core-call
+call-name: /( identifier-name | '_' )/
 
-user-call: /( LOWER WORD* )/
+call-arguments:
+  LPAREN
+  (
+    code-expression (/ COMMA -/ code-expression)*
+  )?
+  RPAREN
 
-core-call: /( UPPER WORD* )/
+lookup-indices:
+  lookup-index*
 
-call-indicator: /(: '.' - | - '.' )/
+lookup-index: /
+  COLON
+  ( identifier-name
+  | integer-literal
+  | single-string
+  | double-string
+  | '(' identifier-name ')'
+  | '[' identifier-name ']'
+  )
+/
 
-call-argument-list:
-  /'(' -/
-  call-argument* % /- ',' -/
-  /- ')'/
+function-call:
+  .call-operator
+  (
+  | call-object
+  | callable-function-object
+  )
 
-call-argument: code-expression
-
-assertion-call-test: / call-indicator (:EQ|OK|HAS) /
-
-assertion-call:
-  | +assertion-eq
-  | +assertion-ok
-  | +assertion-has
-
-assertion-eq:
-  | +assertion-operator-eq
-  | +assertion-function-eq
-
-assertion-operator-eq:
-  /+ '==' +/
+each-call:
+  .each-operator
   code-expression
 
-assertion-function-eq:
-  / call-indicator 'EQ(' /
-  code-expression
-  / ')' /
+assertion-expression:
+  /+
+    ( '=='
+    | '=~'
+    | '~~'
+    | '!=='
+    | '!=~'
+    | '!~~'
+    )
+  +/ code-expression
 
-assertion-ok: assertion-function-ok
+#------------------------------------------------------------------------------
+bridge-section:
+  bridge-definition*
 
-assertion-function-ok: / call-indicator ('OK') empty-parens? /
+bridge-definition:
+  bridge-directive
+  bridge-code
+  bridge-end?
 
-assertion-has: +assertion-operator-has | +assertion-function-has
+bridge-directive:
+  /'%Bridge' + bridge-language - EOL/
 
-assertion-operator-has:
-  /+ '~~' +/
-  code-expression
+bridge-language:
+  /( [a-z][a-z0-9]* | 'c++' )/
 
-assertion-function-has:
-  / call-indicator 'HAS(' /
-  code-expression
-  / ')' /
+bridge-code:
+  /((: ANY* EOL)*?) bridge-boundary comment-lines?/
 
-empty-parens: /(: '(' - ')' )/
+bridge-boundary:
+  /(= '%Bridge' | comment-lines? block-marker )/
 
-# TestML Data Section
+bridge-end:
+  /'%Bridge' + 'end' - EOL/
+
+#------------------------------------------------------------------------------
+data-section:
+  block-definition*
+
+block-definition:
+  block-heading
+  user-defined
+  point-definition*
+
+block-heading:
+  / block-marker (: + ( ANY*? ) -)?  EOL /
+
+user-defined:
+  /( point-lines )/
+
+point-lines:
+  /(: ANY* EOL)*? point-boundary/
+
+point-definition:
+  | point-single
+  | point-multi
+
+point-single: /
+  point-marker +
+  ( CARET? )
+  ( point-name )
+  (: '=' ( point-name ) )?
+  (: ('(') ( ['#+-~/@%']* ) ')' )?
+  COLON ( (= EOL) | + (: ANY*? -))
+  EOL
+  point-lines
+/
+
+point-multi: /
+  point-marker +
+  ( CARET? )
+  ( point-name )
+  (: '=' ( point-name ) )?
+  (: ('(') ( ['<#+-~"/@%']* ) ')' )?
+  EOL
+  ( point-lines )
+/
+
+#------------------------------------------------------------------------------
+
+ending: /(: SEMI (: SPACE (= NS))? | EOL?)/
+
+assignment-operator:
+  /(: '=' | '||=' )/
+
+blank-line:
+  /(: WS* EOL | WS+ EOS )/
+
+call-operator: DOT
+
+each-operator: /+ '%' +/
+
+comment-line:
+  /(: HASH ANY* EOL)/
+
+comment-lines:
+  /(: (: comment-line | blank-line )+ )/
+
 block-marker: '==='
+
 point-marker: '---'
 
-data-section: data-block*
+point-boundary:
+  /(= point-marker | block-marker | eos )/
 
-data-block:
-  block-header
-  .( blank-line | comment )*
-  block-point*
+eos: / EOS /
 
-block-header:
-  block-marker
-  ( blanks block-label )?
-  blank-line
+integer-literal:
+  /(: '0' | DASH? [1-9] DIGIT* )/
 
-block-label: unquoted-string
+function-variable:
+  /( STAR? identifier-user | '_' )/
 
-block-point: lines-point | phrase-point
+identifier-name:
+  / ALPHA ALNUM* (: DASH ALPHA ALNUM*)* /
 
-lines-point:
-  point-marker
-  blanks
-  point-name
-  blank-line
-  point-lines
+identifier-user:
+  / LOWER ALNUM* (: DASH ALPHA ALNUM*)* /
 
-point-lines: /(
-  (:
-    (!
-      (: block-marker | point-marker )
-      SPACE WORD
-    )
-    line
-  )*
-)/
-
-phrase-point:
-  point-marker
-  blanks
-  point-name
-  / COLON BLANK /
-  point-phrase
-  / EOL /
-  /(:
-    comment |
-    blank-line
-  )*/
+module-name: /( NS+ )/
 
 point-name:
-  /(
-    user-point-name |
-    core-point-name
-  )/
+  /(: identifier-user | pseudo-point-name)/
 
-user-point-name:  / LOWER WORD* /
+pseudo-point-name:
+  /(:HEAD|LAST|ONLY|SKIP|TODO|DIFF|WHEN)/
 
-core-point-name:  / UPPER WORD* /
+variable-name: / identifier-name /
 
-point-phrase: unquoted-string
+version-number:
+  /( DIGIT+ DOT DIGIT+ DOT DIGIT+ )/
+
+ws: / BLANK /
+
+xxx: 'XXX'
 
 # vim: sw=2 lisp:

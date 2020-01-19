@@ -1,13 +1,13 @@
 %grammar vic
-%version 0.2.1
-#COPYRIGHT: 2014 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
+%version 0.2.7
+#COPYRIGHT: 2014-2015 Vikas N Kumar <vikas@cpan.org>. All Rights Reserved
 
 # mcu-select is necessary.
-program: mcu-select header* statement* EOS
+program: comment* mcu-select header* statement* EOS
 
 header: pragmas | comment
-mcu-select: /'PIC' BLANK+ ( mcu-types ) line-ending/
-mcu-types: / ALPHA DIGIT+ ALPHA DIGIT+ / # the uc names are like P16F690 or P16F84 etc.
+mcu-select: /'PIC' BLANK+ ( mcu-types | 'Any' ) line-ending/
+mcu-types: / ALPHA+ DIGIT+ ALPHA DIGIT+ ALPHA? / # the uc names are like P16F690 or P16F84 or P16F628A etc.
 pragmas: 'pragma' + (variable | name) (pragma-expression | name)? line-ending
 pragma-expression: name / EQUAL -/ (number-units | number | string) -
 
@@ -47,7 +47,7 @@ unary-rhs: - variable - unary-operator -
 unary-expr: unary-lhs | unary-rhs
 complement: - complement-operator - rhs-expr -
 nested-expr-value: start-nested-expr rhs-expr end-nested-expr
-expr-value: - (number | array-element | variable | number-units | complement |
+expr-value: - (parameter | number | array-element | variable | number-units | complement |
                 modifier-variable | nested-expr-value) -
 rhs-expr: expr-value+ % rhs-operator
 assign-expr: - variable - assign-operator - rhs-expr
@@ -73,7 +73,7 @@ assert-statement: name assert-condition - assert-message? - line-ending
 
 complement-operator: /( TILDE | BANG )/
 unary-operator: /( PLUS PLUS | DASH DASH)/
-assign-operator: /([ PLUS DASH PERCENT CARET STAR PIPE AMP SLASH]? EQUAL)/ | shift-assign-operator
+assign-operator: /([ PLUS DASH PERCENT CARET STAR PIPE AMP SLASH DOT]? EQUAL)/ | shift-assign-operator
 compare-operator: /([ BANG EQUAL LANGLE RANGLE] EQUAL | (: LANGLE | RANGLE ))/
 logic-operator: /([ AMP PIPE]{2})/
 math-operator: /([ PLUS DASH STAR SLASH PERCENT])/
@@ -93,16 +93,18 @@ string: single-quoted-string | double-quoted-string
 number-units: number - units
 # number handles both hex and non-hex values for ease of use
 number: /('0'[xX] HEX+ | '-'? DIGIT+)/ | boolean
+real-number: /('-'? DIGIT* '.' DIGIT+)/ | /('-'? DIGIT+ '.' DIGIT*)/
 units: /([mu]?'s'|[kM]?'Hz' | '%')/
 boolean: /('TRUE'|'FALSE'|'true'|'false'|'0'|'1')/
 
-validated-variable: identifier-without-keyword
+parameter: /'shift'/
+validated-variable: identifier-without-keyword /([+-]?)/
 modifier-variable: identifier-without-keyword - variable
 modifier-constant: identifier-without-keyword - constant
 variable: DOLLAR identifier
 constant: number-units | number | string | array
 array: start-array - array-element-type* % list-separator - end-array
-array-element-type: - (number-units | number | string) -
+array-element-type: - (number-units | real-number | number | string) -
 identifier-without-keyword: /(! keyword)( ALPHA[ WORDS]*)/
 identifier: /( ALPHA [ WORDS ]*)/
 keyword: /'if'|'else'|'while'|'true'|'false'|'TRUE'|'FALSE'/

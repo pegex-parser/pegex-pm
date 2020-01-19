@@ -1,18 +1,20 @@
 # Pegex grammar for the Swim markup language
 #
-#   Copyright 2014. Ingy döt Net <ingy@ingy.net>
+#   Copyright 2014-2015. Ingy döt Net <ingy@ingy.net>
 #
 
 %grammar swim
-%version 0.0.1
+%version 0.0.2
 
 document: block-top*
 
 block-top:
+  | block-func
   | block-blank
   | block-comment
   | line-comment
   | block-rule
+  | block-meta
   | block-head
   | block-code
   | block-pref
@@ -23,43 +25,53 @@ block-top:
 
 block-blank: line-blank
 
-block-comment: /
-  HASH HASH HASH EOL
-  (
-    (: ANY*? EOL)*?
+block-func: /
+  LANGLE LANGLE LANGLE SPACE*
+  ( [ WORD DASH ]+ ) SPACE*
+  (:
+    ( ANY*?) SPACE*
+      |
+    EOL ( (: ANY* EOL )*? )
   )
-  HASH HASH HASH EOL
+  RANGLE RANGLE RANGLE EOL
+/
+
+block-comment: /
+  HASH{3} EOL
+  ( line*? )
+  HASH{3} END
   line-blank?
 /
 
 line-comment: /
-  HASH SPACE? ( ANY*? ) EOL
+  HASH SPACE? ( ANY*? ) END
   line-blank?
 /
 
 block-rule: /
-  DASH{4} EOL
+  DASH{4} END
+  line-blank?
+/
+
+block-meta: /
+  DASH{3} EOL
+  ( ALL*? EOL | )
+  DOT{3} END
   line-blank?
 /
 
 block-head: /
   ( EQUAL{1,4} ) SPACE+ (:
-    ( ANY+? ) SPACE+ EQUAL+ EOL
-  | ( ANY+ EOL (: [^ WS ] ANY* EOL )* [^ WS ] ANY*? ) SPACE+ EQUAL+ EOL
-  | ( ANY+ EOL (: [^ WS ] ANY* EOL )*) (= [ marker-block-start ] | EOL | EOS)
+    ( ANY+? ) SPACE+ EQUAL+ END
+  | ( ANY+ EOL (: [^ WS ] ANY* EOL )* [^ WS ] ANY*? ) SPACE+ EQUAL+ END
+  | ( ANY+ EOL (: [^ WS ] ANY* EOL )*) (= [ marker-block-start ] | END )
   ) line-blank?
 /
 
 block-code: /
-  BACK BACK BACK
-/
-block-pref: /
-  (
-    (:
-      line-blank*
-      SPACE SPACE ANY* EOL
-    )+
-  )
+  BACK{3} EOL
+  ( line*? )
+  BACK{3} END
   line-blank?
 /
 
@@ -67,7 +79,7 @@ block-pref: /
   (
     (:
       line-blank*
-      SPACE SPACE ANY* EOL
+      SPACE SPACE ANY* END
     )+
   )
   line-blank?
@@ -81,13 +93,11 @@ block-list:
 block-list-bullet: /(
   line-list-item-bullet
   (: line-list-item-bullet | line-blank | line-indented )*
-  line-blank?
 )/
 
 block-list-number: /(
   line-list-item-number
   (: line-list-item-number | line-blank | line-indented )*
-  line-blank?
 )/
 
 block-list-data: /(
@@ -96,15 +106,15 @@ block-list-data: /(
 )/
 
 line-list-item-bullet: /
-  STAR SPACE ANY* EOL
+  STAR SPACE ANY* END
 /
 
 line-list-item-number: /
-  PLUS SPACE ANY* EOL
+  PLUS SPACE ANY* END
 /
 
 line-list-item-data: /
-  DASH SPACE ANY* EOL
+  DASH SPACE ANY* END
 /
 
 block-list-item: (
@@ -120,7 +130,7 @@ block-list-item: (
 )*
 
 line-indented: /
-  SPACE SPACE ANY* EOL
+  SPACE{2} ANY* END
 /
 
 block-title: /
@@ -129,7 +139,7 @@ block-title: /
   (:
     line-blank
     ( text-line )
-    (= line-blank | EOS )
+    (= line-blank )
   )?
   line-blank?
 /
@@ -150,6 +160,7 @@ text-markup: phrase-markup+
 phrase-markup:
   | phrase-text
   | marker-escape
+  | phrase-meta
   | phrase-func
   | phrase-code
   | phrase-bold
@@ -174,19 +185,27 @@ phrase-code: /
   marker-code
 /
 
+# This is just a special case of phrase-func.
+# Should be removed and handled there.
+phrase-meta: /
+  marker-pfunc-start '$'
+  ( [^ marker-pfunc-end]+ )
+  marker-pfunc-end
+/
+
 phrase-func: /
-  marker-func-start
-  ( [^ marker-func-end]+ )
-  marker-func-end
+  marker-pfunc-start
+  ( [^ marker-pfunc-end]+ )
+  marker-pfunc-end
 /
 
 phrase-bold:
-  / marker-bold (= NS [^ marker-bold]) /
+  / marker-bold (= NS) (! marker-bold) /
   ( !marker-bold phrase-markup )+
   marker-bold
 
 phrase-emph:
-  / marker-emph (= NS [^ marker-emph]) /
+  / marker-emph (= NS) (! marker-emph) /
   ( !marker-emph phrase-markup )+
   marker-emph
 
@@ -231,9 +250,13 @@ phrase-link-plain: /
 
 marker-next: / ( ALL ) /
 
-text-line: / (: (! [ marker-block-start NL ] SPACE) ANY* NS ANY* (: EOL | EOS ) ) /
+line: / (: ANY* END ) /
 
-line-blank: / (: SPACE* EOL ) /
+text-line: / (: (! [ marker-block-start NL ] SPACE) ANY* NS ANY* END ) /
+
+line-blank: / (: SPACE+ END | EOL ) /
+
+END: / (: EOL | EOS ) /
 
 marker-block-start: /
   marker-pref
@@ -243,11 +266,12 @@ marker-block-start: /
 /
 
 marker-phrase-start: /
-  marker-func-start
+  marker-pfunc-start
   marker-code
   marker-bold
   marker-emph
   marker-del
+  marker-under
   marker-link
   marker-esc
 /
@@ -256,8 +280,8 @@ marker-pref: / SPACE /
 marker-list: / STAR /
 marker-head: / EQUAL /
 marker-comment: / HASH /
-marker-func-start: / LANGLE /
-marker-func-end: / RANGLE /
+marker-pfunc-start: / LANGLE /
+marker-pfunc-end: / RANGLE /
 marker-code: / GRAVE /
 marker-bold: / STAR /
 marker-emph: / SLASH /
