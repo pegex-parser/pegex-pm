@@ -55,67 +55,75 @@ has _tree => ();
 sub combinate {
     my ($self, @rule) = @_;
     if (not @rule) {
-        if (my $rule = $self->{tree}->{'+toprule'}) {
+        if (my $rule = $self->{tree}{'+toprule'}) {
             @rule = ($rule);
         }
         else {
             return $self;
         }
     }
-    $self->{_tree} = {
-        map {($_, $self->{tree}->{$_})} grep { /^\+/ } keys %{$self->{tree}}
+    my $tree = {
+        map {($_, $self->{tree}{$_})} grep { /^\+/ } keys %{$self->{tree}}
     };
-    DEBUG and _debug "combinate", $self->{tree}, $self->{_tree};
+    DEBUG and _debug "combinate", $self->{tree}, $tree;
     for my $rule (@rule) {
-        $self->combinate_rule($rule);
+        $tree = $self->combinate_rule($tree, $rule);
     }
-    DEBUG and _debug "combinate DONE", $self->{_tree};
-    $self->{tree} = $self->{_tree};
-    delete $self->{_tree};
+    DEBUG and _debug "combinate DONE", $tree;
+    $self->{tree} = $tree;
     return $self;
 }
 
 sub combinate_rule {
-    my ($self, $rule) = @_;
-    DEBUG and _debug "combinate_rule($rule)";
-    return if exists $self->{_tree}->{$rule};
+    my ($self, $tree, $rule) = @_;
+    DEBUG and _debug "combinate_rule($rule)", $tree;
+    return $tree if exists $tree->{$rule};
 
-    my $object = $self->{_tree}->{$rule} = $self->{tree}->{$rule};
-    $self->combinate_object($object);
+    my $object = $self->{tree}{$rule};
+    $tree = { %$tree, $rule => $object };
+    ($tree, $object) = $self->combinate_object($tree, $object);
+    return { %$tree, $rule => $object };
 }
 
 sub combinate_object {
-    my ($self, $object) = @_;
-    DEBUG and _debug "combinate_object", $object;
+    my ($self, $tree, $object) = @_;
+    DEBUG and _debug "combinate_object", $tree, $object;
     if (exists $object->{'.lit'}) {
+        $object = { %$object }; # no mutate
         my $got = delete $object->{'.lit'};
         $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
         $object->{'.rgx'} = $got;
     }
     if (exists $object->{'.rgx'}) {
-        $object->{'.rgx'} = $self->combinate_re($object->{'.rgx'});
+        $object = { %$object, '.rgx' => $self->combinate_re($tree, $object->{'.rgx'}) };
     }
     elsif (exists $object->{'.ref'}) {
         my $rule = $object->{'.ref'};
         if (exists $self->{tree}{$rule}) {
-            $self->combinate_rule($rule);
+            $tree = $self->combinate_rule($tree, $rule);
         }
         else {
             if (my $regex = (Pegex::Grammar::Atoms::atoms)->{$rule}) {
-                $self->{tree}{$rule} = { '.rgx' => $regex };
-                $self->combinate_rule($rule);
+                $regex = $self->combinate_re($tree, $regex);
+                $tree = { %$tree, $rule => { '.rgx' => $regex } };
             }
         }
     }
     elsif (exists $object->{'.any'}) {
+        my @collection;
         for my $elem (@{$object->{'.any'}}) {
-            $self->combinate_object($elem);
+            ($tree, $elem) = $self->combinate_object($tree, $elem);
+            push @collection, $elem;
         }
+        $object = { %$object, '.any' => \@collection };
     }
     elsif (exists $object->{'.all' }) {
+        my @collection;
         for my $elem (@{$object->{'.all'}}) {
-            $self->combinate_object($elem);
+            ($tree, $elem) = $self->combinate_object($tree, $elem);
+            push @collection, $elem;
         }
+        $object = { %$object, '.all' => \@collection };
     }
     elsif (exists $object->{'.err' }) {
     }
@@ -124,11 +132,12 @@ sub combinate_object {
         die "Can't combinate:\n" .
             YAML::PP->new(schema => ['Core', 'Perl'])->dump_string($object);
     }
+    return ($tree, $object);
 }
 
 sub combinate_re {
-    my ($self, $re) = @_;
-    DEBUG and _debug "combinate_re", $re;
+    my ($self, $tree, $re) = @_;
+    DEBUG and _debug "combinate_re", $tree, $re;
     my $atoms = Pegex::Grammar::Atoms->atoms;
     my $prev = $re;
     while (1) {
@@ -136,8 +145,12 @@ sub combinate_re {
         $re =~ s[(?<!\\)(~+)]['<ws' . length($1) . '>']ge;
         $re =~ s[<([\w\-]+)>][
             (my $key = $1) =~ s/-/_/g;
-            $self->{tree}->{$key} and (
-                $self->{tree}->{$key}{'.rgx'} or
+            $self->{tree}{$key} and (
+                $self->{tree}{$key}{'.rgx'} or
+                die "'$key' not defined as a single RE"
+            )
+            or $tree->{$key} and (
+                $tree->{$key}{'.rgx'} or
                 die "'$key' not defined as a single RE"
             )
             or $atoms->{$key}
