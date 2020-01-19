@@ -4,7 +4,7 @@
 ; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
 ;
 [subrepo]
-	remote = git@github.com:ingydotnet/pegex-tml
+	remote = git@github.com:pegex-parser/pegex-tml
 	branch = master
 	commit = a78c49c95ae045be9c273e7dd7ea61c52019ebdc
 	parent = 42ca2935e8f4affc08e911af2216488299d0f2e5
