@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:ingydotnet/pegex-pgx
 	branch = master
-	commit = e88a806d1a8e8480f2837492a04a54e755d61444
-	parent = a0c380b680669bc7bfbc891b874d1607a6286f07
+	commit = dea210d42fdce1ae7a4e35f2c7a5c0eda7304b78
+	parent = 0e31c461c3cccb2ad07983a28f30c16b00a7f26f
 	cmdver = 0.4.1
 	method = merge
