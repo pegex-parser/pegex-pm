@@ -198,7 +198,7 @@ sub match_token {
         $token_got =~ s/-/_/g;
         my $method = "got_$token_got";
         if ($self->can($method)) {
-            # print "$method\n";
+            print STDERR "$method\n" if $ENV{PERL_PEGEX_BOOTSTRAP_DEBUG};
             $self->$method($token);
         }
         $self->{pointer}++;
@@ -393,23 +393,24 @@ sub group_ast {
 }
 
 # DEBUG: wrap/trace parse methods:
-# for my $method (qw(
-#     match_times match_next match_ref match_token match_any match_all
-# )) {
-#     no strict 'refs';
-#     no warnings 'redefine';
-#     my $orig = \&$method;
-#     *$method = sub {
-#         my $self = shift;
-#         my $args = join ', ', map {
-#             ref($_) ? '[' . join(', ', @$_) . ']' :
-#             length($_) ? $_ : "''"
-#         } @_;
-#         print "$method($args)\n";
-#         die if $main::x++ > 250;
-#         $orig->($self, @_);
-#     };
-# }
+if ($ENV{PERL_PEGEX_BOOTSTRAP_DEBUG}) {
+    require Data::Dumper;
+    for my $method (qw(
+        match_times match_next match_ref match_token match_any match_all
+    )) {
+        no strict 'refs';
+        no warnings 'redefine';
+        my $orig = \&$method;
+        *$method = sub {
+            my $self = shift;
+            local $Data::Dumper::Terse = 1;
+            local $Data::Dumper::Indent = 1;
+            local $Data::Dumper::Sortkeys = 1;
+            print STDERR "$method ", Data::Dumper::Dumper(\@_);
+            $orig->($self, @_);
+        };
+    }
+}
 
 #------------------------------------------------------------------------------
 # Lexer logic:
@@ -516,6 +517,9 @@ sub lex {
         my $set = $self->{regexes}->{$state} or die "Invalid state '$state'";
         for my $entry (@$set) {
             my ($regex, $name, $scope) = @$entry;
+            print STDERR "Trying $name ($regex) on ",
+                substr($grammar, $pos)
+                    if $ENV{PERL_PEGEX_BOOTSTRAP_DEBUG};
             if (substr($grammar, $pos) =~ $regex) {
                 $pos += length($&);
                 if ($name) {
