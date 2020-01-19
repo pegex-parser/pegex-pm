@@ -222,3 +222,10 @@ a: /-
 /
 --- grammar2
 a: /-foo/
+
+
+=== No parens around a regex to add modifiers
+--- grammar1
+a: ./ (b) /
+--- grammar2
+a: .(/ (b) /)

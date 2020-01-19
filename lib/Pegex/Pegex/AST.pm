@@ -146,6 +146,7 @@ sub got_whitespace_start {
 
 sub got_regular_expression {
     my ($self, $got) = @_;
+    my $modifier = shift @$got;
     if (@$got == 2) {
         my $part = shift @$got;
         unshift @{$got->[0]}, $part;
@@ -170,7 +171,9 @@ sub got_regular_expression {
     } @{$got->[0]};
     # $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
     $regex =~ s{\(([ism]?\:|\=|\!|<[=!])}{(?$1}g;
-    return +{ '.rgx' => $regex };
+    my $rgx = { '.rgx' => $regex };
+    set_modifier($rgx, $modifier) if $modifier;
+    return $rgx;
 }
 
 sub got_whitespace_token {

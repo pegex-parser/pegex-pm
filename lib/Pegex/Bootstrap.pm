@@ -302,12 +302,13 @@ sub got_quoted_regex {
 }
 
 sub got_regex_start {
-    my ($self) = @_;
-    push @{$self->{groups}}, [scalar(@{$self->{stack}}), '/'];
+    my ($self, $token) = @_;
+    push @{$self->{groups}}, [scalar(@{$self->{stack}}), '/', $token->[1]];
 }
 
 sub got_regex_end {
     my ($self) = @_;
+    my ($x, $y, $gmod) = @{$self->{groups}[-1]};
     my $regex = join '', map {
         if (ref($_)) {
             my $part;
@@ -326,7 +327,10 @@ sub got_regex_end {
         }
     } splice(@{$self->{stack}}, (pop @{$self->{groups}})->[0]);
     $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
-    push @{$self->{stack}}, {'.rgx' => $regex};
+    my $rgx = {'.rgx' => $regex};
+    Pegex::Pegex::AST::set_modifier($rgx, $gmod)
+        if $gmod;
+    push @{$self->{stack}}, $rgx;
 }
 
 sub got_regex_raw {
@@ -450,7 +454,7 @@ has regexes => {
         $qr,
         [qr/\A($MOD)?($NAME|<$NAME>)($QUANT)?(?!$WS*$NAME\:)/,
             'rule-reference'],
-        [qr/\A\//,
+        [qr/\A($GMOD)?\//,
             'regex-start', 'regex'],
         [qr/\A\`([^\`\n]*?)\`/,
             'error-message'],

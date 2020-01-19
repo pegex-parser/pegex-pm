@@ -66,6 +66,7 @@ quoted-regex:
   / TICK ( [^ TICK ]* ) TICK /
 
 regular-expression:
+  /( group-modifier? )/
   '/'
   whitespace-start?
   (
@@ -652,6 +653,9 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.72)
     },
     'regular_expression' => {
       '.all' => [
+        {
+          '.rgx' => qr/\G([\-\.]?)/
+        },
         {
           '.rgx' => qr/\G\//
         },
