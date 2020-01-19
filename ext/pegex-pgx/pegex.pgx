@@ -128,7 +128,7 @@ rule_name: /
 /
 
 ending: /
-  ~?
+  -
   (:
     BREAK - SEMI? - |
     comment - SEMI? - |

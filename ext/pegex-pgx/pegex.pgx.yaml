@@ -129,7 +129,7 @@ bracketed_group:
 doc_ending:
   .rgx: (?:\s|\#.*(?:\n|\z))*\z
 ending:
-  .rgx: (?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)
+  .rgx: (?:\s|\#.*(?:\n|\z))*(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)
 error_message:
   .rgx: '`([^`\r\n]*)`'
 grammar:
@@ -140,7 +140,7 @@ grammar:
     - .ref: doc_ending
     - .ref: ERROR_rule_definition
 meta_definition:
-  .rgx: '%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)'
+  .rgx: '%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)'
 meta_section:
   +min: 0
   .any:
@@ -150,7 +150,7 @@ meta_section:
 quoted_regex:
   .rgx: '''([^'']*)'''
 regex_raw:
-  .rgx: ([^\s/'<]+)
+  .rgx: (\(\??<|(?:[^\s/'<])+)
 regex_rule_reference:
   .rgx: (?:(?:\s|\#.*(?:\n|\z))+((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))|(?:<((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))\>))(?![\
     \t]*:)
@@ -158,7 +158,7 @@ regular_expression:
   .all:
   - .rgx: /
   - +max: 1
-    .ref: whitespace_must_start
+    .ref: whitespace_start
   - +min: 0
     .any:
     - .ref: whitespace_must
@@ -205,10 +205,10 @@ rule_section:
 rule_start:
   .rgx: ((?:[a-zA-Z][a-zA-Z0-9]*(?:[\-_][a-zA-Z0-9]+)*|\-+|_+)(?=[^\w\-]))[\ \t]*:(?:\s|\#.*(?:\n|\z))*
 whitespace_maybe:
-  .rgx: (?:\s|\#.*(?:\n|\z))*\-(?=[\ /])
+  .rgx: (?:\s|\#.*(?:\n|\z))*\-(?=[\ /\r\n])
 whitespace_must:
-  .rgx: (?:\s|\#.*(?:\n|\z))+(?:\+|\-\-)(?=[\ /])
-whitespace_must_start:
-  .rgx: \+(?=[\ /])
+  .rgx: (?:\s|\#.*(?:\n|\z))+(?:\+|\-\-)(?=[\ /\r\n])
+whitespace_start:
+  .rgx: ([\+\-])(?![\-\~])
 whitespace_token:
   .rgx: ((?:\+|\-|\-\-|\~|\~\~))(?=(?:\s|\#.*(?:\n|\z))+)
