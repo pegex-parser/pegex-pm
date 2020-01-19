@@ -467,11 +467,3 @@ a: /b/
 +version: 1.1.1
 a:
   .rgx: b
-
-
-=== Dash and Plus as whitespace tokens
---- grammar
-a: / - foo + bar+ -- baz /
---- yaml
-a:
-  .rgx: <_><foo><__><bar>+<__><baz>
