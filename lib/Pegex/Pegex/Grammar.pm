@@ -11,7 +11,7 @@ use constant file => 'ext/pegex-pgx/pegex.pgx';
 #     Pegex::Bootstrap->new->compile($grammar)->tree;
 # }
 
-sub text {   # Generated/Inlined by Pegex::Grammar (0.61)
+sub text {   # Generated/Inlined by Pegex::Grammar (0.72)
 <<'...';
 # This is the Pegex grammar for Pegex grammars!
 
@@ -143,7 +143,7 @@ rule_name: /
 /
 
 ending: /
-  ~?
+  -
   (:
     BREAK - SEMI? - |
     comment - SEMI? - |
@@ -263,7 +263,7 @@ ERROR-separation:
 ...
 }
 
-sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
+sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.72)
   {
     '+grammar' => 'pegex',
     '+include' => 'pegex-atoms',
@@ -599,7 +599,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
       '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*\z/
     },
     'ending' => {
-      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
+      '.rgx' => qr/\G(?:\s|\#.*(?:\n|\z))*(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
     },
     'error_message' => {
       '.rgx' => qr/\G`([^`\r\n]*)`/
@@ -625,7 +625,7 @@ sub make_tree {   # Generated/Inlined by Pegex::Grammar (0.61)
       ]
     },
     'meta_definition' => {
-      '.rgx' => qr/\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*?(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
+      '.rgx' => qr/\G%(grammar|extends|include|version)[\ \t]+[\ \t]*([^;\n]*?)[\ \t]*(?:\s|\#.*(?:\n|\z))*(?:\n(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|\#.*(?:\n|\z)(?:\s|\#.*(?:\n|\z))*;?(?:\s|\#.*(?:\n|\z))*|;(?:\s|\#.*(?:\n|\z))*|\z)/
     },
     'meta_section' => {
       '+min' => 0,
