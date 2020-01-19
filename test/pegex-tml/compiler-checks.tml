@@ -28,7 +28,12 @@ a:
   - .ref: c
   - .ref: _
 b:
-  .rgx: <_>cat<__>dog<_>
+  .rtr:
+  - .ref: _
+  - .lit: cat
+  - .ref: __
+  - .lit: dog
+  - .ref: _
 
 
 === Simple Grammar
@@ -212,7 +217,10 @@ a:
 a: /('(foo*)')*/
 --- yaml
 a:
-  .rgx: (\(foo\*\))*
+  .rtr:
+  - .rgx: (
+  - .lit: (foo*)
+  - .rgx: )*
 
 
 === Single Error
@@ -406,11 +414,18 @@ a:
   - .ref: c
   - .ref: _
 b:
-  .rgx: <_><cat><__><dog><_>
+  .rtr:
+  - .ref: _
+  - .ref: cat
+  - .ref: __
+  - .ref: dog
+  - .ref: _
 c:
-  .rgx: <__>
+  .ref: __
 d:
-  .rgx: <__><kitty>
+  .rtr:
+  - .ref: __
+  - .ref: kitty
 
 
 === Whitespace in Regex
@@ -420,7 +435,14 @@ a: /<DOT>* (<DASH>{3})
    /
 --- yaml
 a:
-  .rgx: <DOT>*(<DASH>{3})<BANG><BANG>
+  .rtr:
+  - .ref: DOT
+  - .rgx: '*'
+  - .rgx: (
+  - .ref: DASH
+  - .rgx: '{3})'
+  - .ref: BANG
+  - .ref: BANG
 
 
 # Drop support for --
@@ -429,7 +451,14 @@ a:
 a: / - foo + bar+ -- baz /
 --- yaml
 a:
-  .rgx: <_><foo><__><bar>+<__><baz>
+  .rtr:
+  - .ref: _
+  - .ref: foo
+  - .ref: __
+  - .ref: bar
+  - .rgx: +
+  - .ref: __
+  - .ref: baz
 
 
 === Directives

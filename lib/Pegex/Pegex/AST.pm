@@ -116,12 +116,6 @@ sub got_rule_reference {
     return $node;
 }
 
-sub _quote_literal_to_re {
-    my ($got) = @_;
-    $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
-    return $got;
-}
-
 sub got_quoted_regex {
     my ($self, $got) = @_;
     return +{ '.lit' => $got };
@@ -135,18 +129,18 @@ sub got_regex_rule_reference {
 
 sub got_whitespace_maybe {
     my ($self) = @_;
-    return +{ '.rgx' => '<_>'};
+    return +{ '.ref' => '_'};
 }
 
 sub got_whitespace_must {
     my ($self) = @_;
-    return +{ '.rgx' => '<__>'};
+    return +{ '.ref' => '__'};
 }
 
 sub got_whitespace_start {
     my ($self, $got) = @_;
     my $rule = $got eq '+' ? '__' : '_';
-    return +{ '.rgx' => "<$rule>"};
+    return +{ '.ref' => $rule };
 }
 
 sub got_regular_expression {
@@ -157,31 +151,21 @@ sub got_regular_expression {
         unshift @{$got->[0]}, $part;
     }
 
-    my $regex = join '', map {
+    my @processed = map {
+        my $ret;
         if (ref($_)) {
-            my $part;
-            if (defined($part = $_->{'.rgx'})) {
-                $part;
-            }
-            elsif (defined($part = $_->{'.lit'})) {
-                _quote_literal_to_re($part);
-            }
-            elsif (defined($part = $_->{'.ref'})) {
-                "<$part>";
-            }
-            else {
-                XXX $_;
-            }
+            my $elem = $_;
+            XXX $_ if !grep defined, grep $elem->{$_}, qw(.rgx .lit .ref);
+            $ret = $elem;
         }
         else {
-            $_;
+            $ret = { '.rgx' => $_ };
         }
+        set_modifier($ret, $modifier) if exists $ret->{'.rgx'} and $modifier;
+        $ret;
     } @{$got->[0]};
-    # $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
-    $regex =~ s{\(([ism]?\:|\=|\!|<[=!])}{(?$1}g;
-    my $rgx = { '.rgx' => $regex };
-    set_modifier($rgx, $modifier) if $modifier;
-    return $rgx;
+    return $processed[0] if @processed == 1;
+    return +{ '.rtr' => \@processed };
 }
 
 sub got_whitespace_token {

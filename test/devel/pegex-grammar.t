@@ -47,15 +47,31 @@ ERROR_any_group:
   - +min: 1
     -flat: 1
     .all:
-    - .rgx: <_><PIPE><_>
+    - .rtr:
+      - .ref: _
+      - .ref: PIPE
+      - .ref: _
     - .ref: ERROR_all_group
 ERROR_bracketed_group:
   .any:
   - .all:
-    - .rgx: (?!<group-modifier>)(?=<illegal-non-modifier-char><LPAREN>)
+    - .rtr:
+      - .rgx: (!
+      - .ref: group-modifier
+      - .rgx: )
+      - .rgx: (=
+      - .ref: illegal-non-modifier-char
+      - .ref: LPAREN
+      - .rgx: )
     - .err: Illegal group rule modifier (can only use .)
   - .all:
-    - .rgx: (<group-modifier>?)<LPAREN><_>
+    - .rtr:
+      - .rgx: (
+      - .ref: group-modifier
+      - .rgx: '?'
+      - .rgx: )
+      - .ref: LPAREN
+      - .ref: _
     - .ref: rule_group
     - .any:
       - .all:
@@ -63,23 +79,63 @@ ERROR_bracketed_group:
           .ref: doc_ending
         - .err: Runaway rule group; no ending parens at EOF
       - .all:
-        - .rgx: (?=<_><RPAREN><illegal-non-quantifier-char>)
+        - .rtr:
+          - .rgx: (=
+          - .ref: _
+          - .ref: RPAREN
+          - .ref: illegal-non-quantifier-char
+          - .rgx: )
         - .err: Illegal character in group rule quantifier
 ERROR_error_message:
   .any:
   - .all:
-    - .rgx: (?=<GRAVE>[^<GRAVE><DOS>]*[<DOS>][^<GRAVE>]*<GRAVE>)
+    - .rtr:
+      - .rgx: (=
+      - .ref: GRAVE
+      - .rgx: '[^'
+      - .ref: GRAVE
+      - .ref: DOS
+      - .rgx: ']*'
+      - .rgx: '['
+      - .ref: DOS
+      - .rgx: ']'
+      - .rgx: '[^'
+      - .ref: GRAVE
+      - .rgx: ']*'
+      - .ref: GRAVE
+      - .rgx: )
     - .err: Multi-line error messages not allowed!
   - .all:
-    - .rgx: (?=<GRAVE>[^<GRAVE>]*<doc-ending>)
+    - .rtr:
+      - .rgx: (=
+      - .ref: GRAVE
+      - .rgx: '[^'
+      - .ref: GRAVE
+      - .rgx: ']*'
+      - .ref: doc-ending
+      - .rgx: )
     - .err: Runaway error message; no ending grave at EOF
 ERROR_meta_definition:
   .all:
-  - .rgx: (?=<PERCENT><WORD>+)
+  - .rtr:
+    - .rgx: (=
+    - .ref: PERCENT
+    - .ref: WORD
+    - .rgx: +
+    - .rgx: )
   - .err: Illegal meta rule
 ERROR_regular_expression:
   .all:
-  - .rgx: (?=<SLASH>([^<SLASH>]*)<doc-ending>)
+  - .rtr:
+    - .rgx: (=
+    - .ref: SLASH
+    - .rgx: (
+    - .rgx: '[^'
+    - .ref: SLASH
+    - .rgx: ']*'
+    - .rgx: )
+    - .ref: doc-ending
+    - .rgx: )
   - .err: Runaway regular expression; no ending slash at EOF
 ERROR_rule_definition:
   .all:
@@ -106,38 +162,114 @@ ERROR_rule_part:
     +min: 0
     -flat: 1
     .all:
-    - .rgx: <__>(<PERCENT>{1,2})<__>
+    - .rtr:
+      - .ref: __
+      - .rgx: (
+      - .ref: PERCENT
+      - .rgx: '{1,2}'
+      - .rgx: )
+      - .ref: __
     - .ref: ERROR_rule_item
 ERROR_rule_reference:
   .any:
   - .all:
-    - .rgx: (?=<rule-modifier>?<LANGLE><rule-name>(?!<RANGLE>))
+    - .rtr:
+      - .rgx: (=
+      - .ref: rule-modifier
+      - .rgx: '?'
+      - .ref: LANGLE
+      - .ref: rule-name
+      - .rgx: (!
+      - .ref: RANGLE
+      - .rgx: )
+      - .rgx: )
     - .err: Missing > in rule reference
   - .all:
-    - .rgx: (?=<rule-modifier>?<rule-name><RANGLE>)
+    - .rtr:
+      - .rgx: (=
+      - .ref: rule-modifier
+      - .rgx: '?'
+      - .ref: rule-name
+      - .ref: RANGLE
+      - .rgx: )
     - .err: Missing < in rule reference
   - .all:
-    - .rgx: (?=<rule-modifier>?(?:<rule-name>|<LANGLE><rule-name><RANGLE>)<illegal-non-quantifier-char>)
+    - .rtr:
+      - .rgx: (=
+      - .ref: rule-modifier
+      - .rgx: '?'
+      - .rgx: '(:'
+      - .ref: rule-name
+      - .rgx: '|'
+      - .ref: LANGLE
+      - .ref: rule-name
+      - .ref: RANGLE
+      - .rgx: )
+      - .ref: illegal-non-quantifier-char
+      - .rgx: )
     - .err: Illegal character in rule quantifier
   - .all:
-    - .rgx: (?=<rule-modifier>?<rule-name><DASH>)
+    - .rtr:
+      - .rgx: (=
+      - .ref: rule-modifier
+      - .rgx: '?'
+      - .ref: rule-name
+      - .ref: DASH
+      - .rgx: )
     - .err: Unprotected rule name with numeric quantifier; please use <rule>#-# syntax!
   - .all:
     - +asr: -1
       .ref: rule_modifier
-    - .rgx: (?=<illegal-non-modifier-char>(?:<rule-name>|<LANGLE><rule-name><RANGLE>)<rule-quantifier>?(?!<BLANK>*<COLON>))
+    - .rtr:
+      - .rgx: (=
+      - .ref: illegal-non-modifier-char
+      - .rgx: '(:'
+      - .ref: rule-name
+      - .rgx: '|'
+      - .ref: LANGLE
+      - .ref: rule-name
+      - .ref: RANGLE
+      - .rgx: )
+      - .ref: rule-quantifier
+      - .rgx: '?'
+      - .rgx: (!
+      - .ref: BLANK
+      - .rgx: '*'
+      - .ref: COLON
+      - .rgx: )
+      - .rgx: )
     - .err: Illegal rule modifier (must be [=!.-+]?)
 ERROR_rule_start:
   .any:
-  - .rgx: (<rule-name>)<BLANK>*<COLON><_>
+  - .rtr:
+    - .rgx: (
+    - .ref: rule-name
+    - .rgx: )
+    - .ref: BLANK
+    - .rgx: '*'
+    - .ref: COLON
+    - .ref: _
   - .err: Rule header syntax error
 ERROR_separation:
   .any:
   - .all:
-    - .rgx: (?=<_><PERCENT>{3})
+    - .rtr:
+      - .rgx: (=
+      - .ref: _
+      - .ref: PERCENT
+      - .rgx: '{3}'
+      - .rgx: )
     - .err: Leading separator form (BOK) no longer supported
   - .all:
-    - .rgx: (?=<_><PERCENT>{1,2}[^<WS>])
+    - .rtr:
+      - .rgx: (=
+      - .ref: _
+      - .ref: PERCENT
+      - .rgx: '{1,2}'
+      - .rgx: '[^'
+      - .ref: WS
+      - .rgx: ']'
+      - .rgx: )
     - .err: Illegal characters in separator indicator
 all_group:
   .all:
@@ -148,25 +280,81 @@ all_group:
     - .ref: rule_part
 any_group:
   .all:
-  - .rgx: <_>\|?<_>
+  - .rtr:
+    - .ref: _
+    - .lit: '|'
+    - .rgx: '?'
+    - .ref: _
   - .ref: all_group
   - +min: 0
     .all:
-    - .rgx: <_>\|<_>
+    - .rtr:
+      - .ref: _
+      - .lit: '|'
+      - .ref: _
     - .ref: all_group
 bracketed_group:
   .all:
-  - .rgx: (<group-modifier>?)\(<_>
+  - .rtr:
+    - .rgx: (
+    - .ref: group-modifier
+    - .rgx: '?'
+    - .rgx: )
+    - .lit: (
+    - .ref: _
   - .ref: rule_group
-  - .rgx: <_>\)(<rule-quantifier>?)
+  - .rtr:
+    - .ref: _
+    - .lit: )
+    - .rgx: (
+    - .ref: rule-quantifier
+    - .rgx: '?'
+    - .rgx: )
 comment:
-  .rgx: \#<ANY>*(?:<BREAK>|<EOS>)
+  .rtr:
+  - .lit: '#'
+  - .ref: ANY
+  - .rgx: '*'
+  - .rgx: '(:'
+  - .ref: BREAK
+  - .rgx: '|'
+  - .ref: EOS
+  - .rgx: )
 doc_ending:
-  .rgx: <_><EOS>
+  .rtr:
+  - .ref: _
+  - .ref: EOS
 ending:
-  .rgx: <_>(?:<BREAK><_><SEMI>?<_>|<comment><_><SEMI>?<_>|<SEMI><_>|<EOS>)
+  .rtr:
+  - .ref: _
+  - .rgx: '(:'
+  - .ref: BREAK
+  - .ref: _
+  - .ref: SEMI
+  - .rgx: '?'
+  - .ref: _
+  - .rgx: '|'
+  - .ref: comment
+  - .ref: _
+  - .ref: SEMI
+  - .rgx: '?'
+  - .ref: _
+  - .rgx: '|'
+  - .ref: SEMI
+  - .ref: _
+  - .rgx: '|'
+  - .ref: EOS
+  - .rgx: )
 error_message:
-  .rgx: '`([^`<DOS>]*)`'
+  .rtr:
+  - .lit: '`'
+  - .rgx: (
+  - .rgx: '[^'
+  - .lit: '`'
+  - .ref: DOS
+  - .rgx: ']*'
+  - .rgx: )
+  - .lit: '`'
 grammar:
   .all:
   - .ref: meta_section
@@ -175,15 +363,65 @@ grammar:
     - .ref: doc_ending
     - .ref: ERROR_rule_definition
 group_modifier:
-  .rgx: '[<DASH><DOT>]'
+  .rtr:
+  - .rgx: '['
+  - .ref: DASH
+  - .ref: DOT
+  - .rgx: ']'
 illegal_non_modifier_char:
-  .rgx: '[^<WORD><LPAREN><RPAREN><LANGLE><SLASH><TILDE><PIPE><GRAVE><WS>]'
+  .rtr:
+  - .rgx: '[^'
+  - .ref: WORD
+  - .ref: LPAREN
+  - .ref: RPAREN
+  - .ref: LANGLE
+  - .ref: SLASH
+  - .ref: TILDE
+  - .ref: PIPE
+  - .ref: GRAVE
+  - .ref: WS
+  - .rgx: ']'
 illegal_non_quantifier_char:
-  .rgx: '[^<WORD><LPAREN><RPAREN><LANGLE><SLASH><TILDE><PIPE><GRAVE><WS><STAR><PLUS><QMARK><BANG><EQUAL><PLUS><DASH><DOT><COLON><SEMI>]'
+  .rtr:
+  - .rgx: '[^'
+  - .ref: WORD
+  - .ref: LPAREN
+  - .ref: RPAREN
+  - .ref: LANGLE
+  - .ref: SLASH
+  - .ref: TILDE
+  - .ref: PIPE
+  - .ref: GRAVE
+  - .ref: WS
+  - .ref: STAR
+  - .ref: PLUS
+  - .ref: QMARK
+  - .ref: BANG
+  - .ref: EQUAL
+  - .ref: PLUS
+  - .ref: DASH
+  - .ref: DOT
+  - .ref: COLON
+  - .ref: SEMI
+  - .rgx: ']'
 meta_definition:
-  .rgx: '%<meta-name><BLANK>+<meta-value>'
+  .rtr:
+  - .lit: '%'
+  - .ref: meta-name
+  - .ref: BLANK
+  - .rgx: +
+  - .ref: meta-value
 meta_name:
-  .rgx: (grammar|extends|include|version)
+  .rtr:
+  - .rgx: (
+  - .lit: grammar
+  - .rgx: '|'
+  - .lit: extends
+  - .rgx: '|'
+  - .lit: include
+  - .rgx: '|'
+  - .lit: version
+  - .rgx: )
 meta_section:
   +min: 0
   .any:
@@ -191,16 +429,75 @@ meta_section:
   - .ref: __
   - .ref: ERROR_meta_definition
 meta_value:
-  .rgx: <BLANK>*([^<SEMI><BREAK>]*?)<BLANK>*<ending>
+  .rtr:
+  - .ref: BLANK
+  - .rgx: '*'
+  - .rgx: (
+  - .rgx: '[^'
+  - .ref: SEMI
+  - .ref: BREAK
+  - .rgx: ']*?'
+  - .rgx: )
+  - .ref: BLANK
+  - .rgx: '*'
+  - .ref: ending
 quoted_regex:
-  .rgx: <TICK>([^<TICK>]*)<TICK>
+  .rtr:
+  - .ref: TICK
+  - .rgx: (
+  - .rgx: '[^'
+  - .ref: TICK
+  - .rgx: ']*'
+  - .rgx: )
+  - .ref: TICK
 regex_raw:
-  .rgx: ((?:<LPAREN><LANGLE>?[<EQUAL><BANG>])|(?:[^<WS><SLASH><TICK><LANGLE>])+)
+  .rtr:
+  - .rgx: (
+  - .rgx: '(:'
+  - .ref: LPAREN
+  - .ref: LANGLE
+  - .rgx: '?'
+  - .rgx: '['
+  - .ref: EQUAL
+  - .ref: BANG
+  - .rgx: ']'
+  - .rgx: )
+  - .rgx: '|'
+  - .rgx: (?:[^
+  - .ref: WS
+  - .ref: SLASH
+  - .ref: TICK
+  - .ref: LANGLE
+  - .rgx: '])+'
+  - .rgx: )
 regex_rule_reference:
-  .rgx: (?:<__>(<rule-name>)|(?:<(<rule-name>)\>))(?!<BLANK>*:)
+  .rtr:
+  - .rgx: '(:'
+  - .ref: __
+  - .rgx: (
+  - .ref: rule-name
+  - .rgx: )
+  - .rgx: '|'
+  - .rgx: '(:'
+  - .lit: <
+  - .rgx: (
+  - .ref: rule-name
+  - .rgx: )
+  - .lit: '>'
+  - .rgx: )
+  - .rgx: )
+  - .rgx: (!
+  - .ref: BLANK
+  - .rgx: '*'
+  - .lit: ':'
+  - .rgx: )
 regular_expression:
   .all:
-  - .rgx: (<group-modifier>?)
+  - .rtr:
+    - .rgx: (
+    - .ref: group-modifier
+    - .rgx: '?'
+    - .rgx: )
   - -skip: 1
     .lit: /
   - +max: 1
@@ -231,9 +528,38 @@ rule_item:
   - .ref: regular_expression
   - .ref: error_message
 rule_modifier:
-  .rgx: '[<BANG><EQUAL><PLUS><DASH><DOT>]'
+  .rtr:
+  - .rgx: '['
+  - .ref: BANG
+  - .ref: EQUAL
+  - .ref: PLUS
+  - .ref: DASH
+  - .ref: DOT
+  - .rgx: ']'
 rule_name:
-  .rgx: (?:<ALPHA><ALNUM>*(?:[<DASH><UNDER>]<ALNUM>+)*|<DASH>+|<UNDER>+)(?=[^<WORD><DASH>])
+  .rtr:
+  - .rgx: '(:'
+  - .ref: ALPHA
+  - .ref: ALNUM
+  - .rgx: '*'
+  - .rgx: (:[
+  - .ref: DASH
+  - .ref: UNDER
+  - .rgx: ']'
+  - .ref: ALNUM
+  - .rgx: +)*
+  - .rgx: '|'
+  - .ref: DASH
+  - .rgx: +
+  - .rgx: '|'
+  - .ref: UNDER
+  - .rgx: +
+  - .rgx: )
+  - .rgx: (=
+  - .rgx: '[^'
+  - .ref: WORD
+  - .ref: DASH
+  - .rgx: '])'
 rule_part:
   .all:
   - .ref: rule_item
@@ -241,26 +567,137 @@ rule_part:
     +min: 0
     -flat: 1
     .all:
-    - .rgx: <__>(%{1,2})<__>
+    - .rtr:
+      - .ref: __
+      - .rgx: (
+      - .lit: '%'
+      - .rgx: '{1,2}'
+      - .rgx: )
+      - .ref: __
     - .ref: rule_item
 rule_quantifier:
-  .rgx: (?:[<STAR><PLUS><QMARK>]|<DIGIT>+(?:<DASH><DIGIT>+|<PLUS>)?)
+  .rtr:
+  - .rgx: '(:'
+  - .rgx: '['
+  - .ref: STAR
+  - .ref: PLUS
+  - .ref: QMARK
+  - .rgx: ']'
+  - .rgx: '|'
+  - .ref: DIGIT
+  - .rgx: +
+  - .rgx: '(:'
+  - .ref: DASH
+  - .ref: DIGIT
+  - .rgx: +
+  - .rgx: '|'
+  - .ref: PLUS
+  - .rgx: )?
+  - .rgx: )
 rule_reference:
-  .rgx: (<rule-modifier>?)(?:(<rule-name>)|(?:<(<rule-name>)\>))(<rule-quantifier>?)(?!<BLANK>*:)
+  .rtr:
+  - .rgx: (
+  - .ref: rule-modifier
+  - .rgx: '?'
+  - .rgx: )
+  - .rgx: '(:'
+  - .rgx: (
+  - .ref: rule-name
+  - .rgx: )
+  - .rgx: '|'
+  - .rgx: '(:'
+  - .lit: <
+  - .rgx: (
+  - .ref: rule-name
+  - .rgx: )
+  - .lit: '>'
+  - .rgx: )
+  - .rgx: )
+  - .rgx: (
+  - .ref: rule-quantifier
+  - .rgx: '?'
+  - .rgx: )
+  - .rgx: (!
+  - .ref: BLANK
+  - .rgx: '*'
+  - .lit: ':'
+  - .rgx: )
 rule_section:
   +min: 0
   .any:
   - .ref: rule_definition
   - .ref: __
 rule_start:
-  .rgx: (<rule-name>)<BLANK>*:<_>
+  .rtr:
+  - .rgx: (
+  - .ref: rule-name
+  - .rgx: )
+  - .ref: BLANK
+  - .rgx: '*'
+  - .lit: ':'
+  - .ref: _
 whitespace_maybe:
-  .rgx: <_><DASH>(?=[<SPACE><SLASH><CR><NL>])
+  .rtr:
+  - .ref: _
+  - .ref: DASH
+  - .rgx: (=
+  - .rgx: '['
+  - .ref: SPACE
+  - .ref: SLASH
+  - .ref: CR
+  - .ref: NL
+  - .rgx: '])'
 whitespace_must:
-  .rgx: <__>(?:<PLUS>|<DASH><DASH>)(?=[<SPACE><SLASH><CR><NL>])
+  .rtr:
+  - .ref: __
+  - .rgx: '(:'
+  - .ref: PLUS
+  - .rgx: '|'
+  - .ref: DASH
+  - .ref: DASH
+  - .rgx: )
+  - .rgx: (=
+  - .rgx: '['
+  - .ref: SPACE
+  - .ref: SLASH
+  - .ref: CR
+  - .ref: NL
+  - .rgx: '])'
 whitespace_start:
-  .rgx: ([<PLUS><DASH>])(?![<DASH><TILDE>])
+  .rtr:
+  - .rgx: ([
+  - .ref: PLUS
+  - .ref: DASH
+  - .rgx: '])'
+  - .rgx: (!
+  - .rgx: '['
+  - .ref: DASH
+  - .ref: TILDE
+  - .rgx: '])'
 whitespace_token:
-  .rgx: ((?:<PLUS>|<DASH>|<DASH><DASH>|<TILDE>|<TILDE><TILDE>))(?=<__>)
+  .rtr:
+  - .rgx: (
+  - .rgx: '(:'
+  - .ref: PLUS
+  - .rgx: '|'
+  - .ref: DASH
+  - .rgx: '|'
+  - .ref: DASH
+  - .ref: DASH
+  - .rgx: '|'
+  - .ref: TILDE
+  - .rgx: '|'
+  - .ref: TILDE
+  - .ref: TILDE
+  - .rgx: )
+  - .rgx: )
+  - .rgx: (=
+  - .ref: __
+  - .rgx: )
 ws:
-  .rgx: (?:<WS>|<comment>)
+  .rtr:
+  - .rgx: '(:'
+  - .ref: WS
+  - .rgx: '|'
+  - .ref: comment
+  - .rgx: )

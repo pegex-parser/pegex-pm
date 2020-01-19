@@ -85,14 +85,18 @@ sub combinate_rule {
     return { %$tree, $rule => $object };
 }
 
+sub _quote_literal_to_re {
+    my ($got) = @_;
+    $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
+    return $got;
+}
+
 sub combinate_object {
     my ($self, $tree, $object) = @_;
     DEBUG and _debug "combinate_object", $tree, $object;
     if (exists $object->{'.lit'}) {
         $object = { %$object }; # no mutate
-        my $got = delete $object->{'.lit'};
-        $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
-        $object->{'.rgx'} = $got;
+        $object->{'.rgx'} = _quote_literal_to_re(delete $object->{'.lit'});
     }
     if (exists $object->{'.rgx'}) {
         $object = { %$object, '.rgx' => $self->combinate_re($tree, $object->{'.rgx'}) };
@@ -125,6 +129,31 @@ sub combinate_object {
         }
         $object = { %$object, '.all' => \@collection };
     }
+    elsif (exists $object->{'.rtr' }) {
+        $object = { %$object }; # no mutate
+        my $rtr = delete $object->{'.rtr'};
+        my @collection;
+        for my $elem (@$rtr) {
+            if (ref $elem) {
+                my $part;
+                if (defined($part = $elem->{'.rgx'})) {
+                    $elem = $part;
+                }
+                elsif (defined($part = $elem->{'.lit'})) {
+                    $elem = _quote_literal_to_re($part);
+                }
+                elsif (defined($part = $elem->{'.ref'})) {
+                    $elem = "<$part>";
+                }
+            }
+            push @collection, $elem;
+        }
+        DEBUG and _debug "combinate_object rtr", \@collection;
+        my $regex = join '', @collection;
+        $regex =~ s{\(([ism]?\:|\=|\!|<[=!])}{(?$1}g;
+        $regex = $self->combinate_re($tree, $regex);
+        $object = { %$object, '.rgx' => $regex };
+    }
     elsif (exists $object->{'.err' }) {
     }
     else {
@@ -145,16 +174,21 @@ sub combinate_re {
         $re =~ s[(?<!\\)(~+)]['<ws' . length($1) . '>']ge;
         $re =~ s[<([\w\-]+)>][
             (my $key = $1) =~ s/-/_/g;
-            $self->{tree}{$key} and (
-                $self->{tree}{$key}{'.rgx'} or
-                die "'$key' not defined as a single RE"
-            )
-            or $tree->{$key} and (
-                $tree->{$key}{'.rgx'} or
-                die "'$key' not defined as a single RE"
-            )
-            or $atoms->{$key}
-            or die "'$key' not defined in the grammar"
+            my ($object, $tmp);
+            if ($object = $self->{tree}{$key}) {
+                ($tree, $object) = $self->combinate_object($tree, $object);
+                $tmp = $object->{'.rgx'};
+            }
+            elsif ($object = $tree->{$key}) {
+                ($tree, $object) = $self->combinate_object($tree, $object);
+                $tmp = $object->{'.rgx'};
+            }
+            elsif ($tmp = $atoms->{$key}) {
+            }
+            else {
+                die "'$key' not defined in the grammar";
+            }
+            $tmp;
         ]e;
         last if $re eq $prev;
         $prev = $re;

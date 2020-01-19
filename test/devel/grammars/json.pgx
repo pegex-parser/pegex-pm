@@ -10,7 +10,7 @@ json: - value -
 
 object:
   ./- '{' -/
-  pair* % /- ',' -/
+  pair* % ./- ',' -/
   ./- '}' -/
 
 pair: string ./- ':' -/ value

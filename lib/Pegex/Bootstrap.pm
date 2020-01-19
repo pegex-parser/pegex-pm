@@ -277,7 +277,7 @@ sub got_rule_reference {
     }
     my $name = $args[2];
     $name =~ s/-/_/g;
-    $name =~ s/^<(.*)>$/$1/;
+    $name =~ s/^[< ]*(.*?)[> ]*$/$1/;
     my $rule = { '.ref' => $name };
     Pegex::Pegex::AST::set_modifier($rule, $args[1]);
     Pegex::Pegex::AST::set_quantity($rule, $args[3]);
@@ -299,12 +299,6 @@ sub got_whitespace_must {
     $self->got_rule_reference(['whitespace-maybe', undef, '__', undef]);
 }
 
-sub _quote_literal_to_re {
-    my ($got) = @_;
-    $got =~ s/([^\w\`\%\:\<\/\,\=\;])/\\$1/g;
-    return $got;
-}
-
 sub got_quoted_regex {
     my ($self, $token) = @_;
     my $regex = $token->[1];
@@ -319,31 +313,24 @@ sub got_regex_start {
 sub got_regex_end {
     my ($self) = @_;
     my ($x, $y, $gmod) = @{$self->{groups}[-1]};
-    my $regex = join '', map {
+    my @processed = map {
+        my $ret;
         if (ref($_)) {
-            my $part;
-            if (defined($part = $_->{'.rgx'})) {
-                $part;
-            }
-            elsif (defined($part = $_->{'.lit'})) {
-                _quote_literal_to_re($part);
-            }
-            elsif (defined($part = $_->{'.ref'})) {
-                "<$part>";
-            }
-            else {
-                XXX $_;
-            }
+            my $elem = $_;
+            XXX $_ if !grep defined, grep $elem->{$_}, qw(.rgx .lit .ref);
+            $ret = $elem;
         }
         else {
-            $_;
+            $ret = { '.rgx' => $_ };
         }
+        Pegex::Pegex::AST::set_modifier($ret, $gmod)
+            if exists $ret->{'.rgx'} and $gmod;
+        $ret;
     } splice(@{$self->{stack}}, (pop @{$self->{groups}})->[0]);
-    $regex =~ s!\(([ism]?\:|\=|\!)!(?$1!g;
-    my $rgx = {'.rgx' => $regex};
-    Pegex::Pegex::AST::set_modifier($rgx, $gmod)
-        if $gmod;
-    push @{$self->{stack}}, $rgx;
+    my $retval = @processed == 1
+        ? $processed[0]
+        : { '.rtr' => \@processed };
+    push @{$self->{stack}}, $retval;
 }
 
 sub got_regex_raw {
