@@ -9,9 +9,11 @@ install:
 - set
   PATH=C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
 - cd C:\projects\%APPVEYOR_PROJECT_NAME%
-- git clone --depth=1 git://github.com/testml-lang/testml %TESTML_ROOT%
-- cpanm --quiet --notest YAML::XS TestML
-  Scalar::Util Tie::IxHash
+- git clone git://github.com/testml-lang/testml %TESTML_ROOT%
+- cpanm --quiet --notest
+  YAML::PP
+  Scalar::Util
+  Tie::IxHash
 - mkdir inc\bin
 - copy %TESTML_ROOT%\src\perl5\pkg\bin\* inc\bin
 - mkdir t

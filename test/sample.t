@@ -3,8 +3,8 @@ use warnings;
 
 use Test::More;
 
-eval "use YAML::XS; 1" or
-    plan skip_all => 'YAML::XS required';
+eval "use YAML::PP; 1" or
+    plan skip_all => 'YAML::PP required';
 
 plan tests => 1;
 
@@ -72,6 +72,6 @@ my $ast1 = $parser->parse($input);
 
 pass 'parsed'; exit;
 
-my $got = YAML::XS::Dump($ast1);
+my $got = YAML::PP->new(schema => ['Perl'])->dump_string($ast1);
 
 is $got, $want, 'It works';

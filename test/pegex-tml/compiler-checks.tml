@@ -1,8 +1,8 @@
 #!/usr/bin/env testml
 
 
-*grammar.bootstrap-compile.yaml.clean == *yaml
-  :"+ (bootstrap compile)"
+# *grammar.bootstrap-compile.yaml.clean == *yaml
+#   :"+ (bootstrap compile)"
 
 *grammar.compile.yaml.clean == *yaml
   :"+ (pegex compile)"
@@ -339,6 +339,7 @@ a:
 
 
 === Separators with Quantifiers
+--- ONLY
 --- grammar
 a: <b>2+ % c* d* %% <e>2-3
 --- yaml

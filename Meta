@@ -26,8 +26,8 @@ requires:
   Scalar::Util: 0
   Carp: 0
   File::ShareDir::Install: 0
-  JSON::XS: 0
-  YAML::XS: 0.74
+  JSON::PP: 0
+  YAML::PP: 0.018
   XXX: 0
 
 test:

@@ -10,7 +10,7 @@ use Pegex::Bootstrap;
 use Pegex::Tree;
 use Pegex::Tree::Wrap;
 use TestAST;
-use YAML::XS;
+use YAML::PP;
 
 sub compile {
     my ($self, $grammar) = @_;
@@ -45,7 +45,13 @@ sub compress {
 sub yaml {
     my ($self, $data) = @_;
     my $tree = $data;
-    return YAML::XS::Dump($tree);
+    my $yaml = YAML::PP->new(schema => ['Core', 'Perl'])
+                       ->dump_string($tree);
+
+    $yaml =~ s/\n *(\[\]\n)/ $1/g;      # Work around YAML::PP formatting issue
+    $yaml =~ s/:\ (\d+)\.0$/: $1/gm;    # YAML::PP dumps 42 as 42.0 for certain perls
+
+    return $yaml;
 }
 
 sub clean {

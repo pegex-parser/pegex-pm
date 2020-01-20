@@ -37,12 +37,12 @@ install:
 - cpan-install --coverage
   Carp
   File::ShareDir::Install
-  JSON::XS
+  JSON::PP
   Scalar::Util
   Test::Pod
   Tie::IxHash
   XXX
-  YAML::XS~0.74
+  YAML::PP~0.018
 
 before_script:
   coverage-setup
