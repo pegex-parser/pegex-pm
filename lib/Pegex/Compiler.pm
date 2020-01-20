@@ -103,8 +103,9 @@ sub combinate_object {
     elsif (exists $object->{'.err' }) {
     }
     else {
-        require YAML::XS;
-        die "Can't combinate:\n" . YAML::XS::Dump($object);
+        require YAML::PP;
+        die "Can't combinate:\n" .
+            YAML::PP->new(schema => ['Core', 'Perl'])->dump_string($object);
     }
 }
 
@@ -159,15 +160,18 @@ sub perl_regexes {
 # Serialization formatter methods
 #-----------------------------------------------------------------------------#
 sub to_yaml {
-    require YAML::XS;
+    require YAML::PP;
     my $self = shift;
-    return YAML::XS::Dump($self->tree);
+    my $yaml = YAML::PP->new(schema => ['Core', 'Perl'])
+                       ->dump_string($self->tree);
+    $yaml =~ s/\n *(\[\]\n)/ $1/g; # Work around YAML::PP formatting issue
+    return $yaml;
 }
 
 sub to_json {
-    require JSON::XS;
+    require JSON::PP;
     my $self = shift;
-    return JSON::XS->new->utf8->canonical->pretty->encode($self->tree);
+    return JSON::PP->new->utf8->canonical->pretty->encode($self->tree);
 }
 
 sub to_perl {

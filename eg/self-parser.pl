@@ -8,7 +8,7 @@
 use Pegex::Parser;
 use FindBin '$Script';
 use IO::All;
-use YAML::XS;
+use YAML::PP;
 
 # Pegex parsing needs:
 #
@@ -26,7 +26,7 @@ sub main {
     );
     my $input = io->file($Script)->all;
     my $tree = $parser->parse($input);
-    print YAML::XS::Dump $tree;
+    print YAML::PP::Dump $tree;
 }
 
 # A custom grammar class:

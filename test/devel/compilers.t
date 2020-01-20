@@ -10,7 +10,7 @@ use TestDevelPegex;
 use Pegex::Bootstrap;
 use Pegex::Compiler;
 
-use YAML::XS;
+use YAML::PP;
 
 for my $grammar (test_grammar_paths) {
     my $expected = eval {

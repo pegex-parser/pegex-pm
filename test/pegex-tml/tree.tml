@@ -469,7 +469,7 @@ undef: /(d+)/
 --- ast
 - 0
 - ''
-- 
+- null
 
 
 === Wrap
