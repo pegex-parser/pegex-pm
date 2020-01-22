@@ -22,3 +22,5 @@ for my $grammar (test_grammar_paths) {
     is $got, $expected,
         "Bootstrap compile matches normal compile for $grammar";
 }
+
+pass "Pass one test";

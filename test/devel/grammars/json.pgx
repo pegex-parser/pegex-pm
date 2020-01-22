@@ -9,16 +9,16 @@
 json: - value -
 
 object:
-  /- '{' -/
+  ./- '{' -/
   pair* % /- ',' -/
-  /- '}' -/
+  ./- '}' -/
 
-pair: string /- ':' -/ value
+pair: string ./- ':' -/ value
 
 array:
-  /- '[' -/
-  value* % /- ',' -/
-  /- ']' -/
+  ./- '[' -/
+  value* % ./- ',' -/
+  ./- ']' -/
 
 value:
   | string

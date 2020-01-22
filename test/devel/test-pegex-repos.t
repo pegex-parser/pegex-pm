@@ -4,6 +4,7 @@ use Cwd 'cwd';
 use Capture::Tiny 'capture_merged';
 
 $ENV{PERL5LIB} = cwd . '/lib';
+$ENV{TESTML_RUN} = 'perl5-tap';
 
 my $home = cwd;
 my $repos = [
@@ -18,7 +19,7 @@ my $repos = [
     'pegex-forth-pm',
     'pegex-json-pm',
     'pegex-vcard-pm',
-    'testml-pm',
+    'testml1-pm',
     'vic',
     # 'yaml-pegex-pm',
 

@@ -64,8 +64,6 @@ sub test_grammar_paths {
             or next;
         push @paths, $grammar_file;
     }
-    plan skip_all => 'No local grammars found to test'
-        unless @paths;
     return @paths;
 }
 

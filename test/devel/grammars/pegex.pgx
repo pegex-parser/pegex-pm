@@ -51,6 +51,7 @@ quoted-regex:
   / TICK ( [^ TICK ]* ) TICK /
 
 regular-expression:
+  /( group-modifier? )/
   '/'
   whitespace-start?
   (

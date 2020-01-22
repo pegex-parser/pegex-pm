@@ -1,4 +1,9 @@
 ---
+version: 0.73
+date:    Mon Jan 20 13:07:22 PST 2020
+changes:
+- Make ./ rule / same as .(/ rule /)
+---
 version: 0.72
 date:    Sun Jan  5 14:03:42 PST 2020
 changes:
