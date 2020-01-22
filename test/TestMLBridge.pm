@@ -49,7 +49,6 @@ sub yaml {
                        ->dump_string($tree);
 
     $yaml =~ s/\n *(\[\]\n)/ $1/g;      # Work around YAML::PP formatting issue
-    $yaml =~ s/:\ (\d+)\.0$/: $1/gm;    # YAML::PP dumps 42 as 42.0 for certain perls
 
     return $yaml;
 }

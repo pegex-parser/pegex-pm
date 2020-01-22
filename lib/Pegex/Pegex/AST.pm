@@ -235,15 +235,15 @@ sub set_quantity {
         $object->{'+min'} = 1;
     }
     elsif ($quantity =~ /^(\d+)$/) {
-        $object->{'+min'} = $1 + 0;
-        $object->{'+max'} = $1 + 0;
+        $object->{'+min'} = int $1 + 0;
+        $object->{'+max'} = int $1 + 0;
     }
     elsif ($quantity =~ /^(\d+)-(\d+)$/) {
-        $object->{'+min'} = $1 + 0;
-        $object->{'+max'} = $2 + 0;
+        $object->{'+min'} = int $1 + 0;
+        $object->{'+max'} = int $2 + 0;
     }
     elsif ($quantity =~ /^(\d+)\+$/) {
-        $object->{'+min'} = $1 + 0;
+        $object->{'+min'} = int $1 + 0;
     }
     else {
         die "Invalid quantifier: '$quantity'";
