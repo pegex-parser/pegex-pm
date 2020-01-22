@@ -339,7 +339,6 @@ a:
 
 
 === Separators with Quantifiers
---- ONLY
 --- grammar
 a: <b>2+ % c* d* %% <e>2-3
 --- yaml
