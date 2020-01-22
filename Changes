@@ -1,4 +1,9 @@
 ---
+version: 0.74
+date:    Wed Jan 22 14:57:47 PST 2020
+changes:
+- Fix YAML::PP and float interaction for older perls
+---
 version: 0.73
 date:    Wed Jan 22 12:03:38 PST 2020
 changes:
