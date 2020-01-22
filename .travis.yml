@@ -41,7 +41,7 @@ install:
   Scalar::Util
   Test::Pod
   Tie::IxHash
-  XXX
+  XXX~0.35
   YAML::PP~0.018
 
 before_script:
