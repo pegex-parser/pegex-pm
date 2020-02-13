@@ -1,7 +1,7 @@
 =meta: 0.0.2
 
 name: Pegex
-version: 0.74
+version: 0.75
 abstract: Acmeist PEG Parser Framework
 homepage: http://pegex.org
 language: perl
@@ -27,7 +27,7 @@ requires:
   Carp: 0
   File::ShareDir::Install: 0
   JSON::PP: 0
-  YAML::PP: 0.018
+  YAML::PP: 0.019
   XXX: 0.35
 
 test:

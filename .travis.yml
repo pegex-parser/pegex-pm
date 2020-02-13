@@ -42,7 +42,7 @@ install:
   Test::Pod
   Tie::IxHash
   XXX~0.35
-  YAML::PP~0.018
+  YAML::PP~0.019
 
 before_script:
   coverage-setup

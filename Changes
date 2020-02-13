@@ -1,4 +1,9 @@
 ---
+version: 0.75
+date:    Thu Feb 13 11:59:58 PST 2020
+changes:
+- Use YAML::PP 0.19 and remove special cases that it fixed. tinita++
+---
 version: 0.74
 date:    Wed Jan 22 14:57:47 PST 2020
 changes:
