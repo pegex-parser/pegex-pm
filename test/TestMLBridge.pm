@@ -45,12 +45,9 @@ sub compress {
 sub yaml {
     my ($self, $data) = @_;
     my $tree = $data;
-    my $yaml = YAML::PP->new(schema => ['Core', 'Perl'])
-                       ->dump_string($tree);
-
-    $yaml =~ s/\n *(\[\]\n)/ $1/g;      # Work around YAML::PP formatting issue
-
-    return $yaml;
+    YAML::PP
+        ->new(schema => ['Core', 'Perl'])
+        ->dump_string($tree);
 }
 
 sub clean {

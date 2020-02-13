@@ -72,6 +72,8 @@ my $ast1 = $parser->parse($input);
 
 pass 'parsed'; exit;
 
-my $got = YAML::PP->new(schema => ['Perl'])->dump_string($ast1);
+my $got = YAML::PP
+    ->new(schema => ['Perl'])
+    ->dump_string($ast1);
 
 is $got, $want, 'It works';
